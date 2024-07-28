@@ -141,12 +141,13 @@ export class ClickTask extends Task {
     }
     async execute(page) {
         console.log('page URL:', page.url());
-        const newPagePromise = new Promise((resolve, reject) => {
+        const newPagePromise = new Promise((resolve) => {
             const timeoutId = setTimeout(() => {
-                reject(new Error('Timeout waiting for new page'));
-            }, 20000); // 增加超时时间为 20 秒
+                console.log('Timeout waiting for new page');
+                resolve(null); // 如果超时，解决 Promise 并返回 null
+            }, 2000);
             this.browser.once('targetcreated', async target => {
-                clearTimeout(timeoutId); // 如果 'targetcreated' 事件被触发，那么清除超时
+                clearTimeout(timeoutId);
                 if (target.type() === 'page') {
                     resolve(await target.page());
                 }
