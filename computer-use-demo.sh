@@ -1,7 +1,7 @@
 
 
 
-export ANTHROPIC_API_KEY=""
+# export ANTHROPIC_API_KEY=""
 export http_proxy=http://10.67.44.186:1082
 export https_proxy=http://10.67.44.186:1082
 docker run \

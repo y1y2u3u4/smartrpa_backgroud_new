@@ -12,7 +12,6 @@ export async function launchBrowser(config) {
         defaultViewport: config.viewport,
         args: config.args,
     });
-    
 }
 
 // import puppeteer from "puppeteer-core";

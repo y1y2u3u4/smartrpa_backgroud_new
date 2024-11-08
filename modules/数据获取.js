@@ -43,8 +43,8 @@ import { parse } from 'csv-parse/sync'; // 修改这里，使用 import 语法
 
 
 // 定义处理范围和批次大小
-// const startIndex = 2000;
-// const endIndex = 4000;
+// const startIndex = 0;
+// const endIndex = 1000;
 // const batchSize = 500;
 
 // // 循环处理每个批次
@@ -52,7 +52,7 @@ import { parse } from 'csv-parse/sync'; // 修改这里，使用 import 语法
 //   const currentEnd = Math.min(currentStart + batchSize, endIndex);
 //   console.log(`正在处理范围: ${currentStart} - ${currentEnd}`);
 
-//   const TaskList = await findTaskList_taskname_limit('OZON_SKU', currentStart, currentEnd);
+//   const TaskList = await findTaskList_taskname_limit('OZON_SKU_001', currentStart, currentEnd);
 //   const expandedData = [];
 
 //   TaskList.forEach((task, index) => {
@@ -61,11 +61,27 @@ import { parse } from 'csv-parse/sync'; // 修改这里，使用 import 语法
 //       if (Array.isArray(outputData)) {
 //         outputData.forEach(sku => {
 //           expandedData.push({
-//             // ... 保持原有字段不变 ...
 //             imageUrl: sku.imageUrl || 'N/A',
 //             title: sku.title || 'N/A',
-//             // ... 其他字段 ...
-//             original_index: index + currentStart,  // 调整索引以反映实际位置
+//             productUrl: sku.productUrl || 'N/A',
+//             brand: sku.brand || 'N/A',
+//             category1: sku.category1 || 'N/A',
+//             category3: sku.category3 || 'N/A',
+//             orderAmount: sku.orderAmount || 'N/A',
+//             salesDynamics: sku.salesDynamics || 'N/A',
+//             orderedQuantity: sku.orderedQuantity || 'N/A',
+//             averagePrice: sku.averagePrice || 'N/A',
+//             missedSales: sku.missedSales || 'N/A',
+//             subscriptionShare: sku.subscriptionShare || 'N/A',
+//             availability: sku.availability || 'N/A',
+//             dailyAverageSales: sku.dailyAverageSales || 'N/A',
+//             searchViews: sku.searchViews || 'N/A',
+//             cardViews: sku.cardViews || 'N/A',
+//             searchAddToCart: sku.searchAddToCart || 'N/A',
+//             cardAddToCart: sku.cardAddToCart || 'N/A',
+//             adCostShare: sku.adCostShare || 'N/A',
+//             listingDate: sku.listingDate || 'N/A',
+//             original_index: index + currentStart,
 //             task_name: task.task_name,
 //             description: task.description,
 //             user_email: task.user_email
@@ -156,7 +172,7 @@ const processAllBatchFiles = () => {
   ].join('\n');
 
   // 保存合并后的结果
-  fs.writeFileSync('../测试数据/merged_unique_OZON_SKU_quan_01.csv', uniqueData);
+  fs.writeFileSync('../测试数据/merged_unique_OZON_SKU_quan_03.csv', uniqueData);
   console.log(`处理完成，共导出 ${uniqueMap.size} 条去重记录`);
 };
 

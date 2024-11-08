@@ -58,10 +58,10 @@ import { handler_run_test, handler_login} from '../handler.js';
 // await onlineOutputHandler.handle(taskExecutor_code, eventHandler_code, 'output_runcode', 'runway');
 
 //OZON 的 SKU 数据获取
-const taskExecutor_code = fs.readFileSync('./taskExecutor_9.js', 'utf8');
-const eventHandler_code = fs.readFileSync('./eventHandler_9.js', 'utf8');
-const onlineOutputHandler = getOnlineOutputHandler();
-await onlineOutputHandler.handle(taskExecutor_code, eventHandler_code, 'output_runcode', 'OZON_SKU');
+// const taskExecutor_code = fs.readFileSync('./taskExecutor_9.js', 'utf8');
+// const eventHandler_code = fs.readFileSync('./eventHandler_9.js', 'utf8');
+// const onlineOutputHandler = getOnlineOutputHandler();
+// await onlineOutputHandler.handle(taskExecutor_code, eventHandler_code, 'output_runcode', 'OZON_SKU');
 
 
 // await taskExecutor('douyin');
@@ -76,15 +76,19 @@ await onlineOutputHandler.handle(taskExecutor_code, eventHandler_code, 'output_r
 // await handler_run_test(params);
 
 
-// const req = {
-//     body: {
-//         url: "https://www.dianping.com/",
-//         task_name: 'dianping'
-//     }
-// };
+const req = {
+    body: {
+        url: "https://seller.ozon.ru/app/analytics/what-to-sell/ozon-bestsellers",
+        task_name: 'OZON_SKU'
+    }
+};
 
-// // 调用 handler_login 函数
-// await handler_login(req);
+// 调用 handler_login 函数
+await handler_login(req);
+
+
+
+
 
 // // 单独调用下 api 实现电话获取
 // export async function getData_baidu(req) {

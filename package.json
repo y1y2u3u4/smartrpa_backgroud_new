@@ -13,6 +13,7 @@
     "axios": "^1.7.2",
     "child_process": "^1.0.2",
     "cors": "^2.8.5",
+    "csv-parse": "^5.5.6",
     "exceljs": "^4.4.0",
     "express": "^4.19.2",
     "fs": "^0.0.1-security",
