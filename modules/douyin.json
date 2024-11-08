@@ -1,0 +1,121 @@
+[
+    {
+        "url": "https://creator.douyin.com/creator-micro/home",
+        "time": "2024-06-16T03:08:50.422Z",
+        "type": "navigation"
+    },
+    {
+        "loopEvents": [
+            {
+                "element": {
+                    "tagName": "SPAN",
+                    "id": "",
+                    "className": "_Ji1e",
+                    "name": "",
+                    "innerText": "管理"
+                },
+                "value": "",
+                "time": "2024-06-16T03:08:55.448Z",
+                "type": "click"
+            },
+            {
+                "url": "https://creator.douyin.com/content/upload",
+                "time": "2024-06-16T03:09:10.388Z",
+                "type": "navigation"
+            },
+
+
+            {
+                "element": {
+                    "tagName": "DIV",
+                    "id": "",
+                    "className": "container-drag-icon",
+                    "name": "",
+                    "innerText": "上传视频"
+                },
+                "value": "",
+                "time": "2024-06-16T03:09:11.388Z",
+                "type": "click"
+            },
+
+
+            {
+                "url": "https://creator.douyin.com/content/manage",
+                "time": "2024-06-16T03:09:11.388Z",
+                "type": "navigation"
+            },
+            {
+                "element": {
+                    "tagName": "DIV",
+                    "id": "",
+                    "className": "tab-item-E7ebGh",
+                    "name": "",
+                    "innerText": "已发布"
+                },
+                "time": "2024-06-16T03:09:12.388Z",
+                "type": "click"
+            },
+            {
+                "action": "scroll",
+                "direction": "down",
+                "distance": 3000,
+                "time": "2024-06-16T03:09:13.638Z",
+                "type": "scroll"
+            },
+            {
+                "action": "scroll",
+                "direction": "down",
+                "distance": 3000,
+                "time": "2024-06-16T03:09:14.638Z",
+                "type": "scroll"
+            },
+            {
+                "action": "scroll",
+                "direction": "down",
+                "distance": 3000,
+                "time": "2024-06-16T03:09:15.638Z",
+                "type": "scroll"
+            },
+            {
+                "action": "scroll",
+                "direction": "down",
+                "distance": 3000,
+                "time": "2024-06-16T03:09:16.638Z",
+                "type": "scroll"
+            },
+            {
+                "action": "scroll",
+                "direction": "down",
+                "distance": 3000,
+                "time": "2024-06-16T03:09:17.638Z",
+                "type": "scroll"
+            },
+            {
+                "element": {
+                    "tagName": "",
+                    "id": "",
+                    "className": "",
+                    "name": "",
+                    "innerText": "",
+                    "leixing": "自定义3"
+                },
+                "time": "2024-06-16T03:09:20.713Z",
+                "type": "output"
+            },
+            {
+                "element": {
+                    "tagName": "SPAN",
+                    "id": "",
+                    "className": "logout",
+                    "name": "",
+                    "innerText": "退出代运营状态",
+                    "leixing": "自定义4"
+                },
+                "time": "2024-06-16T03:09:30.388Z",
+                "type": "click"
+            }
+        ],
+        "loopCount": 10,
+        "type": "loop"
+    }
+]
