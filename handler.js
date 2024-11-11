@@ -79,6 +79,7 @@ export async function handler_run(req, res) {
     const sortedData = req.body.sortedData;
     //变量配置match文件
     // const row = req.body.row;
+    console.log('req.body.row:', req.body.row);
     const rows = Array.isArray(req.body.row) ? req.body.row : [req.body.row];
     const task_name = req.body.task_name;
     const leixing = req.body.leixing;
@@ -193,7 +194,7 @@ export async function handler_run(req, res) {
 
     const dataProcessor = new DataProcessor(monitorResults);
     dataProcessor.addMonitor(page);
-
+    console.log('rowscheck:', rows);
     const sortedData_new = matchAndReplace(sortedData, rows[0])
 
     for (const [index, event] of sortedData_new.entries()) {

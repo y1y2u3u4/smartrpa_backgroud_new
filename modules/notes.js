@@ -263,7 +263,9 @@ export const findTaskList_taskname_limit = async (task_name, offset = 0, limit =
   const db = getDb();
   await db.query('SET statement_timeout = 500000');
   const res = await db.query(
-    `SELECT * FROM tasks WHERE task_name = $1 LIMIT $2 OFFSET $3`,
+    `SELECT * FROM tasks WHERE task_name = $1 
+    AND created_at >= '2024-11-11 00:00:00'
+    LIMIT $2 OFFSET $3`,
     [task_name, limit, offset]
   );
 
@@ -271,6 +273,7 @@ export const findTaskList_taskname_limit = async (task_name, offset = 0, limit =
     return [];
   }
   return res.rows;
+
 }
 
 export const getMusicCount = async () => {

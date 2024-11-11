@@ -767,10 +767,12 @@ export class OutputTask extends Task {
 
             console.log('提取的数据:', this.data);
 
-            if (this.data && this.data.length > 0 && this.data.length < 5) {
+            // 确保this.data是数组且长度小于5（包括空数组）
+            if (Array.isArray(this.data) && this.data.length < 5) {
+                console.log(`处理数据，数组长度: ${this.data.length}`);
                 outputHandler.handle(this.data, 'output', this.task_name, this.cityname);
             } else {
-                console.log('没有提取到数据或数据为空');
+                console.log(`数据无效或超出处理范围，数组长度: ${this.data?.length}`);
             }
         }
 
