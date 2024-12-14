@@ -815,3 +815,34 @@ function clickGenerateButton() {
 
 // 执行点击
 clickGenerateButton();
+
+
+const value = '不允许';  // 或 '允许'
+const downloadContent = document.querySelector('.download-content-Lci5tL');
+const labels = downloadContent.querySelectorAll('.radio-d4zkru');
+console.log('找到的按钮数量:', labels.length);
+
+if (labels.length === 2) {
+    const labelTexts = Array.from(labels).map(label => label.textContent.trim());
+    console.log('按钮文本:', labelTexts);
+
+    const targetIndex = value === '允许' ? 0 : 1;
+    const targetLabel = labels[targetIndex];
+    const otherLabel = labels[1 - targetIndex];
+
+    const targetInput = targetLabel.querySelector('input');
+    const otherInput = otherLabel.querySelector('input');
+
+    console.log('当前状态:', {
+        target: targetInput.checked,
+        other: otherInput.checked
+    });
+
+    targetInput.checked = true;
+    otherInput.checked = false;
+
+    [targetInput, otherInput].forEach(input => {
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+        input.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+}

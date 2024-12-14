@@ -1,5 +1,5 @@
 // modules/taskExecutor.js
-///实现通过OZON的店铺来获取对应的 sku 数据
+///实现通过OZON商家后台搜索查询商品销量
 import { loadConfig } from './configManager.js';
 import { OutputFactory } from './outputHandler.js';
 
@@ -59,18 +59,19 @@ export class ClickTask extends Task {
                 }
             });
         });
-
+        
         let clickSelector;
         let isXPath_click = false;
         if (this.element.id) {
             clickSelector = `#${this.element.id}`;
         }
         else if (this.element.tagName && this.element.innerText) {
-            if (this.element.innerText.includes('保存当前页') || this.element.innerText.includes('同步至未推送站点') ||
+            if (this.element.innerText.includes('保存当前页') || this.element.innerText.includes('同步��未推送站点') ||
                 this.element.innerText.includes('翻译') || this.element.innerText.includes('保存所有站点') || this.element.innerText.includes('保存并提交所有站点')
-            ) {
+            )
+            {
                 clickSelector = `//button[contains(., '${this.element.innerText}')]`;
-            }
+            } 
             else if (this.element.innerText === '视频管理') {
                 clickSelector = "//li[contains(@class, 'semi-navigation-item')]//span[contains(@class, 'semi-navigation-item-text')]/span[text()='视频管理']";
             }
@@ -92,7 +93,9 @@ export class ClickTask extends Task {
         console.log('clickSelector:', clickSelector);
         console.log('isXPath_click:', isXPath_click);
         console.log('leixing:', this.element.leixing);
-        const cliclValue = this.value;
+
+        // const cliclValue = this.value;
+        const cliclValue = this.element.innerText;
 
 
         try {
@@ -146,13 +149,13 @@ export class ClickTask extends Task {
                         try {
                             await page.click(clickSelector);
                             console.log(`成功点击元素: ${clickSelector}`);
-                            return page;
+                            return page; 
                         } catch (error) {
                             console.log(`点击元素失败: ${error.message}`);
                         }
                     } else {
                         console.log(`元素 ${clickSelector} 不存在，跳过点击操作`);
-                        return page;
+                        return page; 
                     }
                     // 无论点击是否成功，都等待可能的新页面
 
@@ -248,71 +251,122 @@ export class ClickTask extends Task {
                 }
                 console.log('自定义3_done');
             } else if (this.element.leixing === '自定义4') {
-                console.log('Hover and click operation started');
-                await page.evaluate(async () => {
-                    const AVATAR_SELECTORS = [
-                        "span.semi-avatar.semi-avatar-circle.semi-avatar-small.semi-avatar-grey.semi-dropdown-showing",
-                        ".semi-avatar",
-                        "img[src*='aweme-avatar']",
-                        "[class*='avatar']"
-                    ];
-                    let avatarElement;
-                    for (let selector of AVATAR_SELECTORS) {
-                        avatarElement = document.querySelector(selector);
-                        if (avatarElement) {
-                            console.log('找到头像元素:', selector);
-                            avatarElement.click();
-                            console.log('已点击头像');
-                            break;
+                console.log('自定义4_start');
+
+                try {
+                    await page.evaluate(async (cliclValue) => {
+                        // 查找搜索输入框
+                        const searchInput = document.querySelector('input[id^="input___"]');
+                        if (!searchInput) {
+                            throw new Error('未找到搜索输入框');
                         }
-                    }
-                    if (!avatarElement) {
-                        console.error('未找到头像元素');
-                        return;
-                    }
-                    const mouseoverEvent = new MouseEvent('mouseover', {
-                        bubbles: true,
-                        cancelable: true,
-                        view: window
-                    });
-                    avatarElement.dispatchEvent(mouseoverEvent);
-                    console.log('已模拟鼠标悬停在头像上');
-                    await new Promise(resolve => setTimeout(resolve, 1000));
-                    const menuItems = document.querySelectorAll('.semi-dropdown-menu *');
-                    console.log('找到的菜单项数量:', menuItems.length);
-                    for (let item of menuItems) {
-                        console.log('菜单项内容:', item.textContent.trim());
-                        if (item.textContent.trim() === '退出代运营状态') {
-                            console.log('找到"退出代运营状态"选项');
-                            item.click();
-                            console.log('已点击"退出代运营状态"');
-                            return;
+
+                        // 聚焦输入框
+                        searchInput.focus();
+
+                        // 清空现有内容
+                        searchInput.value = '';
+
+                        // 模拟用户输入
+                        searchInput.value = cliclValue;
+
+                        // 触发输入事件
+                        searchInput.dispatchEvent(new Event('input', { bubbles: true }));
+
+                        // 触发回车键
+                        searchInput.dispatchEvent(new KeyboardEvent('keydown', {
+                            key: 'Enter',
+                            code: 'Enter',
+                            keyCode: 13,
+                            bubbles: true,
+                            cancelable: true
+                        }));
+
+                        console.log('已触发搜索输入和回车');
+
+                        // 等待下拉菜单出现并点击
+                        let attempts = 0;
+                        const maxAttempts = 5;
+
+                        while (attempts < maxAttempts) {
+                            await new Promise(resolve => setTimeout(resolve, 1000));
+
+                            // 查找下拉菜单容器
+                            const dropdown = document.querySelector('.ozi__dropdown__wrapper__J7d88');
+                            if (!dropdown) {
+                                console.log('未找到下拉菜单容器，继续尝试...');
+                                attempts++;
+                                continue;
+                            }
+
+                            // 查找第一个商品项
+                            const firstResult = dropdown.querySelector('.ozi__data-cell__dataCell__QUywL._alignItemPrice_k7foi_28');
+                            if (firstResult) {
+                                // 确保元素在视图中
+                                firstResult.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+                                // 等待滚动完成
+                                await new Promise(resolve => setTimeout(resolve, 100));
+
+                                // 模拟完整的点击事件序列
+                                ['mouseenter', 'mouseover', 'mousedown', 'click', 'mouseup'].forEach(eventType => {
+                                    const event = new MouseEvent(eventType, {
+                                        view: window,
+                                        bubbles: true,
+                                        cancelable: true,
+                                        clientX: firstResult.getBoundingClientRect().left + 10,
+                                        clientY: firstResult.getBoundingClientRect().top + 10
+                                    });
+                                    firstResult.dispatchEvent(event);
+                                });
+
+                                console.log('已点击搜索结果');
+                                return true;
+                            }
+
+                            console.log(`尝试第 ${attempts + 1} 次查找商品项...`);
+                            attempts++;
                         }
-                    }
-                    console.error('未找到"退出代运营状态"选项');
-                });
-                console.log('自定义4_done');
+
+                        throw new Error('未能在指定次数内找到并点击商品项');
+                    }, cliclValue);
+
+                    // 等待页面加载和可能的跳转完成
+                    await page.waitForTimeout(5000);
+                    console.log('自定义4_done');
+
+                } catch (error) {
+                    console.error('搜索和点击操作失败:', error);
+
+                    // 输出当前页面状态以便调试
+                    const pageContent = await page.content();
+                    console.log('页面内容:', pageContent);
+
+                    throw error;
+                }
             }
+
+
         } catch (error) {
             console.error('执行点击操作时发生错误:', error);
         }
 
         console.log('check_1');
-        const newPage = await newPagePromise
+        // const newPage = await newPagePromise
         console.log('check_2');
-        console.log('newPage:', newPage);
-
-        if (newPage !== null) {
-            console.log('newPage URL:', newPage.url());
-            await newPage.setViewport({ width: 1280, height: 720 });
-            await newPage.waitForNavigation({ waitUntil: 'networkidle0', timeout: 10000 }).catch(() => {
-                console.log('Navigation timeout after 20 seconds');
-            });
-        }
+        // console.log('newPage:', newPage);
+        
+        // if (newPage !== null) {
+        //     console.log('newPage URL:', newPage.url());
+        //     await newPage.setViewport({ width: 1280, height: 720 });
+        //     await newPage.waitForNavigation({ waitUntil: 'networkidle0', timeout: 10000 }).catch(() => {
+        //         console.log('Navigation timeout after 20 seconds');
+        //     });
+        // }
 
         console.log('check_3')
 
-        return newPage || page;
+        return page;
 
     }
 }
@@ -434,7 +488,7 @@ export class InputTask extends Task {
 
                     element.dispatchEvent(blurEvent);
                 } else {
-                    // 清空输入框并输入新的值
+                    // 清输入框并输入新的值
                     element.value = '';
                     element.dispatchEvent(inputEvent);
 
@@ -476,7 +530,7 @@ export class InputTask extends Task {
 }
 
 export class OutputTask extends Task {
-    constructor(element, value, sortedData_new, task_name, cityname) {
+    constructor(element, value, sortedData_new,task_name, cityname) {
         super('output', element, value, sortedData_new, task_name, cityname);
         console.log('OutputTask task_name:', this.task_name);
         console.log('OutputTask cityname:', this.cityname);
@@ -540,24 +594,25 @@ export class OutputTask extends Task {
 
             // 将数据转换为 JSON 格式
             this.data = await Promise.all(this.data.map(async (row) => {
-                // const allData = await getAllData(row.name, this.cityname);
+                const allData = await getAllData(row.name,this.cityname);
                 // console.log('All Data:', allData);
                 return {
                     ...row,
-                    // gaodeName: allData.gaode.name,
-                    // gaodeAddress: allData.gaode.address,
-                    // gaodePhone: allData.gaode.phone,
-                    // tengxunName: allData.tengxun.name,
-                    // tengxunAddress: allData.tengxun.address,
-                    // tengxunPhone: allData.tengxun.phone,
-                    // baiduName: allData.baidu.name,
-                    // baiduAddress: allData.baidu.address,
-                    // baiduPhone: allData.baidu.phone
+                    gaodeName: allData.gaode.name,
+                    gaodeAddress: allData.gaode.address,
+                    gaodePhone: allData.gaode.phone,
+                    tengxunName: allData.tengxun.name,
+                    tengxunAddress: allData.tengxun.address,
+                    tengxunPhone: allData.tengxun.phone,
+                    baiduName: allData.baidu.name,
+                    baiduAddress: allData.baidu.address,
+                    baiduPhone: allData.baidu.phone
                 };
             }));
 
             // console.log('Updated data:', this.data);
-            outputHandler.handle(this.data, 'output', this.task_name, this.cityname);
+
+            outputHandler.handle(this.data, 'output', this.task_name);
         }
         else if (this.element.leixing === '自定义2') {
             this.data = await page.evaluate(() => {
@@ -604,26 +659,26 @@ export class OutputTask extends Task {
                                 duration: ''
                             }]);
                         } else {
-                            videoCards.forEach(card => {
-                                const titleElement = card.querySelector('.info-title-text-YTLo9y');
-                                const timeElement = card.querySelector('.info-time-iAYLF0');
-                                const viewsElement = card.querySelector('.info-figure-z1H3gA:nth-child(1) .info-figure-text-B6wLrt');
-                                const commentsElement = card.querySelector('.info-figure-z1H3gA:nth-child(2) .info-figure-text-B6wLrt');
-                                const likesElement = card.querySelector('.info-figure-z1H3gA:nth-child(3) .info-figure-text-B6wLrt');
-                                const coverElement = card.querySelector('.video-card-cover-xx9wyS');
-                                const durationElement = card.querySelector('.badge-pcgoA6');
+                        videoCards.forEach(card => {
+                            const titleElement = card.querySelector('.info-title-text-YTLo9y');
+                            const timeElement = card.querySelector('.info-time-iAYLF0');
+                            const viewsElement = card.querySelector('.info-figure-z1H3gA:nth-child(1) .info-figure-text-B6wLrt');
+                            const commentsElement = card.querySelector('.info-figure-z1H3gA:nth-child(2) .info-figure-text-B6wLrt');
+                            const likesElement = card.querySelector('.info-figure-z1H3gA:nth-child(3) .info-figure-text-B6wLrt');
+                            const coverElement = card.querySelector('.video-card-cover-xx9wyS');
+                            const durationElement = card.querySelector('.badge-pcgoA6');
 
-                                videos.push({
-                                    channelName: channelName,
-                                    title: titleElement ? titleElement.textContent.trim() : '',
-                                    publishTime: timeElement ? timeElement.textContent.trim() : '',
-                                    views: viewsElement ? parseInt(viewsElement.textContent) : 0,
-                                    comments: commentsElement ? parseInt(commentsElement.textContent) : 0,
-                                    likes: likesElement ? parseInt(likesElement.textContent) : 0,
-                                    coverUrl: coverElement ? coverElement.style.backgroundImage.slice(5, -2) : '',
-                                    duration: durationElement ? durationElement.textContent.trim() : ''
-                                });
+                            videos.push({
+                                channelName: channelName,
+                                title: titleElement ? titleElement.textContent.trim() : '',
+                                publishTime: timeElement ? timeElement.textContent.trim() : '',
+                                views: viewsElement ? parseInt(viewsElement.textContent) : 0,
+                                comments: commentsElement ? parseInt(commentsElement.textContent) : 0,
+                                likes: likesElement ? parseInt(likesElement.textContent) : 0,
+                                coverUrl: coverElement ? coverElement.style.backgroundImage.slice(5, -2) : '',
+                                duration: durationElement ? durationElement.textContent.trim() : ''
                             });
+                        });
                         }
 
                         resolve(videos);
@@ -636,102 +691,80 @@ export class OutputTask extends Task {
 
         }
         else if (this.element.leixing === '自定义4') {
-            this.data = await page.evaluate(() => {
-                return new Promise((resolve) => {
-                    setTimeout(() => {
-                        // ... existing code ...
-                        try {
-                            const products = [];
-                            // 使用更精确的选择器来定位商品卡片
-                            const productCards = document.querySelectorAll('div[data-index][class*="tile-root"]');
-                            console.log('找到的产品卡片数量:', productCards.length);
-
-                            productCards.forEach((card, index) => {
-                                const product = {};
-
-                                // 提取链接和ID
-                                const linkElement = card.querySelector('a[class*="tile-hover-target"]');
-                                product.link = linkElement ? linkElement.href : '未找到链接';
-                                product.id = product.link ? product.link.match(/\/product\/([^\/\?]+)/)?.[1] : '未找到ID';
-
-
-                                // 提取图片URL
-                                const imageElement = card.querySelector('img.b930-a');
-                                product.imageUrl = imageElement ? imageElement.src : '未找到图片URL';
-
-                                // 提取价格信息
-                                const currentPriceElement = card.querySelector('[class*="tsHeadline500Medium"]');
-                                product.currentPrice = currentPriceElement ? currentPriceElement.textContent.trim() : '未找到当前价格';
-
-                                const oldPriceElement = card.querySelector('[class*="tsBodyControl400Small"]');
-                                product.oldPrice = oldPriceElement ? oldPriceElement.textContent.trim() : '未找到原价';
-
-                                // 提取折扣信息
-                                const discountElement = card.querySelector('[class*="tsBodyControl400Small"][class*="c3019-a6"]');
-                                product.discount = discountElement ? discountElement.textContent.trim() : '未找到折扣';
-
-                                // 提取标题
-                                const titleElement = card.querySelector('[class*="tsBody500Medium"]');
-                                product.title = titleElement ? titleElement.textContent.trim() : '未找到标题';
-
-                                // 评分和评论信息提取
-                                const ratingAndReviewContainer = card.querySelector('[class*="tsBodyMBold"]');
-                                if (ratingAndReviewContainer) {
-                                    // 提取评分
-                                    const ratingText = ratingAndReviewContainer.textContent;
-                                    const ratingMatch = ratingText.match(/(\d+(?:\.\d+)?)/);
-                                    product.rating = ratingMatch ? ratingMatch[1] : '未找到评分';
-
-                                    // 提取评论数
-                                    const reviewMatch = ratingText.match(/(\d+)\s*отзыв/);
-                                    product.reviewCount = reviewMatch ? reviewMatch[1] : '未找到评论数';
-                                } else {
-                                    // 备用方案：查找所有可能包含评分和评论的元素
-                                    const allSpans = card.querySelectorAll('span');
-                                    allSpans.forEach(span => {
-                                        const text = span.textContent.trim();
-                                        // 匹配评分（通常是1-5之间的数字，可能带小数点）
-                                        if (/^[1-5](?:\.\d+)?$/.test(text)) {
-                                            product.rating = text;
-                                        }
-                                        // 匹配评论数（数字后面跟着отзыв相关文字）
-                                        if (/\d+\s*отзыв/.test(text)) {
-                                            product.reviewCount = text.match(/(\d+)/)[1];
-                                        }
-                                    });
-                                }
-
-                                // 设置默认值
-                                if (!product.rating) product.rating = '未找到评分';
-                                if (!product.reviewCount) product.reviewCount = '未找到评论数';
-
-                                // 提取配送信息
-                                const deliveryElement = card.querySelector('[class*="tsBodyControl500Medium"]');
-                                product.deliveryDate = deliveryElement ? deliveryElement.textContent.trim() : '未找到配送日期';
-
-                                // 提取库存状态
-                                const stockElement = card.querySelector('[class*="tsBodyControl400Small"]:not([class*="c3019"])');
-                                product.stockStatus = stockElement ? stockElement.textContent.trim() : '';
-
-                                console.log(`产品 ${index + 1}:`, product);
-                                products.push(product);
-                            });
-
-                            resolve(products);
-                        } catch (error) {
-                            console.error('数据提取过程中出错:', error);
-                            resolve([]);
-                        }
-                    }, 5000); // 增加延迟到5秒
-                });
+            // 等待几何输入元素出现
+            await page.waitForFunction(() => {
+                return document.querySelector('._geometryInputs_ail1k_12') !== null;
+            }, { timeout: 30000 }).catch(error => {
+                console.log('等待几何输入元素超时:', error);
             });
 
-            console.log('提取的数据:', this.data);
+            this.data = await page.evaluate(() => {
+                const geometryInputs = document.querySelector('._geometryInputs_ail1k_12');
+                const result = {};
 
-            if (this.data && this.data.length > 0) {
+                if (geometryInputs) {
+                    const inputs = geometryInputs.querySelectorAll('input');
+                    const dimensions = {};
+
+                    inputs.forEach(input => {
+                        const label = input.nextElementSibling.textContent.toLowerCase();
+                        if (label.includes('длина')) {
+                            dimensions.length = parseFloat(input.value) || 0;
+                        } else if (label.includes('ширина')) {
+                            dimensions.width = parseFloat(input.value) || 0;
+                        } else if (label.includes('высота')) {
+                            dimensions.height = parseFloat(input.value) || 0;
+                        }
+                    });
+
+                    result.dimensions = dimensions;
+                }
+
+                // 提取体积信息
+                const volumeElement = document.querySelector('._volumeCaption_ail1k_27');
+                if (volumeElement) {
+                    const volumeText = volumeElement.textContent;
+                    const volumeMatch = volumeText.match(/(\d+\.?\d*)\s*л/);
+                    if (volumeMatch) {
+                        result.volume = parseFloat(volumeMatch[1]) || 0;
+                    }
+                }
+
+                // 提取标题、价格和图片链接
+                const itemCell = document.querySelector('.ozi__data-cell__dataCell__QUywL');
+                if (itemCell) {
+                    // 提取标题
+                    const titleElement = itemCell.querySelector('.ozi__data-content__label__tXF2r');
+                    if (titleElement) {
+                        result.title = titleElement.textContent.trim();
+                    }
+
+                    // 提取价格
+                    const priceElement = itemCell.querySelector('._itemPrice_gxabl_1');
+                    if (priceElement) {
+                        const priceText = priceElement.textContent;
+                        const priceMatch = priceText.match(/(\d+)/);
+                        result.price = priceMatch ? parseInt(priceMatch[0]) : 0;
+                    }
+
+                    // 提取图片链接
+                    const imageElement = itemCell.querySelector('._selectedItemImage_gxabl_36');
+                    if (imageElement) {
+                        result.imageUrl = imageElement.src;
+                    }
+                }
+
+                return [result];
+            });
+
+            console.log('提取的尺寸和体积数据:', this.data);
+
+
+            if (Array.isArray(this.data) && this.data.length > 0) {
+                console.log(`处理尺寸数据，数组长度: ${this.data.length}`);
                 outputHandler.handle(this.data, 'output', this.task_name, this.cityname);
             } else {
-                console.log('没有提取到数据或数据为空');
+                console.log('未找到尺寸数据');
             }
         }
 
@@ -789,80 +822,30 @@ export class NavigationTask extends Task {
         } catch (error) {
             // await this.update('failed', error.message);
         }
-
+        
         return page;
     }
 }
-// export class ScrollTask extends Task {
-//     constructor(distance, direction) {
-//         super('scroll', null);
-//         this.distance = distance;
-//         this.direction = direction;
-//     } async execute(page) {
-//         // await this.save();
-//         try {
-//             await page.evaluate((distance, direction) => {
-//                 window.scrollBy(0, direction === 'down' ? distance : -distance);
-//             }, this.distance, this.direction);
-//             await new Promise(resolve => setTimeout(resolve, 5000));
-//             // await this.update('completed');
-//         } catch (error) {
-//             // await this.update('failed', error.message);
-//         }
-//         return page;
-//     }
-// }
-
-
 export class ScrollTask extends Task {
     constructor(distance, direction) {
         super('scroll', null);
         this.distance = distance;
         this.direction = direction;
-    }
-
-    async execute(page) {
+    } async execute(page) {
+        // await this.save();
         try {
-            let previousCount = 0;
-            let currentCount = 0;
-            let noChangeCount = 0;
-
-            while (noChangeCount < 6) { // 连续3次数量没变化时停止
-                // 获取当前商品数量
-                currentCount = await page.evaluate(() => {
-                    return document.querySelectorAll('div[data-index][class*="tile-root"]').length;
-                });
-
-                console.log(`当前商品数量: ${currentCount}`);
-
-                if (currentCount === previousCount) {
-                    noChangeCount++;
-                    console.log(`商品数量未变化，连续${noChangeCount}次`);
-                } else {
-                    noChangeCount = 0;
-                    console.log('商品数量发生变化，重置计数器');
-                }
-
-                // 执行滚动
-                await page.bringToFront();
-                await page.evaluate((distance, direction) => {
-                    window.scrollBy(0, direction === 'down' ? distance : -distance);
-                }, this.distance, this.direction);
-
-                // 等待新内容加载
-                await page.waitForTimeout(4000);
-
-                previousCount = currentCount;
-            }
-
-            console.log('滚动结束，商品数量已稳定');
-
+            await page.evaluate((distance, direction) => {
+                window.scrollBy(0, direction === 'down' ? distance : -distance);
+            }, this.distance, this.direction);
+            await new Promise(resolve => setTimeout(resolve, 5000));
+            // await this.update('completed');
         } catch (error) {
-            console.error('滚动过程发生错误:', error);
+            // await this.update('failed', error.message);
         }
         return page;
     }
 }
+
 
 export class TaskExecutor {
     constructor(tasks) {
@@ -871,7 +854,11 @@ export class TaskExecutor {
 
     async executeAll(page) {
         for (const task of this.tasks) {
-            page = await task.execute(page);
+            page = await task.execute(page); 
         }
     }
 }
+
+
+
+

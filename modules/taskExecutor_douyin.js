@@ -251,7 +251,8 @@ export class ClickTask extends Task {
             } catch (error) {
                 console.error('An error occurred:', error);
             }
-        } else if (this.element.leixing === '自定义4') {
+        } 
+        else if (this.element.leixing === '自定义4') {
             try {
 
                 console.log('Hover and click operation completed');

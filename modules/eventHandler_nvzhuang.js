@@ -15,7 +15,7 @@ class LoopTask {
     async execute(page, browser, index, sortedData_new, task_name, cityname, handleEvent) {
 
         const data = this.outputData || []; 
-        for (let text of data.filter(d => d !== '上城区')) {
+        for (let text of data.filter(d => d !== '西城区' && d !== '海淀区' && d !== '东城区' && d !== '石景山区')) {
             console.log('Processing text:', text);
 
             try {

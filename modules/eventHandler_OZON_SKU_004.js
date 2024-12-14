@@ -1,3 +1,4 @@
+
 ///实现通过OZON的店铺来获取对应的 sku 数据
 async function importTasks(task_name) {
     const module = await import(`./taskExecutor_${task_name}.js`);
@@ -24,32 +25,28 @@ class LoopTask {
     }
     async execute(page, browser, index, sortedData_new, task_name, cityname, handleEvent) {
         console.log('action.loopEvents:');
+        // await page.goto(page.url(), { waitUntil: 'load', timeout: 60000 });
+        // console.log('Page loaded.');
         await new Promise(resolve => setTimeout(resolve, 2000));
-        
+        // try {
+        //     await page.waitForSelector('.e2r', { timeout: 10000 });
+        // } catch (error) {
+        //     console.log('等待选择器 .e2r 超时，继续执行');
+        // }
+
         let currentPage = 1;
         let totalPages = 1;
 
         while (true) {
+            await new Promise(resolve => setTimeout(resolve, 2000));
             try {
-                // 1. 等待页面加载
-                await new Promise(resolve => setTimeout(resolve, 2000));
-                
-                // 2. 执行当前页面的循环事件
-                const loopEvents = this.loopEvents || [];
-                for (const loopEvent of loopEvents) {
-                    try {
-                        console.log(`执行循环事件:`, loopEvent);
-                        page = await handleEvent(loopEvent, page, browser, index, sortedData_new, task_name, cityname);
-                    } catch (error) {
-                        console.error(`循环中发生错误:`, error);
-                    }
-                }
+                await page.waitForSelector('input[placeholder*="请输入商品名称"], input.base-input-module_baseInput_vFlRR.input-module_baseInput_QHL39, .input-module_inputTokensContainer_kvU9K input, [data-widget="tableFilter-ProductsSearch"] input, .styles_productsSearch_WhG9p input', { timeout: 15000 });
+                console.log('搜索框已找到');
 
-                // 3. 获取分页信息
-                await page.waitForSelector('.et7', { timeout: 30000 });
+                // 每次循环时重新获取分页信息
                 const paginationInfo = await page.evaluate(() => {
                     try {
-                        const paginationContainer = document.querySelector('.et7');
+                        const paginationContainer = document.querySelector('.s4e');
                         if (!paginationContainer) {
                             console.log('未找到分页元素');
                             return null;
@@ -57,7 +54,7 @@ class LoopTask {
 
                         console.log('分页元素已找到');
 
-                        const pageLinks = paginationContainer.querySelectorAll('a.se8');
+                        const pageLinks = paginationContainer.querySelectorAll('a.s2e');
                         const allPages = Array.from(pageLinks).map(link => link.textContent.trim());
 
                         const totalPages = allPages
@@ -65,14 +62,14 @@ class LoopTask {
                             .map(text => parseInt(text))
                             .reduce((max, current) => Math.max(max, current), 0);
 
-                        const currentPage = Array.from(pageLinks).findIndex(link => link.classList.contains('es9')) + 1;
+                        const currentPage = Array.from(pageLinks).findIndex(link => link.classList.contains('r8e')) + 1;
 
-                        // console.log('所有页码:', allPages);
-                        // console.log('当前页面类名:', Array.from(pageLinks).map(link => link.className));
+                        console.log('所有页码:', allPages);
+                        console.log('当前页面类名:', Array.from(pageLinks).map(link => link.className));
 
                         const paginationInfo = { currentPage, totalPages, allPages };
-                        // console.log('分页信息:', paginationInfo);
-                        // console.log(`当前页码: ${currentPage}, 总页数: ${totalPages}`);
+                        console.log('分页信息:', paginationInfo);
+                        console.log(`当前页码: ${currentPage}, 总页数: ${totalPages}`);
 
                         const hasEllipsis = Array.from(pageLinks).some(el => el.textContent.trim() === '...');
                         if (hasEllipsis) {
@@ -87,35 +84,54 @@ class LoopTask {
                 });
 
                 if (paginationInfo) {
-                    currentPage = paginationInfo.currentPage;
-                    totalPages = paginationInfo.totalPages;
+                    console.log('成功获取分页信息:', paginationInfo);
+                    currentPage = paginationInfo.currentPage
+                    totalPages = paginationInfo.totalPages
+                } else {
+                    console.log('未能获取分页信息');
+                }
+            } catch (error) {
+                console.log('等待选择器 .re0 .eq9 超时，继续执行');
+            }
+
+            console.log(`当前页码: ${currentPage}, 总页数: ${totalPages}`);
+
+
+            const loopEvents = this.loopEvents || [];
+            try {
+                for (const loopEvent of loopEvents) {
+                    try {
+                        console.log(`执行循环事件:`, loopEvent);
+                        page = await handleEvent(loopEvent, page, browser, index, sortedData_new, task_name, cityname);
+                    } catch (error) {
+                        console.error(`循环中发生错误:`, error);
+                    }
                 }
 
-                console.log(`当前页码: ${currentPage}, 总页数: ${totalPages}`);
+            } catch (error) {
+                console.error(`处理文本时发生错误:`, error);
+            }
 
-                // 4. 判断是否需要进入下一页
-                if (currentPage >= totalPages) {
-                    console.log('已到达最后一页，退出循环');
-                    break;
-                }
-
-                // 5. 点击下一页并等待页面加载
+            // if (currentPage < totalPages) {
+            if (currentPage >= totalPages) {
                 try {
-                    await page.click('a.s6e.b2117-a0.b2117-b6.b2117-b1');
+                    await page.click('a.es1.b2117-a0.b2117-b6.b2117-b1');
                     console.log('点击了下一页按钮');
-                    await page.waitForNavigation({ waitUntil: 'networkidle0', timeout: 60000 }).catch(() => {
+                    try {
+                        await page.waitForNavigation({ waitUntil: 'networkidle0', timeout: 30000 });
+                    } catch (error) {
                         console.log('导航等待超时，继续执行');
-                    });
+                    }
                 } catch (error) {
                     console.log('无法点击下一页按钮，可能已经到达最后一页或页面结构发生变化');
                     break;
                 }
-                
-            } catch (error) {
-                console.error(`处理页面时发生错误:`, error);
+            } else {
+                console.log('已到达最后一页，退出循环');
                 break;
             }
         }
+
     }
 }
 
@@ -147,10 +163,8 @@ export async function handleEvent(event, page, browser,index, sortedData_new, ta
             task = new LoopTask(event.loopEvents, event.loopCount, outputData, handleEvent);  // 传入 handleEvent 函数
             console.log('task_name_1.4:', task_name);
             console.log('cityname_1.4:', cityname);
-            // await task.execute(page, browser, index, sortedData_new, task_name,cityname,handleEvent);
-            // return; // LoopTask already handles the execution of nested events
-            const newLoopPage = await task.execute(page, browser, index, sortedData_new, task_name, cityname, handleEvent);
-            return newLoopPage || page; // 如果 newLoopPage 是 undefined，则返回原始页面
+            await task.execute(page, browser, index, sortedData_new, task_name,cityname,handleEvent);
+            return; // LoopTask already handles the execution of nested events
         case 'scroll':
             task = new ScrollTask(event.distance, event.direction);
             break;

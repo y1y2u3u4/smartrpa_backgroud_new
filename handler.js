@@ -105,7 +105,7 @@ export async function handler_run(req, res) {
         // 尝试读取 cookie 文件
         const cookieFileContent = await fs.readFile(cookieFilePath, 'utf-8');
         cookies = JSON.parse(cookieFileContent);
-        console.log(`成功从文件读取 cookies: ${cookieFilePath}`);
+        // console.log(`成功从文件读取 cookies: ${cookieFilePath}`);
     } catch (error) {
         if (error.code === 'ENOENT') {
             console.log(`Cookie 文件不存在: ${cookieFilePath}，将从数据库获取`);
@@ -143,46 +143,14 @@ export async function handler_run(req, res) {
         page = await setupPage(browser, cookies);
     } else {
         // adsPower浏览器
-        // browser = await launchBrowser_adsPower_lianjie(adsPowerUserId, adsPowerId);
-        browser = await launchBrowser_adsPower_lianjie_local(adsPowerUserId,adsPowerId);
+        if (environment === 'cloud') {
+            browser = await launchBrowser_adsPower_lianjie(adsPowerUserId, adsPowerId);
+        } else {
+            browser = await launchBrowser_adsPower_lianjie_local(adsPowerUserId, adsPowerId);
+        }
         page = await setupPage_adsPower(browser, cookies);
     }
 
-
-
-    // let cityname = row.cityname
-    // console.log('cityname_0:', cityname);
-    // const sortedData_new = matchAndReplace(sortedData, row);
-
-    // for (const [index, event] of sortedData_new.entries()) {
-    //     try {
-    //         const { type, time } = event;
-    //         console.log('正在处理事件:', event);
-    //         await new Promise(resolve => setTimeout(resolve, 2000));
-    //         // 确保页面处于活跃状态
-    //         await page.bringToFront();
-
-    //         // // 点击页面空白处以确保获得焦点
-    //         // await page.evaluate(() => {
-    //         //     document.body.click();
-    //         // });
-
-    //         page = await handleEvent(event, page, browser, index, sortedData_new, task_name, cityname);
-    //         // 获取当前事件的时间戳(毫秒)
-    //         const currentTime = new Date(time).getTime();
-    //         // 获取下一个事件的时间戳(如果存在的话),否则使用当前事件的时间戳
-    //         const nextTime = sortedData[sortedData.indexOf(event) + 1]
-    //             ? new Date(sortedData[sortedData.indexOf(event) + 1].time).getTime()
-    //             : currentTime;
-    //         // 计算等待时间,确保至少等待2秒,最多等待20秒
-    //         const waitTime = Math.max(2000, Math.min(nextTime - currentTime, 120000));
-    //         // 等待计算出的时间
-    //         await new Promise(resolve => setTimeout(resolve, waitTime));
-    //     } catch (error) {
-    //         console.error(`处理事件 ${index} 时出错:`, error);
-    //         // 可以在这里添加更多的错误处理逻辑,比如记录日志等
-    //     }
-    // }
 
     const monitorResults = {
         clicks: [],
@@ -195,18 +163,27 @@ export async function handler_run(req, res) {
     const dataProcessor = new DataProcessor(monitorResults);
     dataProcessor.addMonitor(page);
     console.log('rowscheck:', rows);
+    
     const sortedData_new = matchAndReplace(sortedData, rows[0])
-
+    let cityname = rows[0].cityname;
+    console.log('cityname:', cityname);
+    console.log('task_name:', task_name);
+    console.log('sortedData_new:', sortedData_new);
     for (const [index, event] of sortedData_new.entries()) {
         if (event.type !== 'loop_new') {
             try {
                 const { type, time } = event;
-                console.log('正在处理非循环事件:', event);
+                console.log('正在处理事件:', event);
                 await new Promise(resolve => setTimeout(resolve, 2000));
 
                 await page.bringToFront();
-
-                page = await handleEvent(event, page, browser, index, sortedData_new, task_name, '');
+                // 如果是循环事件，先处理 loopEvents
+                if (type === 'loop' && event.loopEvents) {
+                    console.log('处理循环事件的 loopEvents');
+                    event.loopEvents = matchAndReplace(event.loopEvents, rows[0]);
+                    console.log('处理后的 loopEvents:', event.loopEvents);
+                }
+                page = await handleEvent(event, page, browser, index, sortedData_new, task_name, cityname);
 
                 const currentTime = new Date(time).getTime();
                 const nextTime = sortedData_new[index + 1]
@@ -229,8 +206,6 @@ export async function handler_run(req, res) {
                     console.log('处理循环事件，数据行:', row);
                     let cityname = row.cityname;
                     console.log('cityname:', cityname);
-                    
-
                     await new Promise(resolve => setTimeout(resolve, 2000));
                     const loopEvents_new = matchAndReplace(event.loopEvents, row)
                     for (const loopEvent of loopEvents_new) {
@@ -277,7 +252,7 @@ export async function handler_run(req, res) {
         await browser.close();
     } else {
         // await browser.close();
-        await page.close()
+        // await page.close()
     }
    
     // await browser.close();

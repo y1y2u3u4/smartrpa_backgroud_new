@@ -1,5 +1,5 @@
 // modules/taskExecutor.js
-///实现通过OZON的店铺来获取对应的 sku 数据
+///大众点评获取商户名称+调用 api 实现电话查询流程by 最细颗粒度
 import { loadConfig } from './configManager.js';
 import { OutputFactory } from './outputHandler.js';
 
@@ -14,8 +14,6 @@ function isUniqueAttribute(attribute, event, events) {
     const count = values.filter(value => value === event.element[attribute]).length;
     return count === 1;
 }
-
-
 
 
 export class Task {
@@ -38,11 +36,10 @@ export class Task {
     }
 }
 
-
-
 export class ClickTask extends Task {
-    constructor(element, browser) {
+    constructor(element,index, browser) {
         super('click', element);
+        this.index = index;  // 添加这一行
         this.browser = browser;
     }
     async execute(page) {
@@ -51,7 +48,7 @@ export class ClickTask extends Task {
             const timeoutId = setTimeout(() => {
                 console.log('Timeout waiting for new page');
                 resolve(null); // 如果超时，解决 Promise 并返回 null
-            }, 4000);
+            }, 2000);
             this.browser.once('targetcreated', async target => {
                 clearTimeout(timeoutId);
                 if (target.type() === 'page') {
@@ -59,7 +56,7 @@ export class ClickTask extends Task {
                 }
             });
         });
-
+        
         let clickSelector;
         let isXPath_click = false;
         if (this.element.id) {
@@ -70,9 +67,8 @@ export class ClickTask extends Task {
                 this.element.innerText.includes('翻译') || this.element.innerText.includes('保存所有站点') || this.element.innerText.includes('保存并提交所有站点')
             ) {
                 clickSelector = `//button[contains(., '${this.element.innerText}')]`;
-            }
-            else if (this.element.innerText === '视频管理') {
-                clickSelector = "//li[contains(@class, 'semi-navigation-item')]//span[contains(@class, 'semi-navigation-item-text')]/span[text()='视频管理']";
+            } else if (this.element.innerText.includes('确定')) {
+                clickSelector = `//div[@data-v-3e50dd5e]//button[contains(@class, 'ivu-btn-primary') and span[text() ='${this.element.innerText}']]`;
             }
             else {
                 clickSelector = `//${this.element.tagName.toLowerCase()}[text()='${this.element.innerText}'] | //${this.element.tagName.toLowerCase()}/span[text()='${this.element.innerText}']`;
@@ -92,96 +88,72 @@ export class ClickTask extends Task {
         console.log('clickSelector:', clickSelector);
         console.log('isXPath_click:', isXPath_click);
         console.log('leixing:', this.element.leixing);
-        const cliclValue = this.value;
+        const cliclValue = this.element.value;
+        console.log('cliclValue:', cliclValue);
 
 
-        try {
-            if (!this.element.leixing) {
-                if (isXPath_click) {
-                    if (this.element.innerText.includes('确定')) {
-                        console.log('尝试点击"确定"按钮');
-                        await page.evaluate((selector) => {
-                            const xpathResult = document.evaluate(selector, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
-                            console.log('xpathResult:', xpathResult);
-                            const element = xpathResult.snapshotItem(2);
-                            if (element) {
-                                console.log('找到"确定"按钮元素:', element);
-                                element.click();
-                                console.log('点击"确定"按钮成功');
-                            } else {
-                                console.log('未找到"确定"按钮元素');
-                            }
-                        }, clickSelector);
-                    } else {
-                        console.log('clickSelector:', clickSelector);
-                        console.log('page URL:', page.url());
-                        await page.waitForFunction(
-                            (selector) => {
-                                const xpathResult = document.evaluate(selector, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null);
-                                return xpathResult.singleNodeValue !== null;
-                            },
-                            { timeout: 10000 },
-                            clickSelector
-                        ).catch(error => console.log(`等待元素超时: ${error.message}`));
 
-                        await page.evaluate((selector) => {
-                            const xpathResult = document.evaluate(selector, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null);
-                            console.log('xpathResult:', xpathResult);
-                            const element = xpathResult.singleNodeValue;
-                            if (element) {
-                                console.log('找到元素:', element);
-                                element.click();
-                                console.log('点击元素成功');
-                            } else {
-                                console.log('未找到元素');
-                            }
-                        }, clickSelector);
-                    }
-                } else {
-                    const elementExists = await page.evaluate((selector) => {
-                        return !!document.querySelector(selector);
+        if (!this.element.leixing) {
+            if (isXPath_click) {
+                if (this.element.innerText.includes('确定')) {
+                    console.log('点击“确定”按钮');
+                    await page.evaluate((selector) => {
+                        const xpathResult = document.evaluate(selector, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
+                        console.log('xpathResult:', xpathResult);
+                        const element = xpathResult.snapshotItem(2);
+                        console.log('element:', element);
+                        element.click();
                     }, clickSelector);
-
-                    if (elementExists) {
-                        try {
-                            await page.click(clickSelector);
-                            console.log(`成功点击元素: ${clickSelector}`);
-                            return page;
-                        } catch (error) {
-                            console.log(`点击元素失败: ${error.message}`);
-                        }
-                    } else {
-                        console.log(`元素 ${clickSelector} 不存在，跳过点击操作`);
-                        return page;
-                    }
-                    // 无论点击是否成功，都等待可能的新页面
-
+                    console.log('点击“确定”按钮_2');
                 }
-            } else if (this.element.leixing === '自定义1') {
-                console.log('点击"刊登管理"菜单项以展开子菜单');
-                await page.evaluate(async () => {
-                    const menuTitle = document.querySelector('.ivu-menu-submenu-title');
-                    console.log('menuTitle', menuTitle);
-                    if (menuTitle) {
-                        console.log('Found the menu title, clicking to expand...');
-                        menuTitle.click();
-                        console.log('menuTitle_1');
-                        await new Promise(resolve => setTimeout(resolve, 1000));
-                        const productListItem = document.evaluate("//li[contains(@class, 'ivu-menu-item') and .//span[text()='产品列表']]", document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
-                        if (productListItem) {
-                            console.log('Found the product list item, clicking...');
-                            productListItem.click();
-                            console.log('productListItem_1');
-                        } else {
-                            console.error("无法找到菜单项");
-                        }
+                else {
+                    await page.evaluate((selector) => {
+                        const xpathResult = document.evaluate(selector, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null);
+                        console.log('xpathResult:', xpathResult);
+                        const element = xpathResult.singleNodeValue;
+                        console.log('element:', element);
+                        element.click();
+                    }, clickSelector);
+                }
+                // await page.waitForSelector(clickSelector, { visible: true, timeout: 5000 });
+
+            } else {
+                // const url = await page.url();
+                // console.log('Current URL:', url);
+                // await page.waitForSelector(clickSelector, { visible: true, timeout: 5000 });
+                await page.click(clickSelector);
+            }
+        } else if (this.element.leixing === '自定义1') {
+            console.log('点击“刊登管理”菜单项以展开子菜单');
+
+            await page.evaluate(async () => {
+                const menuTitle = document.querySelector('.ivu-menu-submenu-title');
+                console.log('menuTitle', menuTitle);
+                if (menuTitle) {
+                    console.log('Found the menu title, clicking to expand...');
+                    menuTitle.click();
+                    console.log('menuTitle_1');
+                    // 等待子菜单加载完毕并点击“产品列表”菜单项
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    const productListItem = document.evaluate("//li[contains(@class, 'ivu-menu-item') and .//span[text()='产品列表']]", document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
+                    // console.log('productListItem', productListItem);
+                    if (productListItem) {
+                        console.log('Found the product list item, clicking...');
+                        productListItem.click();
+                        console.log('productListItem_1');
                     } else {
-                        console.error("无法找到菜单标题");
+                        console.error("无法找到“产品列表”菜单项");
                     }
-                });
-            } else if (this.element.leixing === '自定义2') {
+                }
+            });
+        } else if (this.element.leixing === '自定义2') {
+            try {
+                console.log('cliclValue_check', cliclValue);
                 await page.evaluate(async (cliclValue) => {
+                    // 查找所有具有特定样式的标签元素
                     const labels = document.querySelectorAll('.ivu-form-item-label[style="width: 60px;"]');
+                    console.log('labels', labels);
+                    // 迭代这些标签以找到包含 "店铺" 文本的标签
                     let storeFormItem = null;
                     labels.forEach(label => {
                         if (label.textContent.trim() === "店铺") {
@@ -193,29 +165,42 @@ export class ClickTask extends Task {
                         const selectButton = storeFormItem.querySelector('.ivu-select-selection');
                         if (selectButton) {
                             console.log('Found the select button:', selectButton);
+
+                            // 确保元素在视图中
                             selectButton.scrollIntoView();
+
+                            // 手动创建并触发点击事件
                             const clickEvent = new MouseEvent('click', {
                                 view: window,
                                 bubbles: true,
                                 cancelable: true
                             });
+
                             selectButton.dispatchEvent(clickEvent);
-                            console.log('Click dispatched on select button');
-                            await new Promise(resolve => setTimeout(resolve, 1000));
-                            console.log("cliclValue", cliclValue);
+                            console.log('Click this dispatched on select button');
+
+                            // 设置适当的延时，确保下拉菜单有时间加载
+                            await new Promise(resolve => setTimeout(resolve, 3000));
+
+                            // 使用XPath选择包含“Sadong”文本的下拉项
+                            console.log("cliclValue_check2", cliclValue)
                             const item = document.evaluate(`//li[contains(@class, 'ivu-select-item') and text()="${cliclValue}"]`, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
+
                             if (item) {
-                                console.log('Found the item:', item);
+                                console.log('Found the Sadong item:', item);
                                 item.scrollIntoView();
+
+                                // 手动创建并触发点击事件
                                 const itemClickEvent = new MouseEvent('click', {
                                     view: window,
                                     bubbles: true,
                                     cancelable: true
                                 });
+
                                 item.dispatchEvent(itemClickEvent);
-                                console.log('Click dispatched on item');
+                                console.log('Click this dispatched on Sadong item');
                             } else {
-                                console.error(`无法找到包含"${cliclValue}"的下拉项`);
+                                console.error("无法找到包含“Sadong”的下拉项");
                             }
                         } else {
                             console.error("无法找到选择器 .ivu-select-selection 对应的元素");
@@ -226,82 +211,41 @@ export class ClickTask extends Task {
                 }, cliclValue);
                 await new Promise(resolve => setTimeout(resolve, 10000));
                 console.log('自定义2_done');
-            } else if (this.element.leixing === '自定义3') {
+            } catch (error) {
+                console.error('An error occurred:', error);
+            }
+        } else if (this.element.leixing === '自定义3') {
+            try {
                 await page.evaluate(async (clickSelector) => {
                     const selectButton = document.querySelector(clickSelector);
+
                     if (selectButton) {
                         console.log('Found the select button, clicking to expand...');
                         selectButton.click();
                     } else {
-                        console.error("无法找到选择器对应的元素");
+                        console.error("无法找到选择器 .ivu-select-selection 对应的元素");
                     }
                 }, clickSelector);
                 const input = await page.$(clickSelector);
-                if (input) {
-                    await input.uploadFile(cliclValue).catch(error => console.error('文件上传失败:', error));
-                    const uploadButtonSelector = '.btn';
-                    await page.waitForSelector(uploadButtonSelector, { visible: true, timeout: 5000 })
-                        .catch(() => console.log('上传按钮未出现'));
-                    await page.click(uploadButtonSelector).catch(error => console.log(`点击上传按钮失败: ${error.message}`));
-                } else {
-                    console.error('未找到上传输入元素');
-                }
+                await input.uploadFile(cliclValue);
+                // 如果需要手动触发上传操作（可选）
+                // 假设有一个上传按钮需要点击来完成上传
+                const uploadButtonSelector = '.btn';  // 替换为实际的上传按钮选择器
+                await page.waitForSelector(uploadButtonSelector, { visible: true });
+                await page.click(uploadButtonSelector);
+
                 console.log('自定义3_done');
-            } else if (this.element.leixing === '自定义4') {
-                console.log('Hover and click operation started');
-                await page.evaluate(async () => {
-                    const AVATAR_SELECTORS = [
-                        "span.semi-avatar.semi-avatar-circle.semi-avatar-small.semi-avatar-grey.semi-dropdown-showing",
-                        ".semi-avatar",
-                        "img[src*='aweme-avatar']",
-                        "[class*='avatar']"
-                    ];
-                    let avatarElement;
-                    for (let selector of AVATAR_SELECTORS) {
-                        avatarElement = document.querySelector(selector);
-                        if (avatarElement) {
-                            console.log('找到头像元素:', selector);
-                            avatarElement.click();
-                            console.log('已点击头像');
-                            break;
-                        }
-                    }
-                    if (!avatarElement) {
-                        console.error('未找到头像元素');
-                        return;
-                    }
-                    const mouseoverEvent = new MouseEvent('mouseover', {
-                        bubbles: true,
-                        cancelable: true,
-                        view: window
-                    });
-                    avatarElement.dispatchEvent(mouseoverEvent);
-                    console.log('已模拟鼠标悬停在头像上');
-                    await new Promise(resolve => setTimeout(resolve, 1000));
-                    const menuItems = document.querySelectorAll('.semi-dropdown-menu *');
-                    console.log('找到的菜单项数量:', menuItems.length);
-                    for (let item of menuItems) {
-                        console.log('菜单项内容:', item.textContent.trim());
-                        if (item.textContent.trim() === '退出代运营状态') {
-                            console.log('找到"退出代运营状态"选项');
-                            item.click();
-                            console.log('已点击"退出代运营状态"');
-                            return;
-                        }
-                    }
-                    console.error('未找到"退出代运营状态"选项');
-                });
-                console.log('自定义4_done');
+            } catch (error) {
+                console.error('An error occurred:', error);
             }
-        } catch (error) {
-            console.error('执行点击操作时发生错误:', error);
         }
 
+
         console.log('check_1');
-        const newPage = await newPagePromise
+        const newPage = await newPagePromise.catch(() => null);
         console.log('check_2');
         console.log('newPage:', newPage);
-
+        
         if (newPage !== null) {
             console.log('newPage URL:', newPage.url());
             await newPage.setViewport({ width: 1280, height: 720 });
@@ -310,7 +254,7 @@ export class ClickTask extends Task {
             });
         }
 
-        console.log('check_3')
+        console.log('check_3');
 
         return newPage || page;
 
@@ -476,7 +420,7 @@ export class InputTask extends Task {
 }
 
 export class OutputTask extends Task {
-    constructor(element, value, sortedData_new, task_name, cityname) {
+    constructor(element, value, sortedData_new,task_name, cityname) {
         super('output', element, value, sortedData_new, task_name, cityname);
         console.log('OutputTask task_name:', this.task_name);
         console.log('OutputTask cityname:', this.cityname);
@@ -485,6 +429,8 @@ export class OutputTask extends Task {
     async execute(page) {
         console.log('task_name_2:', this.task_name);
         console.log('cityname_2:', this.cityname);
+        console.log('cityname_3:', this.cityname.split('_')[0]);
+
         const config = loadConfig('config/config.json');
         const outputHandler = OutputFactory.createOutputHandler(config.outputFormat);
         if (this.element.leixing === '自定义1') {
@@ -494,6 +440,10 @@ export class OutputTask extends Task {
                         const shopListContainer = document.querySelector('#shop-all-list');
                         const shops = [];
                         const shopList = shopListContainer.querySelectorAll('li');
+                        // 获取店铺区域，独立于 shopList
+                        const areaElement = document.querySelector('a[data-ga-index="2"] span[itemprop="title"]');
+                        const area = areaElement ? areaElement.innerText.trim() : '';
+
                         shopList.forEach(shop => {
                             const nameElement = shop.querySelector('.tit h4');
                             const linkElement = shop.querySelector('.tit a');
@@ -528,6 +478,7 @@ export class OutputTask extends Task {
                                 image,
                                 review_count: reviewCount,
                                 price,
+                                area,
                                 tags,
                                 deals
                             });
@@ -539,24 +490,14 @@ export class OutputTask extends Task {
             });
 
             // 将数据转换为 JSON 格式
-            this.data = await Promise.all(this.data.map(async (row) => {
-                // const allData = await getAllData(row.name, this.cityname);
-                // console.log('All Data:', allData);
-                return {
-                    ...row,
-                    // gaodeName: allData.gaode.name,
-                    // gaodeAddress: allData.gaode.address,
-                    // gaodePhone: allData.gaode.phone,
-                    // tengxunName: allData.tengxun.name,
-                    // tengxunAddress: allData.tengxun.address,
-                    // tengxunPhone: allData.tengxun.phone,
-                    // baiduName: allData.baidu.name,
-                    // baiduAddress: allData.baidu.address,
-                    // baiduPhone: allData.baidu.phone
-                };
-            }));
+            // this.data = await Promise.all(this.data.map(async (row) => {
+            //     return {
+            //         ...row,
+            //     };
+            // }));
 
             // console.log('Updated data:', this.data);
+
             outputHandler.handle(this.data, 'output', this.task_name, this.cityname);
         }
         else if (this.element.leixing === '自定义2') {
@@ -581,160 +522,6 @@ export class OutputTask extends Task {
             console.log('data:', this.data);
 
         }
-        else if (this.element.leixing === '自定义3') {
-
-            this.data = await page.evaluate(() => {
-                return new Promise((resolve) => {
-                    setTimeout(() => {
-                        const channelNameElement = document.querySelector('.avatar-text-FBPe7r');
-                        const channelName = channelNameElement ? channelNameElement.textContent.trim() : '';
-
-                        const videoCards = document.querySelectorAll('.video-card-zQ02ng');
-                        const videos = [];
-                        if (videoCards.length === 0) {
-                            // 如果没有视频卡片,返回只包含channelName的对象
-                            resolve([{
-                                channelName: channelName,
-                                title: '',
-                                publishTime: '',
-                                views: 0,
-                                comments: 0,
-                                likes: 0,
-                                coverUrl: '',
-                                duration: ''
-                            }]);
-                        } else {
-                            videoCards.forEach(card => {
-                                const titleElement = card.querySelector('.info-title-text-YTLo9y');
-                                const timeElement = card.querySelector('.info-time-iAYLF0');
-                                const viewsElement = card.querySelector('.info-figure-z1H3gA:nth-child(1) .info-figure-text-B6wLrt');
-                                const commentsElement = card.querySelector('.info-figure-z1H3gA:nth-child(2) .info-figure-text-B6wLrt');
-                                const likesElement = card.querySelector('.info-figure-z1H3gA:nth-child(3) .info-figure-text-B6wLrt');
-                                const coverElement = card.querySelector('.video-card-cover-xx9wyS');
-                                const durationElement = card.querySelector('.badge-pcgoA6');
-
-                                videos.push({
-                                    channelName: channelName,
-                                    title: titleElement ? titleElement.textContent.trim() : '',
-                                    publishTime: timeElement ? timeElement.textContent.trim() : '',
-                                    views: viewsElement ? parseInt(viewsElement.textContent) : 0,
-                                    comments: commentsElement ? parseInt(commentsElement.textContent) : 0,
-                                    likes: likesElement ? parseInt(likesElement.textContent) : 0,
-                                    coverUrl: coverElement ? coverElement.style.backgroundImage.slice(5, -2) : '',
-                                    duration: durationElement ? durationElement.textContent.trim() : ''
-                                });
-                            });
-                        }
-
-                        resolve(videos);
-                    }, 2000);
-                });
-            });
-            console.log('Updated data:', this.data);
-
-            outputHandler.handle(this.data, 'output', this.task_name);
-
-        }
-        else if (this.element.leixing === '自定义4') {
-            this.data = await page.evaluate(() => {
-                return new Promise((resolve) => {
-                    setTimeout(() => {
-                        // ... existing code ...
-                        try {
-                            const products = [];
-                            // 使用更精确的选择器来定位商品卡片
-                            const productCards = document.querySelectorAll('div[data-index][class*="tile-root"]');
-                            console.log('找到的产品卡片数量:', productCards.length);
-
-                            productCards.forEach((card, index) => {
-                                const product = {};
-
-                                // 提取链接和ID
-                                const linkElement = card.querySelector('a[class*="tile-hover-target"]');
-                                product.link = linkElement ? linkElement.href : '未找到链接';
-                                product.id = product.link ? product.link.match(/\/product\/([^\/\?]+)/)?.[1] : '未找到ID';
-
-
-                                // 提取图片URL
-                                const imageElement = card.querySelector('img.b930-a');
-                                product.imageUrl = imageElement ? imageElement.src : '未找到图片URL';
-
-                                // 提取价格信息
-                                const currentPriceElement = card.querySelector('[class*="tsHeadline500Medium"]');
-                                product.currentPrice = currentPriceElement ? currentPriceElement.textContent.trim() : '未找到当前价格';
-
-                                const oldPriceElement = card.querySelector('[class*="tsBodyControl400Small"]');
-                                product.oldPrice = oldPriceElement ? oldPriceElement.textContent.trim() : '未找到原价';
-
-                                // 提取折扣信息
-                                const discountElement = card.querySelector('[class*="tsBodyControl400Small"][class*="c3019-a6"]');
-                                product.discount = discountElement ? discountElement.textContent.trim() : '未找到折扣';
-
-                                // 提取标题
-                                const titleElement = card.querySelector('[class*="tsBody500Medium"]');
-                                product.title = titleElement ? titleElement.textContent.trim() : '未找到标题';
-
-                                // 评分和评论信息提取
-                                const ratingAndReviewContainer = card.querySelector('[class*="tsBodyMBold"]');
-                                if (ratingAndReviewContainer) {
-                                    // 提取评分
-                                    const ratingText = ratingAndReviewContainer.textContent;
-                                    const ratingMatch = ratingText.match(/(\d+(?:\.\d+)?)/);
-                                    product.rating = ratingMatch ? ratingMatch[1] : '未找到评分';
-
-                                    // 提取评论数
-                                    const reviewMatch = ratingText.match(/(\d+)\s*отзыв/);
-                                    product.reviewCount = reviewMatch ? reviewMatch[1] : '未找到评论数';
-                                } else {
-                                    // 备用方案：查找所有可能包含评分和评论的元素
-                                    const allSpans = card.querySelectorAll('span');
-                                    allSpans.forEach(span => {
-                                        const text = span.textContent.trim();
-                                        // 匹配评分（通常是1-5之间的数字，可能带小数点）
-                                        if (/^[1-5](?:\.\d+)?$/.test(text)) {
-                                            product.rating = text;
-                                        }
-                                        // 匹配评论数（数字后面跟着отзыв相关文字）
-                                        if (/\d+\s*отзыв/.test(text)) {
-                                            product.reviewCount = text.match(/(\d+)/)[1];
-                                        }
-                                    });
-                                }
-
-                                // 设置默认值
-                                if (!product.rating) product.rating = '未找到评分';
-                                if (!product.reviewCount) product.reviewCount = '未找到评论数';
-
-                                // 提取配送信息
-                                const deliveryElement = card.querySelector('[class*="tsBodyControl500Medium"]');
-                                product.deliveryDate = deliveryElement ? deliveryElement.textContent.trim() : '未找到配送日期';
-
-                                // 提取库存状态
-                                const stockElement = card.querySelector('[class*="tsBodyControl400Small"]:not([class*="c3019"])');
-                                product.stockStatus = stockElement ? stockElement.textContent.trim() : '';
-
-                                console.log(`产品 ${index + 1}:`, product);
-                                products.push(product);
-                            });
-
-                            resolve(products);
-                        } catch (error) {
-                            console.error('数据提取过程中出错:', error);
-                            resolve([]);
-                        }
-                    }, 5000); // 增加延迟到5秒
-                });
-            });
-
-            console.log('提取的数据:', this.data);
-
-            if (this.data && this.data.length > 0) {
-                outputHandler.handle(this.data, 'output', this.task_name, this.cityname);
-            } else {
-                console.log('没有提取到数据或数据为空');
-            }
-        }
-
         else if (this.element.leixing === '自定义0') {
             this.data = await page.evaluate(() => {
                 const shops = [];
@@ -789,80 +576,30 @@ export class NavigationTask extends Task {
         } catch (error) {
             // await this.update('failed', error.message);
         }
-
+        
         return page;
     }
 }
-// export class ScrollTask extends Task {
-//     constructor(distance, direction) {
-//         super('scroll', null);
-//         this.distance = distance;
-//         this.direction = direction;
-//     } async execute(page) {
-//         // await this.save();
-//         try {
-//             await page.evaluate((distance, direction) => {
-//                 window.scrollBy(0, direction === 'down' ? distance : -distance);
-//             }, this.distance, this.direction);
-//             await new Promise(resolve => setTimeout(resolve, 5000));
-//             // await this.update('completed');
-//         } catch (error) {
-//             // await this.update('failed', error.message);
-//         }
-//         return page;
-//     }
-// }
-
-
 export class ScrollTask extends Task {
     constructor(distance, direction) {
         super('scroll', null);
         this.distance = distance;
         this.direction = direction;
-    }
-
-    async execute(page) {
+    } async execute(page) {
+        // await this.save();
         try {
-            let previousCount = 0;
-            let currentCount = 0;
-            let noChangeCount = 0;
-
-            while (noChangeCount < 6) { // 连续3次数量没变化时停止
-                // 获取当前商品数量
-                currentCount = await page.evaluate(() => {
-                    return document.querySelectorAll('div[data-index][class*="tile-root"]').length;
-                });
-
-                console.log(`当前商品数量: ${currentCount}`);
-
-                if (currentCount === previousCount) {
-                    noChangeCount++;
-                    console.log(`商品数量未变化，连续${noChangeCount}次`);
-                } else {
-                    noChangeCount = 0;
-                    console.log('商品数量发生变化，重置计数器');
-                }
-
-                // 执行滚动
-                await page.bringToFront();
-                await page.evaluate((distance, direction) => {
-                    window.scrollBy(0, direction === 'down' ? distance : -distance);
-                }, this.distance, this.direction);
-
-                // 等待新内容加载
-                await page.waitForTimeout(4000);
-
-                previousCount = currentCount;
-            }
-
-            console.log('滚动结束，商品数量已稳定');
-
+            await page.evaluate((distance, direction) => {
+                window.scrollBy(0, direction === 'down' ? distance : -distance);
+            }, this.distance, this.direction);
+            await new Promise(resolve => setTimeout(resolve, 5000));
+            // await this.update('completed');
         } catch (error) {
-            console.error('滚动过程发生错误:', error);
+            // await this.update('failed', error.message);
         }
         return page;
     }
 }
+
 
 export class TaskExecutor {
     constructor(tasks) {
@@ -871,7 +608,7 @@ export class TaskExecutor {
 
     async executeAll(page) {
         for (const task of this.tasks) {
-            page = await task.execute(page);
+            page = await task.execute(page); 
         }
     }
 }

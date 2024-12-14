@@ -172,7 +172,7 @@ export async function getData_tengxun(req) {
 };
 
 // // 读取Excel文件
-const workbook = xlsx.readFile('../测试数据/美甲美睫.xlsx'); // 假设输入文件名为input_data.xlsx
+const workbook = xlsx.readFile('../测试数据/大众点评_1209.xlsx'); // 假设输入文件名为input_data.xlsx
 const sheetName = workbook.SheetNames[0];
 const worksheet = workbook.Sheets[sheetName];
 
@@ -227,4 +227,4 @@ for (let i = 0; i < data.length; i += batchSize) {
 const newWorksheet = xlsx.utils.json_to_sheet(data);
 const newWorkbook = xlsx.utils.book_new();
 xlsx.utils.book_append_sheet(newWorkbook, newWorksheet, 'Results');
-xlsx.writeFile(newWorkbook, '../测试数据/美甲美睫_001.xlsx'); // 假设输出文件名为output_data.xlsx
+xlsx.writeFile(newWorkbook, '../测试数据/大众点评_1209_output.xlsx'); // 假设输出文件名为output_data.xlsx
