@@ -25,8 +25,9 @@ app.listen(PORT, () => {
 });
 
 //https://ngrok.com/download
-// ngrok http 8082 --region ap
+// ngrok http 8082
 // ngrok http 8188 --region ap
 // ngrok tcp 3389 --region ap
 
 
+// nohup  ngrok http 8082 > ngrok.log 2>&1 &

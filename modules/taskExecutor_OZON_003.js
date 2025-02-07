@@ -630,30 +630,30 @@ export class OutputTask extends Task {
                     setTimeout(() => {
                         const products = [];
                         // 使用新的选择器来定位商品卡片
-                        const productCards = document.querySelectorAll('div.iw1_23.w1i_23.tile-root');
+                        const productCards = document.querySelectorAll('div.xi4_23.i5x_23.tile-root');
                         console.log('找到的产品卡片数量:', productCards.length);
         
                         productCards.forEach((card, index) => {
                             const product = {};
         
                             // 提取链接和ID
-                            const linkElement = card.querySelector('a.xi6_23');
+                            const linkElement = card.querySelector('a.iz_23.tile-clickable-element');
                             product.link = linkElement ? linkElement.href : '未找到链接';
                             product.id = product.link ? product.link.match(/\/product\/([^\/\?]+)/)?.[1] : '未找到ID';
         
                             // 提取图片URL
-                            const imageElement = card.querySelector('img.ix4_23');
+                            const imageElement = card.querySelector('img.yi7_23.b933-a');
                             product.imageUrl = imageElement ? imageElement.src : '未找到图片URL';
         
                             // 提取价格信息
-                            const currentPriceElement = card.querySelector('span.tsHeadline500Medium');
+                            const currentPriceElement = card.querySelector('span.c3024-a1.tsHeadline500Medium');
                             product.currentPrice = currentPriceElement ? currentPriceElement.textContent.trim() : '未找到当前价格';
         
-                            const oldPriceElement = card.querySelector('span.tsBodyControl400Small:not([class*="c3023-b4"])');
+                            const oldPriceElement = card.querySelector('span.c3024-a1.tsBodyControl400Small');
                             product.oldPrice = oldPriceElement ? oldPriceElement.textContent.trim() : '未找到原价';
         
                             // 提取折扣信息
-                            const discountElement = card.querySelector('span.c3023-b4');
+                            const discountElement = card.querySelector('span.tsBodyControl400Small.c3024-a6.c3024-b4');
                             product.discount = discountElement ? discountElement.textContent.trim() : '未找到折扣';
         
                             // 提取标题
@@ -673,11 +673,11 @@ export class OutputTask extends Task {
                             }
         
                             // 提取库存状态
-                            const stockElement = card.querySelector('div.b222-b0');
+                            const stockElement = card.querySelector('.bq013-a.bq013-a4.bq013-a5 span.tsBodyControl400Small');
                             product.stockStatus = stockElement ? stockElement.textContent.trim() : '';
         
                             // 提取配送信息
-                            const deliveryElement = card.querySelector('div.b2121-a8');
+                            const deliveryElement = card.querySelector('.b2121-a8.tsBodyControl500Medium');
                             product.deliveryDate = deliveryElement ? deliveryElement.textContent.trim() : '未找到配送日期';
         
                             console.log(`产品 ${index + 1}:`, product);

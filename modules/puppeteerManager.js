@@ -301,36 +301,18 @@ export async function launchBrowser_adsPower_lianjie_linux(adsPowerUserId, adsPo
 
 
 
+// RunPod 配置
+const RUNPOD_CONFIG = {
+    BASE_URL: 'q9p2c49e1pdbfb',
+    API_PORT: '50325',
+    DEBUG_PORT: '52919'
+};
 
-export async function launchBrowser_adsPower_lianjie_linux_api(adsPowerUserId, adsPowerId = '213.173.105.83') {
+export async function launchBrowser_adsPower_lianjie_linux_api(adsPowerUserId, BASE_URL,API_PORT=50325,DEBUG_PORT=52919) {
     console.log('config:', adsPowerUserId);
-    const API_KEY = 'ab5ffb76b4a5870bbeaa6a406bbf483d';
-    const API_PORT = 50325;
     let response;
     try {
-
-        // const platform = process.platform;
-        // let startCommand;
-        // if (platform === 'darwin') {
-        //     startCommand = '"/Applications/AdsPower Global.app/Contents/MacOS/AdsPower Global" --args --headless=true ';
-        // } else if (platform === 'win32') {
-        //     startCommand = '"AdsPower Global.exe" --headless=true ';
-        // } else if (platform === 'linux') {
-        //     startCommand = 'adspower_global --headless=true ';
-        // }
-        // startCommand += `--api-key=${API_KEY} --api-port=${API_PORT}`;
-        
-        // try {
-        //     await exec(startCommand);
-        //     console.log('AdsPower Global 启动成功');
-        //     // 等待服务启动
-        //     await new Promise(resolve => setTimeout(resolve, 5000));
-        // } catch (error) {
-        //     console.log('AdsPower Global 可能已经在运行:', error.message);
-        // }
-
-        response = await axios.get(`https://qnwtdsh6itnjvx-50325.proxy.runpod.net/api/v1/browser/active`, {
-        // response = await axios.get(`http://local.adspower.net:50325/api/v1/browser/active`, {
+        response = await axios.get(`https://${BASE_URL}-${API_PORT}.proxy.runpod.net/api/v1/browser/active`, {
             params: {
                 user_id: adsPowerUserId
             },
@@ -345,8 +327,7 @@ export async function launchBrowser_adsPower_lianjie_linux_api(adsPowerUserId, a
         } else {
             console.log('浏览器未启动，尝试启动浏览器');
             // 启��浏览器
-            response = await axios.get(`https://qnwtdsh6itnjvx-50325.proxy.runpod.net/api/v1/browser/start`, {
-            // response = await axios.get(`http://local.adspower.net:50325/api/v1/browser/start`, {
+            response = await axios.get(`https://${BASE_URL}-${API_PORT}.proxy.runpod.net/api/v1/browser/start`, {
                 params: {
                     user_id: adsPowerUserId,
                     launch_args: JSON.stringify([
@@ -370,13 +351,13 @@ export async function launchBrowser_adsPower_lianjie_linux_api(adsPowerUserId, a
         console.log('wsEndpoint:', wsEndpoint);
         // 先尝试获取连接信息
         try {
-            const response = await axios.get(`https://qnwtdsh6itnjvx-52919.proxy.runpod.net/json/version`);
+            const response = await axios.get(`https://${BASE_URL}-${DEBUG_PORT}.proxy.runpod.net/json/version`);
             console.log('获取调试信息:', response.data);
             if (response.data.webSocketDebuggerUrl) {
                 // 使用wss协议
                 const debuggerUrl = response.data.webSocketDebuggerUrl;
                 const path = debuggerUrl.split('/').slice(3).join('/');
-                wsEndpoint = `wss://qnwtdsh6itnjvx-52919.proxy.runpod.net/${path}`;
+                wsEndpoint = `wss://${BASE_URL}-${DEBUG_PORT}.proxy.runpod.net/${path}`;
                 console.log('使用新的wsEndpoint:', wsEndpoint);
                 return await puppeteer_core.connect({
                     browserWSEndpoint: wsEndpoint,
@@ -389,7 +370,7 @@ export async function launchBrowser_adsPower_lianjie_linux_api(adsPowerUserId, a
 
         // 如果获取失败，尝试直接替换
         const path = wsEndpoint.split('/').slice(3).join('/');
-        const modifiedWsEndpoint = `wss://qnwtdsh6itnjvx-52919.proxy.runpod.net/${path}`;
+        const modifiedWsEndpoint = `wss://${RUNPOD_CONFIG.BASE_URL}-${RUNPOD_CONFIG.DEBUG_PORT}.proxy.runpod.net/${path}`;
         console.log('modifiedWsEndpoint:', modifiedWsEndpoint);
 
         return await puppeteer_core.connect({

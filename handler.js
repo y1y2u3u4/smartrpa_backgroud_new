@@ -84,6 +84,7 @@ export async function handler_run(req, res) {
     const task_name = req.body.task_name;
     const leixing = req.body.leixing;
     const adsPowerUserId = req.body.adsPowerUserId || 'kn8o287';
+    const BASE_URL = req.body.BASE_URL;
     const adsPowerId = req.body.adsPowerId || '10.128.0.3';
 
 
@@ -146,8 +147,8 @@ export async function handler_run(req, res) {
         if (environment === 'cloud') {
             browser = await launchBrowser_adsPower_lianjie(adsPowerUserId, adsPowerId);
         } else {
-            browser = await launchBrowser_adsPower_lianjie_local(adsPowerUserId, adsPowerId);
-            // browser = await launchBrowser_adsPower_lianjie_local_api(adsPowerUserId, adsPowerId);
+            browser = await launchBrowser_adsPower_lianjie_linux_api(adsPowerUserId,BASE_URL);
+            // browser = await launchBrowser_adsPower_lianjie_local(adsPowerUserId, adsPowerId);
         }
         page = await setupPage_adsPower(browser, cookies);
     }
