@@ -30,4 +30,4 @@ app.listen(PORT, () => {
 // ngrok tcp 3389 --region ap
 
 
-// nohup  ngrok http 8082 > ngrok.log 2>&1 &
+// nohup  node server.js > server.log 2>&1 &

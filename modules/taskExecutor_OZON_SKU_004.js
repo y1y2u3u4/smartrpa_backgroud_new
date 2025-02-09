@@ -340,7 +340,7 @@ export class ClickTask extends Task {
 
                     // 输出当前页面状态以便调试
                     const pageContent = await page.content();
-                    console.log('页面内容:', pageContent);
+                    // console.log('页面内容:', pageContent);
 
                     throw error;
                 }
@@ -703,17 +703,29 @@ export class OutputTask extends Task {
                 const result = {};
 
                 if (geometryInputs) {
-                    const inputs = geometryInputs.querySelectorAll('input');
                     const dimensions = {};
-
-                    inputs.forEach(input => {
-                        const label = input.nextElementSibling.textContent.toLowerCase();
-                        if (label.includes('длина')) {
-                            dimensions.length = parseFloat(input.value) || 0;
-                        } else if (label.includes('ширина')) {
-                            dimensions.width = parseFloat(input.value) || 0;
-                        } else if (label.includes('высота')) {
-                            dimensions.height = parseFloat(input.value) || 0;
+                    
+                    // 获取所有输入容器
+                    const containers = geometryInputs.querySelectorAll('.ozi__input__inputContainer__RAbz0');
+                    containers.forEach(container => {
+                        try {
+                            const input = container.querySelector('input');
+                            const label = container.querySelector('label');
+                            
+                            if (input && label) {
+                                const labelText = label.textContent.toLowerCase();
+                                const value = parseFloat(input.value) || 0;
+                                
+                                if (labelText.includes('длина')) {
+                                    dimensions.length = value;
+                                } else if (labelText.includes('ширина')) {
+                                    dimensions.width = value;
+                                } else if (labelText.includes('высота')) {
+                                    dimensions.height = value;
+                                }
+                            }
+                        } catch (e) {
+                            console.error('处理输入框时出错:', e);
                         }
                     });
 
@@ -758,7 +770,6 @@ export class OutputTask extends Task {
             });
 
             console.log('提取的尺寸和体积数据:', this.data);
-
 
             if (Array.isArray(this.data) && this.data.length > 0) {
                 console.log(`处理尺寸数据，数组长度: ${this.data.length}`);
@@ -858,7 +869,3 @@ export class TaskExecutor {
         }
     }
 }
-
-
-
-

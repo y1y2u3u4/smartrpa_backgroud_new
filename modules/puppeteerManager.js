@@ -370,7 +370,7 @@ export async function launchBrowser_adsPower_lianjie_linux_api(adsPowerUserId, B
 
         // 如果获取失败，尝试直接替换
         const path = wsEndpoint.split('/').slice(3).join('/');
-        const modifiedWsEndpoint = `wss://${RUNPOD_CONFIG.BASE_URL}-${RUNPOD_CONFIG.DEBUG_PORT}.proxy.runpod.net/${path}`;
+        const modifiedWsEndpoint = `wss://${BASE_URL}-${DEBUG_PORT}.proxy.runpod.net/${path}`;
         console.log('modifiedWsEndpoint:', modifiedWsEndpoint);
 
         return await puppeteer_core.connect({
