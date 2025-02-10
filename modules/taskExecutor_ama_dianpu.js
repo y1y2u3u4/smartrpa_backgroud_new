@@ -214,20 +214,35 @@ export class ClickTask extends Task {
                         // 等待并点击搜索按钮
                         await page.waitForSelector('input[type="submit"]');
                         
-                        // 创建导航完成的 Promise
+                        // 创建导航完成的 Promise，增加超时时间到 60 秒
                         const navigationPromise = page.waitForNavigation({
-                            waitUntil: ['networkidle0', 'domcontentloaded']
+                            waitUntil: ['networkidle0', 'domcontentloaded'],
+                            timeout: 60000 // 增加到 60 秒
                         });
                         
-                        // 点击搜索按钮
-                        await Promise.all([
-                            navigationPromise,
-                            page.click('input[type="submit"]')
-                        ]);
+                        try {
+                            // 点击搜索按钮并等待导航
+                            await Promise.all([
+                                navigationPromise,
+                                page.click('input[type="submit"]')
+                            ]);
+                        } catch (navigationError) {
+                            console.log('导航超时，尝试继续执行...');
+                            // 即使导航超时，也等待一段时间让页面加载
+                            await new Promise(resolve => setTimeout(resolve, 5000));
+                        }
                         
-                        // 等待页面加载完成
-                        await page.waitForFunction(() => document.readyState === 'complete');
-                        await new Promise(resolve => setTimeout(resolve, 2000));
+                        try {
+                            // 等待页面加载完成
+                            await page.waitForFunction(() => document.readyState === 'complete', {
+                                timeout: 30000
+                            });
+                        } catch (loadError) {
+                            console.log('页面加载等待超时，继续执行...');
+                        }
+                        
+                        // 额外等待时间，确保页面内容加载
+                        await new Promise(resolve => setTimeout(resolve, 3000));
 
                         // 检查页面是否存在Results标题
                         const hasResults = await page.evaluate(() => {
