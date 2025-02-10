@@ -6,6 +6,10 @@ import axios from 'axios'; // 用于 HTTP 请求
 
 const app = express();
 app.use(cors());
+// 增加 JSON 请求体大小限制到 50MB
+app.use(express.json({limit: '50mb'}));
+// 增加 URL-encoded 请求体大小限制
+app.use(express.urlencoded({limit: '50mb', extended: true}));
 app.use(express.json());
 app.post('/login', handler_login);
 app.post('/scrape', handler_run);
