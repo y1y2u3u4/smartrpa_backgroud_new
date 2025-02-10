@@ -35,11 +35,174 @@ export class Task {
     }
 }
 
-export class ClickTask extends Task {
-    constructor(element, browser) {
-        super('click', element);
-        this.browser = browser;
+
+async function waitForTableData(page, task_name, cityname) {
+    try {
+        console.log('等待表格数据加载...');
+        
+        // 等待表格和分页器出现
+        await Promise.all([
+            page.waitForSelector('tr.table-row-module_row_JSSv0', { timeout: 30000, visible: true }),
+            page.waitForSelector('article.styles_paginationWrapper_24KuK.styles_pagination_3RNLQ', { timeout: 30000 })
+        ]);
+
+        // 获取总页数
+        const totalPages = await page.evaluate(() => {
+            // 首先尝试从总数信息获取
+            const totalText = document.querySelector('.text-view-module_caption_ytwaB')?.textContent;
+            if (totalText) {
+                const match = totalText.match(/(\d+)中的/);
+                if (match) {
+                    const total = parseInt(match[1]);
+                    return Math.ceil(total / 50); // 每页50条数据
+                }
+            }
+
+            // 如果无法从总数信息获取，则从分页按钮获取
+            const pagination = document.querySelector('article.styles_paginationWrapper_24KuK.styles_pagination_3RNLQ ul.pagination-module_pagination_OvL2B');
+            if (!pagination) {
+                console.log('未找到分页器，返回1页');
+                return 1;
+            }
+
+            const buttons = Array.from(pagination.querySelectorAll('button'));
+            console.log('分页按钮数量:', buttons.length);
+            
+            // 输出所有按钮的文本内容以便调试
+            buttons.forEach((btn, index) => {
+                console.log(`按钮 ${index + 1} 文本:`, btn.textContent.trim());
+            });
+
+            const pageNumbers = buttons
+                .map(btn => btn.textContent.trim())
+                .filter(text => /^\d+$/.test(text))
+                .map(Number);
+
+            const maxPage = Math.max(...pageNumbers);
+            console.log('找到的最大页码:', maxPage);
+            return maxPage;
+        });
+
+        console.log('总页数:', totalPages);
+        let allData = [];
+
+        // 遍历每一页
+        for (let currentPage = 1; currentPage <= totalPages; currentPage++) {
+            console.log(`正在处理第 ${currentPage}/${totalPages} 页`);
+
+            // 如果不是第一页，需要点击翻页按钮
+            if (currentPage > 1) {
+                await page.evaluate((pageNum) => {
+                    const pagination = document.querySelector('article.styles_paginationWrapper_24KuK.styles_pagination_3RNLQ ul.pagination-module_pagination_OvL2B');
+                    const buttons = Array.from(pagination.querySelectorAll('button'));
+                    const targetButton = buttons.find(btn => btn.textContent.trim() === String(pageNum));
+                    if (targetButton) {
+                        targetButton.click();
+                    }
+                }, currentPage);
+
+                // 等待新数据加载
+                await page.waitForFunction(() => {
+                    const loadingIndicator = document.querySelector('.loading-module_loading_2Yqkq');
+                    return !loadingIndicator;
+                }, { timeout: 30000 });
+                
+                // 确保新数据已加载
+                await page.waitForTimeout(2000);
+            }
+
+            // 提取当前页数据
+            const pageData = await page.evaluate(() => {
+                const rows = document.querySelectorAll('tr.table-row-module_row_JSSv0');
+                return Array.from(rows).map(row => {
+                    // 获取产品信息
+                    const nameCell = row.querySelector('.styles_nameCellContent_3a8_L');
+                    const nameLink = nameCell?.querySelector('a');
+                    const name = nameLink?.textContent?.trim() || '';
+                    const productUrl = nameLink?.href || '';
+                    const productId = productUrl ? productUrl.split('/product/')[1] : '';
+                    
+                    // 获取图片信息
+                    const imgElement = row.querySelector('.styles_nameCellImage_oiDkW img');
+                    const imageUrl = imgElement?.src || '';
+                    
+                    // 获取品牌和卖家信息
+                    const brandDivs = nameCell?.querySelectorAll('.styles_brand_3WOGM');
+                    const brand = brandDivs?.[0]?.querySelector('span')?.getAttribute('title')?.trim() || '';
+                    const seller = brandDivs?.[1]?.querySelector('span')?.getAttribute('title')?.trim() || '';
+                    const skuNumber = brandDivs?.[2]?.textContent?.replace('货号:', '')?.trim() || '';
+
+                    // 获取类别信息
+                    const categoryCell = row.querySelector('.styles_categoryCellContent_2bvg3');
+                    const category1 = categoryCell?.querySelector('.styles_category1_1rCWs')?.textContent?.trim() || '';
+                    const category3 = categoryCell?.querySelector('.styles_category3_36tVL')?.textContent?.trim() || '';
+
+                    // 获取其他数据列
+                    const cells = Array.from(row.querySelectorAll('.table-cell-module_td_p43QB'));
+                    const getData = (index) => cells[index]?.querySelector('.styles_sortableCellContent_2WeWK')?.textContent?.trim() || '';
+
+                    return {
+                        name,
+                        productUrl,
+                        productId,
+                        imageUrl,
+                        brand,
+                        seller,
+                        skuNumber,
+                        category1,
+                        category3,
+                        orderAmount: getData(3),
+                        turnoverDynamics: getData(4),
+                        salesVolume: getData(5),
+                        averagePrice: getData(6),
+                        availability: getData(7),
+                        workingMode: getData(11),
+                        deliveryDays: getData(12),
+                        volume: getData(13),
+                        searchViews: getData(14),
+                        cardViews: getData(15),
+                        searchToCartRate: getData(16),
+                        cardToCartRate: getData(17),
+                        adShare: getData(18),
+                        createDate: getData(19)
+                    };
+                });
+            });
+
+            // 添加到总数据中
+            allData = allData.concat(pageData);
+            console.log(`第 ${currentPage} 页数据提取完成，当前总数据条数: ${allData.length}`);
+            
+            // 每页处理完后稍作等待
+            await page.waitForTimeout(1000);
+        }
+
+        // 保存所有数据
+        if (allData.length > 0) {
+            const config = loadConfig('config/config.json');
+            const outputHandler = OutputFactory.createOutputHandler(config.outputFormat);
+            outputHandler.handle(allData, 'output', task_name, cityname);
+            console.log(`所有数据已保存，总条数: ${allData.length}`);
+            return true;
+        }
+
+        return false;
+    } catch (error) {
+        console.error('等待表格数据时发生错误:', error);
+        return false;
     }
+}
+
+export class ClickTask extends Task {
+    constructor(element, browser, task_name, cityname) {
+        super('click', element, null, null, task_name, cityname);
+        this.browser = browser;
+        console.log('ClickTask task_name:', this.task_name);
+        console.log('ClickTask cityname:', this.cityname);
+    }
+
+
+
     async execute(page) {
         console.log('page URL:', page.url());
         const newPagePromise = new Promise((resolve) => {
@@ -245,6 +408,8 @@ export class ClickTask extends Task {
             } else if (this.element.leixing === '自定义4') {
                 console.log('自定义4_start');
 
+
+
                 try {
                     // 注册日志函数
                     await page.exposeFunction('logToConsole', (...args) => {
@@ -370,7 +535,7 @@ export class ClickTask extends Task {
                         }
 
                         return await clickCategoryFilter();
-                    });
+                    }, cliclValue);
 
                     if (!clickResult) {
                         throw new Error('类别按钮点击失败');
@@ -864,9 +1029,13 @@ export class ClickTask extends Task {
                                     
                                     for (const item of treeItems) {
                                         const label = item.querySelector('.data-content-module_label_fGS\\+z');
-                                        if (label && label.textContent && label.textContent.trim() === clickValue) {
-                                            targetButton = label;
-                                            break;
+                                        if (label) {
+                                            const text = label.textContent.trim();
+                                            window.logToConsole('按钮文本:', text);
+                                            if (text === clickValue) {
+                                                targetButton = label;
+                                                break;
+                                            }
                                         }
                                     }
 
@@ -1074,187 +1243,14 @@ export class ClickTask extends Task {
                             });
 
                             // 6. 等待表格数据加载并下载
-                            await page.evaluate(async () => {
-                                async function waitForTableData() {
-                                    try {
-                                        window.logToConsole('等待表格数据加载...');
-                                        
-                                        // 最多等待30秒
-                                        const maxWaitTime = 30000;
-                                        const startTime = Date.now();
-                                        
-                                        while (Date.now() - startTime < maxWaitTime) {
-                                            // 检查表格行是否存在且有数据
-                                            const tableRows = document.querySelectorAll('tr.table-row-module_row_JSSv0');
-                                            if (tableRows.length > 0) {
-                                                window.logToConsole(`找到 ${tableRows.length} 行数据`);
-                                                return true;
-                                            }
-                                            
-                                            // 等待100毫秒后再次检查
-                                            await new Promise(resolve => setTimeout(resolve, 100));
-                                        }
-                                        
-                                        throw new Error('等待表格数据超时');
-                                    } catch (error) {
-                                        window.logToConsole('等待表格数据失败:', error);
-                                        return false;
-                                    }
+                            try {
+                                const dataLoaded = await waitForTableData(page, this.task_name, this.cityname);
+                                if (!dataLoaded) {
+                                    throw new Error('表格数据未加载完成');
                                 }
-
-                                // async function waitForDownload() {
-                                //     try {
-                                //         await new Promise((resolve, reject) => {
-                                //             let downloadTimeout;
-                                //             let isDownloading = false;
-
-                                //             // 创建一个检查下载状态的函数
-                                //             const checkDownloadStatus = () => {
-                                //                 const downloadingElements = document.querySelectorAll('.notification-module_notification_Kj\\+Wk');
-                                //                 for (const elem of downloadingElements) {
-                                //                     const text = elem.textContent.toLowerCase();
-                                //                     if (text.includes('正在下载') || text.includes('downloading')) {
-                                //                         isDownloading = true;
-                                //                         return false; // 继续等待
-                                //                     }
-                                //                     if (text.includes('下载完成') || text.includes('downloaded')) {
-                                //                         return true; // 下载完成
-                                //                     }
-                                //                 }
-                                //                 return !isDownloading; // 如果从未开始下载，返回true
-                                //             };
-
-                                //             // 设置检查间隔
-                                //             const checkInterval = setInterval(() => {
-                                //                 if (checkDownloadStatus()) {
-                                //                     clearInterval(checkInterval);
-                                //                     clearTimeout(downloadTimeout);
-                                //                     resolve();
-                                //                 }
-                                //             }, 1000);
-
-                                //             // 设置超时
-                                //             downloadTimeout = setTimeout(() => {
-                                //                 clearInterval(checkInterval);
-                                //                 if (isDownloading) {
-                                //                     reject(new Error('下载超时'));
-                                //                 } else {
-                                //                     resolve(); // 如果从未开始下载，就继续执行
-                                //                 }
-                                //             }, 300000); // 30秒超时
-                                //         });
-                                //         return true;
-                                //     } catch (error) {
-                                //         window.logToConsole('等待下载时发生错误:', error.toString());
-                                //         return false;
-                                //     }
-                                // }
-
-                                async function clickDownloadButton() {
-                                    try {
-                                        // 查找下载按钮（多种方式）
-                                        let downloadButton = document.querySelector('button[data-test-id="export-button"]');
-                                        
-                                        if (!downloadButton) {
-                                            // 尝试通过类名查找
-                                            downloadButton = document.querySelector('button.button-module_button_x9kDW');
-                                        }
-                                        
-                                        if (!downloadButton) {
-                                            // 尝试通过文本内容查找
-                                            downloadButton = Array.from(document.querySelectorAll('button')).find(button => 
-                                                button.textContent.includes('下载') || 
-                                                button.textContent.includes('导出') ||
-                                                button.textContent.includes('export')
-                                            );
-                                        }
-
-                                        if (!downloadButton) {
-                                            throw new Error('未找到下载按钮');
-                                        }
-
-                                        window.logToConsole('找到下载按钮，准备点击');
-                                        
-                                        // 创建并触发下载按钮的点击事件
-                                        const clickEvent = new MouseEvent('click', {
-                                            view: window,
-                                            bubbles: true,
-                                            cancelable: true,
-                                            buttons: 1
-                                        });
-                                        downloadButton.dispatchEvent(clickEvent);
-                                        
-                                        window.logToConsole('成功点击下载按钮，等待选项出现...');
-                                        
-                                        // 等待包含所有设置的报告选项出现
-                                        let reportOption = null;
-                                        const optionStartTime = Date.now();
-                                        while (Date.now() - optionStartTime < 10000) { // 等待10秒
-                                            const options = Array.from(document.querySelectorAll('div.data-cell-module_dataCell_z0Yiq.dropdown-item-module_dropdownItem_99nD2'));
-                                            reportOption = options.find(div => div.textContent.includes('包含所有设置的报告'));
-                                            if (reportOption) break;
-                                            await new Promise(resolve => setTimeout(resolve, 100));
-                                        }
-                                        
-                                        if (!reportOption) {
-                                            throw new Error('未找到包含所有设置的报告选项');
-                                        }
-                                        
-                                        // 等待报告生成完成
-                                        const maxWaitTime = 300000; // 最长等待30秒
-                                        const startTime = Date.now();
-                                        
-                                        while (Date.now() - startTime < maxWaitTime) {
-                                            // 检查是否还在生成报告
-                                            const generatingText = document.querySelector('div.data-content-module_caption_nC\+Qq')?.textContent;
-                                            const isGenerating = generatingText && generatingText.includes('正在生成报告');
-                                            
-                                            if (!isGenerating && !downloadButton.disabled && !downloadButton.classList.contains('button-module_loading_CH8SU')) {
-                                                window.logToConsole('报告生成完成，下载按钮已恢复可点击状态');
-                                                break;
-                                            }
-                                            await new Promise(resolve => setTimeout(resolve, 500)); // 每500ms检查一次
-                                        }
-                                        
-                                        if (Date.now() - startTime >= maxWaitTime) {
-                                            window.logToConsole('等待报告生成完成超时');
-                                            return false;
-                                        }
-
-                                        // 点击选项
-                                        const reportClickEvent = new MouseEvent('click', {
-                                            view: window,
-                                            bubbles: true,
-                                            cancelable: true,
-                                            buttons: 1
-                                        });
-                                        reportOption.dispatchEvent(reportClickEvent);
-                                        
-                                        window.logToConsole('成功点击包含所有设置的报告选项，等待下载完成...');
-                                        return true;
-                                        return false;
-                                    } catch (error) {
-                                        window.logToConsole('点击下载按钮失败:', error.toString());
-                                        return false;
-                                    }
-                                }
-
-                                try {
-                                    // 首先等待表格数据加载
-                                    const dataLoaded = await waitForTableData();
-                                    if (!dataLoaded) {
-                                        throw new Error('表格数据未加载，无法点击下载按钮');
-                                    }
-
-                                    // 数据加载完成后，执行下载操作
-                                    const downloadSuccess = await clickDownloadButton();
-                                    if (!downloadSuccess) {
-                                        throw new Error('下载操作失败');
-                                    }
-                                } catch (error) {
-                                    window.logToConsole('下载操作失败:', error.toString());
-                                }
-                            });
+                            } catch (error) {
+                                console.error('下载操作失败:', error.toString());
+                            }
                             
                             console.log(`完成子类目 ${subcategory.name} 的处理`);
                             
@@ -1772,3 +1768,5 @@ export class TaskExecutor {
         }
     }
 }
+
+// 新增的函数

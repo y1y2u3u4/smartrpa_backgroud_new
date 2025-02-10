@@ -142,7 +142,7 @@ export async function handleEvent(event, page, browser,index, sortedData_new, ta
     console.log('cityname_1:', cityname);
     switch (event.type) {
         case 'click':
-            task = new ClickTask(event.element, browser);
+            task = new ClickTask(event.element, browser, task_name, cityname);
             break;
         case 'input':
             task = new InputTask(event.element, event.value, sortedData_new);
