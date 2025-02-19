@@ -296,6 +296,20 @@ export class ClickTask extends Task {
 
                                 item.dispatchEvent(itemClickEvent);
                                 console.log('Click this dispatched on Sadong item');
+
+                                // // 查找并点击HuanshijiCA元素
+                                // const huanshijiButton = document.querySelector('span.item.iskeep button span span:first-child');
+                                // if (huanshijiButton && huanshijiButton.textContent === cliclValue + "CA") {
+                                //     const huanshijiClickEvent = new MouseEvent('click', {
+                                //         view: window,
+                                //         bubbles: true,
+                                //         cancelable: true
+                                //     });
+                                //     huanshijiButton.closest('button').dispatchEvent(huanshijiClickEvent);
+                                //     console.log('Click dispatched on  item', cliclValue + "CA");
+                                // } else {
+                                //     console.error("无法找到HuanshijiCA按钮");
+                                // }
                             } else {
                                 console.error("无法找到包含“Sadong”的下拉项");
                             }
@@ -307,12 +321,138 @@ export class ClickTask extends Task {
                     }
                 }, cliclValue);
                 await page.waitForNavigation({ waitUntil: 'networkidle0', timeout: 30000 }).catch(e => console.log('等待页面加载超时，继续执行'));
-                await new Promise(resolve => setTimeout(resolve, 10000));
+                // await new Promise(resolve => setTimeout(resolve, 10000));
                 console.log('自定义2_done');
             } catch (error) {
                 console.error('An error occurred:', error);
             }
-        } else if (this.element.leixing === '自定义3') {
+        } else if (this.element.leixing === '自定义2.1') {
+            try {
+                await page.evaluate(async () => {
+                    // 查找包含"侵权词/敏感词"文本的span元素
+                    const spans = document.querySelectorAll('.vxe-table--header .vxe-cell--title span');
+                    const sensitiveWordSpan = Array.from(spans).find(span => span.textContent.includes('侵权词/敏感词'));
+
+                    if (sensitiveWordSpan) {
+                        // 找到包含这个span的模态框
+                        const modalContent = sensitiveWordSpan.closest('.ivu-modal-content');
+                        if (modalContent) {
+                            // 在这个特定的模态框中查找确定按钮
+                            const confirmButton = modalContent.querySelector('.ivu-modal-footer button.m-r.ivu-btn.ivu-btn-primary');
+                            if (confirmButton) {
+                                console.log('Found the correct confirm button');
+                                
+                                // 确保元素在视图中
+                                confirmButton.scrollIntoView();
+
+                                // 手动创建并触发点击事件
+                                const clickEvent = new MouseEvent('click', {
+                                    view: window,
+                                    bubbles: true,
+                                    cancelable: true
+                                });
+
+                                confirmButton.dispatchEvent(clickEvent);
+                                console.log('Click dispatched on confirm button');
+                            } else {
+                                console.error("在正确的模态框中未找到确定按钮");
+                            }
+                        } else {
+                            console.error("未找到包含侵权词表格的模态框");
+                        }
+                    } else {
+                        console.error("未找到侵权词表格");
+                    }
+                });
+                console.log('自定义2.1_done');
+            } catch (error) {
+                console.error('An error occurred:', error);
+            }
+        } else if (this.element.leixing === '自定义2.2') {
+            try {
+                await page.evaluate(async () => {
+                    // 获取所有按钮
+                    const buttons = document.querySelectorAll('.mult-header-h .self_tabs_style .item button');
+                    const buttonsArray = Array.from(buttons);
+                    
+                    // 跳过第一个按钮，获取剩余的按钮
+                    const remainingButtons = buttonsArray.slice(1);
+                    
+                    // 依次点击每个按钮
+                    for (const button of remainingButtons) {
+                        // 点击站点按钮
+                        console.log('点击按钮:', button.textContent);
+                        button.scrollIntoView();
+                        const buttonClickEvent = new MouseEvent('click', {
+                            view: window,
+                            bubbles: true,
+                            cancelable: true
+                        });
+                        button.dispatchEvent(buttonClickEvent);
+                        
+                        // 等待一下确保点击生效
+                        await new Promise(resolve => setTimeout(resolve, 1000));
+                        
+                        // 查找检测按钮
+                        const spans = document.querySelectorAll('span');
+                        const targetSpan = Array.from(spans).find(span => span.textContent === '一键检测侵权词/敏感词');
+                        
+                        if (targetSpan) {
+                            console.log('找到检测按钮，准备点击');
+                            targetSpan.scrollIntoView();
+                            const checkClickEvent = new MouseEvent('click', {
+                                view: window,
+                                bubbles: true,
+                                cancelable: true
+                            });
+                            targetSpan.dispatchEvent(checkClickEvent);
+                            
+                            // 等待模态框出现
+                            await new Promise(resolve => setTimeout(resolve, 2000));
+                            
+                            // 使用相同的方法查找确认按钮
+                            const sensitiveWordSpan = Array.from(document.querySelectorAll('.vxe-table--header .vxe-cell--title span'))
+                                .find(span => span.textContent.includes('侵权词/敏感词'));
+
+                            if (sensitiveWordSpan) {
+                                const modalContent = sensitiveWordSpan.closest('.ivu-modal-content');
+                                if (modalContent) {
+                                    const confirmButton = modalContent.querySelector('.ivu-modal-footer button.m-r.ivu-btn.ivu-btn-primary');
+                                    if (confirmButton) {
+                                        console.log('找到确认按钮，准备点击');
+                                        confirmButton.scrollIntoView();
+                                        const confirmClickEvent = new MouseEvent('click', {
+                                            view: window,
+                                            bubbles: true,
+                                            cancelable: true
+                                        });
+                                        confirmButton.dispatchEvent(confirmClickEvent);
+                                        console.log('已点击确认按钮');
+                                        
+                                        // 等待确认操作完成
+                                        await new Promise(resolve => setTimeout(resolve, 2000));
+                                    } else {
+                                        console.error('在模态框中未找到确认按钮');
+                                    }
+                                } else {
+                                    console.error('未找到包含侵权词表格的模态框');
+                                }
+                            } else {
+                                console.error('未找到侵权词表格');
+                            }
+                        } else {
+                            console.error('未找到检测按钮');
+                        }
+                    }
+                });
+                console.log('自定义2.2_done');
+            } catch (error) {
+                console.error('An error occurred:', error);
+            }
+        } 
+        
+        
+        else if (this.element.leixing === '自定义3') {
             try {
                 await page.evaluate(async (clickSelector) => {
                     const selectButton = document.querySelector(clickSelector);

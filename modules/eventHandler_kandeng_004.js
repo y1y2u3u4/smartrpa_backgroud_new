@@ -1,6 +1,6 @@
 
 ///实现通过 e百的任务批量刊登工作流
-import { ClickTask, InputTask, OutputTask, KeydownTask, NavigationTask, ScrollTask } from './taskExecutor_2.js';
+import { ClickTask, InputTask, OutputTask, KeydownTask, NavigationTask, ScrollTask } from './taskExecutor_kandeng_004.js';
 
 function getRandomInterval(min = 2000, max = 8000) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
