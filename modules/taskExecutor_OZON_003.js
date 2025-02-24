@@ -660,11 +660,24 @@ export class OutputTask extends Task {
                             const titleElement = card.querySelector('span.tsBody500Medium');
                             product.title = titleElement ? titleElement.textContent.trim() : '未找到标题';
         
-                            // 提取评分和评论数
-                            const ratingElement = card.querySelector('.p6b13-a4 span[style*="color:rgba(7, 7, 7, 1)"]');
+                            // 提取评分和评论数（兼容两种样式）
+                            const ratingSpans = [
+                                card.querySelector('.p6b17-a4 span[style*="color:rgba(7, 7, 7, 1)"]'),
+                                card.querySelector('.p6b17-a4 span[style*="color: rgb(7, 7, 7)"]'),
+                                card.querySelector('.p6b13-a4 span[style*="color:rgba(7, 7, 7, 1)"]'),
+                                card.querySelector('.p6b13-a4 span[style*="color: rgb(7, 7, 7)"]')
+                            ];
+                            const ratingElement = ratingSpans.find(span => span !== null);
                             product.rating = ratingElement ? ratingElement.textContent.trim() : '未找到评分';
-        
-                            const reviewElement = card.querySelector('.p6b13-a4 span[style*="color:rgba(0, 26, 52, 0.6)"]');
+
+                            // 提取评论数（兼容两种样式）
+                            const reviewSpans = [
+                                card.querySelector('.p6b17-a4 span[style*="color:rgba(0, 26, 52, 0.6)"]'),
+                                card.querySelector('.p6b17-a4 span[style*="color: rgba(0, 26, 52, 0.6)"]'),
+                                card.querySelector('.p6b13-a4 span[style*="color:rgba(0, 26, 52, 0.6)"]'),
+                                card.querySelector('.p6b13-a4 span[style*="color: rgba(0, 26, 52, 0.6)"]')
+                            ];
+                            const reviewElement = reviewSpans.find(span => span !== null);
                             if (reviewElement) {
                                 const reviewText = reviewElement.textContent.trim();
                                 product.reviewCount = reviewText.replace(/[^\d]/g, ''); // 只保留数字
