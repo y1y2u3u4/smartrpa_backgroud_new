@@ -797,11 +797,12 @@ export class OutputTask extends Task {
 
             console.log('提取的数据:', this.data);
 
-            if (this.data && this.data.length > 0) {
-                outputHandler.handle(this.data, 'output', this.task_name, this.cityname);
-            } else {
-                console.log('没有提取到数据或数据为空');
-            }
+            // if (this.data && this.data.length > 0) {
+            //     outputHandler.handle(this.data, 'output', this.task_name, this.cityname);
+            // } else {
+            //     console.log('没有提取到数据或数据为空');
+            // }
+            outputHandler.handle(this.data, 'output', this.task_name, this.cityname);
         }
 
         else if (this.element.leixing === '自定义0') {
