@@ -11,24 +11,32 @@ export async function launchBrowser(config) {
         executablePath: config.executablePath,
         defaultViewport: config.viewport,
         args: config.args,
+        protocolTimeout: 120000, // 增加协议超时设置为120秒，解决evaluate超时问题
     });
 }
 
-// import puppeteer from "puppeteer-core";
-// export async function launchBrowser(config) {
-//     const launchArgs = JSON.stringify({
-//         stealth: true,
-//         headless: false,
-//         args: [
-//             '--disable-setuid-sandbox',
-//             '--window-size=1280,800',
-//         ],
-//         ignoreDefaultArgs: true,
-//     });
-//     return  await puppeteer.connect({
-//         browserWSEndpoint: `wss://production-sfo.browserless.io/?token=QXoknERUGOQhXNe91655221066b3ab5962bd3b2a1a&proxy=residential&proxyCountry=us&timeout=1000000&launch=${launchArgs}`,
+
+
+// export async function launchBrowser(config, display = null) {
+//     // 构建环境变量对象
+//     const env = { ...process.env };
+    
+//     // 如果提供了显示器编号，则使用该显示器
+//     if (display) {
+//         env.DISPLAY = `:${display}`;
+//     }
+    
+//     return await puppeteer.launch({
+//         headless: config.headless,
+//         executablePath: config.executablePath,
+//         defaultViewport: config.viewport,
+//         args: config.args,
+//         protocolTimeout: 120000,
+//         env: env  // 设置环境变量
 //     });
 // }
+
+
 
 export async function launchBrowser_adsPower_bendi(adsPowerUserId) {
     console.log('config:', adsPowerUserId);
@@ -633,9 +641,10 @@ export async function setupPage(browser, cookies) {
 // }
 
 
-export async function setupPage_adsPower(browser) {
+export async function setupPage_adsPower(browser, cookies) {
     try {
         // 获取所有页面
+        
         const pages = await browser.pages();
         console.log(`当前打开的页面数量: ${pages.length}`);
 
@@ -660,10 +669,13 @@ export async function setupPage_adsPower(browser) {
         }
 
         // 创建新页面
+        
         const page = await browser.newPage().catch(e => {
             console.error('创建新页面失败:', e);
             throw e;
         });
+        await page.setCookie(...cookies);
+        
 
         // 设置页面视口
         // await page.setViewport({

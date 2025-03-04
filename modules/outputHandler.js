@@ -2,7 +2,7 @@
 // import { tasks } from "../types/music";
 import pkg from 'exceljs';
 // const { Workbook } = pkg;
-import { inserttask, findTaskList, inserttask_runcode, inserttask_cookie } from "./notes.js";
+import { inserttask, findTaskList, inserttask_runcode, inserttask_cookie, inserttask_waimai } from "./notes.js";
 import fs from 'fs';
 
 export class OutputHandler {
@@ -22,22 +22,14 @@ export class JsonOutputHandler extends OutputHandler {
 
 
 export class onlineOutputHandler extends OutputHandler {
-    // constructor() {
-    //     super();
-    //     // 使用环境变量来指定输出目录
-    //     this.outputDir = process.env.OUTPUT_DIR || '/app/output';
-    //     // 确保输出目录存在
-    //     if (!fs.existsSync(this.outputDir)) {
-    //         fs.mkdirSync(this.outputDir, { recursive: true });
-    //     }
-    // }
+
     convertJsonToCsv(jsonData) {
         const items = JSON.parse(jsonData);
         const header = Object.keys(items[0]).join(',');
         const rows = items.map(item => Object.values(item).map(value => `"${value}"`).join(','));
         return [header, ...rows].join('\n');
     }
-    async handle(data, type, task_name, cityname) {
+    async handle(data, type, task_name, cityname, user_id, tuiguang_phonenumber) {
         const maxRetries = 10;
         const retryDelay = 5000; // 1秒
 
@@ -58,15 +50,37 @@ export class onlineOutputHandler extends OutputHandler {
         if (type === 'login') {
         const jsonData = JSON.stringify(data, null, 2);
         const task = {
-            // user_email: userEmail.toString(),
-            user_email: 'test',
+            user_id:user_id,
+            tuiguang_phonenumber:tuiguang_phonenumber,
             task_name: task_name,
             cookies: jsonData,
             created_at: new Date().toISOString(),
         };
             await retryOperation(() => inserttask_cookie(task));
 
-    } else if (type === 'output') {
+    }  else if (type === 'output_waimai') {
+        let jsonData;
+        try {
+            jsonData = JSON.stringify(data, null, 2);
+        } catch (error) {
+            console.error('无法转换为 JSON 对象，将使用字符串存储:', error);
+            jsonData = String(data);  // 直接转换为字符串
+        }
+        console.log('task_name', task_name);
+        const task = {
+            user_id: user_id,
+            tuiguang_phonenumber: tuiguang_phonenumber,
+            task_name: task_name,
+            task_description: cityname,
+            run_output: jsonData,
+            created_at: new Date().toISOString(),
+            status: 1,
+        };
+        await retryOperation(() => inserttask_waimai(task));
+
+} 
+    
+    else if (type === 'output') {
             let jsonData;
             try {
                 jsonData = JSON.stringify(data, null, 2);
@@ -94,7 +108,9 @@ export class onlineOutputHandler extends OutputHandler {
             };
             await retryOperation(() => inserttask(task));
 
-        } else if (type === 'output_csv') {
+    } 
+    
+    else if (type === 'output_csv') {
             const jsonData = JSON.stringify(data, null, 2);
             console.log('task_name', task_name);
             const task = {

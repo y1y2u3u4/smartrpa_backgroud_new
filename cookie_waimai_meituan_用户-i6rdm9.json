@@ -1,0 +1,14 @@
+[
+  {
+    "domain": "waimaie.meituan.com",
+    "hostOnly": true,
+    "httpOnly": false,
+    "name": "JSESSIONID",
+    "path": "/",
+    "sameSite": "unspecified",
+    "secure": true,
+    "session": true,
+    "storeId": "0",
+    "value": "18drf0fvf6539bs6ndajopyed"
+  }
+]

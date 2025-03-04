@@ -1,0 +1,24 @@
+[
+    {
+        "url": "https://store.jddj.com/",
+        "time": "2024-09-13T17:00:52.359Z",
+        "type": "navigation"
+    },
+    {
+        "element": {
+            "tagName": "INPUT",
+            "id": "twotabsearchtextbox",
+            "className": "",
+            "name": "",
+            "innerText": "",
+            "placeholder": "",
+            "value": "关键词",
+            "leixing": "自定义4"
+        },
+        "value": "关键词",
+        "time": "2024-09-13T17:00:53.252Z",
+        "type": "click"
+    }
+]
+
+

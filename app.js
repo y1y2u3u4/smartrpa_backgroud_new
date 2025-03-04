@@ -61,7 +61,8 @@ async function handler(req, res) {
             '--window-size=1280,800',
             '--start-maximized',
         ],
-        ignoreDefaultArgs: ['--enable-automation']
+        ignoreDefaultArgs: ['--enable-automation'],
+        protocolTimeout: 120000 // 增加协议超时设置为120秒，解决evaluate超时问题
     });
     console.log('Browser launched, opening new page...');
     let page = await browser.newPage();

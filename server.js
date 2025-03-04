@@ -1,9 +1,8 @@
 // server.js
 import express from 'express';
 import cors from 'cors';
-import { handler_login, handler_run} from './handler.js';
+import { handler_login, handler_run, handler_run_base} from './handler.js';
 import axios from 'axios'; // 用于 HTTP 请求
-
 // 存储运行中的任务
 const runningTasks = new Map();
 
@@ -32,19 +31,18 @@ app.use(express.json({limit: '50mb'}));
 // 增加 URL-encoded 请求体大小限制
 app.use(express.urlencoded({limit: '50mb', extended: true}));
 app.use(express.json());
+
+/**
+ * 登录接口 - 用于自动登录并保存cookies
+ * 请求参数:
+ * - url: 登录页面URL
+ * - task_name: 任务名称，用于保存cookies
+ * - successSelectors: [可选] 自定义登录成功的CSS选择器数组，例如 ["#user-avatar", ".login-success"]
+ *   若不提供，将使用默认选择器判断登录状态
+ */
 app.post('/login', handler_login);
 app.post('/scrape', handler_run);
-
-
-
-
-
-
-// const PORT = process.env.PORT || 3001;
-// app.listen(PORT, () => {
-//     console.log(`Server is running on port ${PORT}`);
-// });
-
+app.post('/scrape_base', handler_run_base);
 
 const PORT = 8082;
 app.listen(PORT, () => {
@@ -58,3 +56,6 @@ app.listen(PORT, () => {
 
 
 // nohup  node server.js > server.log 2>&1 &
+
+
+// https://test1-container-001-506455378112.us-central1.run.app/novnc/vnc_session.html?port=6082&password=4c0e65e97298d181

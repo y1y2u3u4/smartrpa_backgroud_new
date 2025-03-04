@@ -10,14 +10,17 @@
     "build": "pkg . --targets node14-win-x64,node14-macos-x64,node14-linux-x64 --output myapp"
   },
   "dependencies": {
+    "adm-zip": "^0.5.16",
     "axios": "^1.7.2",
     "child_process": "^1.0.2",
     "cors": "^2.8.5",
     "csv-parse": "^5.5.6",
     "exceljs": "^4.4.0",
     "express": "^4.19.2",
+    "form-data": "^4.0.2",
     "fs": "^0.0.1-security",
     "node-cache": "^5.1.2",
+    "node-fetch": "^2.7.0",
     "path": "^0.12.7",
     "pg": "^8.12.0",
     "puppeteer": "^22.13.0",

@@ -4,13 +4,14 @@ import { launchBrowser, setupPage, launchBrowser_adsPower, setupPage_adsPower, c
 import { matchAndReplace, DataProcessor } from './modules/dataProcessor.js';
 import { OutputFactory } from './modules/outputHandler.js';
 // import { handleEvent } from './modules/eventHandler_3.js';
-import { inserttask, findTaskList, findTaskcookies } from "./modules/notes.js";
+import { inserttask, findTaskList, findTaskcookies, findTaskCategoryNames, findTaskDetail, findTaskinfo } from "./modules/notes.js";
+import xlsx from 'xlsx';
 import puppeteer from 'puppeteer';
 import path from 'path';
 import { taskExecutor } from './modules/taskExecutor.js';
 import { eventHandler } from './modules/eventHandler.js';
 import fs from 'fs/promises';
-
+import { processProductImages } from './modules/imageProcessor.js';
 
 async function importHandleEvent(task_name) {
     console.log('importTasks called with:', task_name);
@@ -23,7 +24,6 @@ async function importHandleEvent(task_name) {
 
     return handleEvent;
 }
-
 export async function handler_login(req, res) {
     const environment = process.env.ENVIRONMENT;
     let config;
@@ -34,226 +34,628 @@ export async function handler_login(req, res) {
     }
     const url = req.body.url;
     const task_name = req.body.task_name;
+    const user_id = req.body.user_id;
+    const tuiguang_phonenumber = req.body.tuiguang_phonenumber;
+    // 获取用户提供的登录成功选择器，如果未提供则使用默认选择器
+    const loginSuccessSelectors = req.body.successSelectors || [
+        'div.user-container',
+        '.userinfo-container .username',
+        '.userinfo-container',
+        'div#header-avatar.dropdown-wrapper--1F0hA.avatar-wrapper--10nXI'
+    ];
+    let browser;
+    let page;
+    
+    try {
+        // 使用指定显示器启动浏览器
+        browser = await launchBrowser(config.puppeteerConfig);
+        page = await setupPage(browser, config.cookies);
+    
 
-    const browser = await launchBrowser(config.puppeteerConfig);
-    let page = await setupPage(browser, config.cookies);
-    await page.setDefaultNavigationTimeout(180000); // 设置超时时间为 60 秒
+    // const browser = await launchBrowser(config.puppeteerConfig);
+    // let page = await setupPage(browser, config.cookies);
+    await page.setDefaultNavigationTimeout(180000); // 设置超时时间为 3 分钟
+    
+    console.log(`正在导航到 ${url}...`);
     await page.goto(url);
 
-
-    await Promise.race([
-        page.waitForSelector('div.user-container', { timeout: 10 * 60 * 1000 }),
-        page.waitForSelector('.userinfo-container .username', { timeout: 10 * 60 * 1000 }),
-        page.waitForSelector('.userinfo-container', { timeout: 10 * 60 * 1000 }),
-        page.waitForSelector('div#header-avatar.dropdown-wrapper--1F0hA.avatar-wrapper--10nXI', { timeout: 10 * 60 * 1000 })
-    ]);
-
+    // 创建基于用户提供的选择器或默认选择器的Promise数组
+    const selectorPromises = loginSuccessSelectors.map(selector => 
+        page.waitForSelector(selector, { timeout: 10 * 60 * 1000 })
+    );
+    
+    // 等待任一选择器出现
+    const element = await Promise.race(selectorPromises);
+    
+    // 等待用户登录过程并定期检查登录状态
+    console.log('检测到目标元素，开始监测登录状态...');
+    
+    // 为了确认包含用户信息，检查页面上的文本内容
+    let loginConfirmed = false;
+    const maxAttempts = 10; // 最大尝试次数
+    let attempts = 0;
+    
+    while (!loginConfirmed && attempts < maxAttempts) {
+        try {
+            // 检查京东外卖登录平台
+            if (url.includes('store.jddj.com')) {
+                const userText = await page.evaluate(() => {
+                    // 尝试获取用户菜单文本
+                    const userMenuText = document.querySelector('.dj-button-content')?.innerText;
+                    return userMenuText || '';
+                });
+                
+                console.log('检测到用户信息文本:', userText);
+                
+                // 如果用户文本不为空且不含有"登录"或"注册"字样，则认为登录成功
+                if (userText && !userText.includes('登录') && !userText.includes('注册')) {
+                    loginConfirmed = true;
+                    console.log('检测到登录成功状态！');
+                } else {
+                    console.log(`第 ${attempts + 1}/${maxAttempts} 次监测，未检测到登录状态，等待 30 秒后重试...`);
+                    await new Promise(resolve => setTimeout(resolve, 30000)); // 等待30秒后重新检测
+                    attempts++;
+                }
+            } else {
+                // 其他平台的默认处理，假设元素存在就表示登录成功
+                loginConfirmed = true;
+            }
+        } catch (error) {
+            console.error(`第 ${attempts + 1}/${maxAttempts} 次监测出错:`, error);
+            // 出错时进行重试而不是直接判定为成功
+            await new Promise(resolve => setTimeout(resolve, 30000)); // 等待30秒后重新检测
+            attempts++;
+        }
+    }
+    
+    if (!loginConfirmed) {
+        console.log('达到最大监测次数，仍未检测到登录状态，将继续执行...');
+        // 等待更长时间让用户手动登录
+        await new Promise(resolve => setTimeout(resolve, 10000));
+    } else {
+        console.log('成功确认登录状态！');
+    }
+    
     console.log('登录成功.');
     // 登录成功后，保存登录状态
+    // 从 URL 中提取域名
+    let domain = '';
+    try {
+        // 尝试从 URL 中提取域名
+        const urlObj = new URL(url);
+        domain = urlObj.hostname;
+        console.log(`从 URL 提取域名: ${domain}`);
+    } catch (error) {
+        console.error(`无法从 URL 提取域名: ${error.message}`);
+    }
+    
     // 获取cookies
-    const cookies = await page.cookies();
+    const allCookies = await page.cookies();
+    let cookies = allCookies;
+    
+    // 如果有效域名，则过滤特定域名的 cookies
+    if (domain) {
+        // 过滤出特定域名及其子域名的 cookies
+        cookies = allCookies.filter(cookie => {
+            // 完全匹配或者是子域名
+            return cookie.domain === domain || 
+                   cookie.domain === `.${domain}` || 
+                   domain.endsWith(cookie.domain.startsWith('.') ? cookie.domain : `.${cookie.domain}`);
+        });
+        
+        console.log(`所有 cookies: ${allCookies.length}, 过滤后的 cookies: ${cookies.length}`);
+    }
+    
     // 保存cookies到文件
     const outputHandler = OutputFactory.createOutputHandler(config.outputFormat);
-    await outputHandler.handle(JSON.stringify(cookies, null, 2), 'login', task_name);
+    await outputHandler.handle(JSON.stringify(cookies, null, 2), 'login', task_name,'cityname', user_id, tuiguang_phonenumber);
 
     console.log('保存成功.');
 
-    await new Promise(resolve => setTimeout(resolve, 200000));
-    await browser.close(); // 关闭浏览器
-    res.json({ message: 'cookies save successfully' });
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    } catch (error) {
+        console.error('自动登录过程中出错:', error);
+        if (browser) {
+            try {
+                await browser.close();
+            } catch (closeError) {
+                console.error('关闭浏览器时出错:', closeError);
+            }
+        }
+    }
+}
 
+export async function handler_run_base(req, res) {
+    // 添加未捕获异常的全局处理
+    let browser, page;
+    
+    try {
+        console.log('开始处理任务请求');
+        const environment = process.env.ENVIRONMENT;
+        let config;
+        if (environment === 'cloud') {
+            config = loadConfig('config/config.json');
+        } else {
+            config = loadConfig('config/config_off.json');
+        }
+
+        const sortedData = req.body.sortedData;
+        console.log('req.body.row:', req.body.row);
+        const rows = Array.isArray(req.body.row) ? req.body.row : [req.body.row];
+        const task_name = req.body.task_name;
+        const user_id = req.body.user_id;
+        const workflowFile = req.body.workflowFile;
+        const adsPowerUserId = req.body.adsPowerUserId || 'kn8o287';
+        const BASE_URL = req.body.BASE_URL;
+
+        // 初始化响应头
+        res.writeHead(200, {
+            'Content-Type': 'application/json',
+            'Transfer-Encoding': 'chunked'
+        });
+
+        // 发送初始状态
+        res.write(JSON.stringify({
+            status: 'initializing',
+            message: '开始执行代码'
+        }) + '\n');
+
+        //获取执行代码
+        await taskExecutor(task_name);
+        await eventHandler(task_name);
+
+        const handleEvent = await importHandleEvent(task_name);
+        console.log('task_name_0:', task_name);
+
+        // 发送状态更新
+        res.write(JSON.stringify({
+            status: 'loading',
+            message: '正在加载Cookie'
+        }) + '\n');
+
+        let cookies = [];
+        let categoryNames = [];
+        const cookieFilePath = path.join(process.cwd(), `cookie_${task_name}_${user_id}.json`);
+        try {
+            const cookieFileContent = await fs.readFile(cookieFilePath, 'utf-8');
+            cookies = JSON.parse(cookieFileContent);
+        } catch (error) {
+            if (error.code === 'ENOENT') {
+                console.log(`Cookie 文件不存在: ${cookieFilePath}，将从数据库获取`);
+                const TaskList = await findTaskcookies(task_name,user_id);
+                TaskList.sort((a, b) => b.id - a.id);
+                const latestTask = TaskList.length > 0 ? TaskList[0] : null;
+
+                if (latestTask && latestTask.cookies) {
+                    try {
+                        // 检查cookies类型
+                        if (typeof latestTask.cookies === 'string') {
+                            try {
+                                // 先尝试解析一次
+                                cookies = JSON.parse(latestTask.cookies);
+                                console.log('第一次解析后的类型:', typeof cookies);
+                                
+                                // 如果得到的仍然是字符串，可能是字符串形式的JSON，再解析一次
+                                if (typeof cookies === 'string') {
+                                    try {
+                                        cookies = JSON.parse(cookies);
+                                        console.log('第二次解析后的类型:', typeof cookies);
+                                    } catch (e) {
+                                        console.log('第二次解析失败，使用原始字符串:', e);
+                                    }
+                                }
+                                
+                                // 确保cookies是数组
+                                if (!Array.isArray(cookies)) {
+                                    console.log('解析结果不是数组，将其转换为数组');
+                                    cookies = [cookies];
+                                }
+                            } catch (parseError) {
+                                console.error('解析 task_cookies 字符串失败:', parseError);
+                                cookies = [];
+                            }
+                        } else if (typeof latestTask.cookies === 'object') {
+                            // 如果已经是对象，直接使用
+                            console.log('cookies已经是对象类型');
+                            cookies = latestTask.cookies;
+                            if (!Array.isArray(cookies)) {
+                                console.log('cookies对象不是数组格式，将其转换为数组');
+                                cookies = [cookies];
+                            }
+                        } else {
+                            console.error('意外的cookies类型:', typeof latestTask.cookies);
+                            cookies = [];
+                        }
+                        
+                        console.log('成功解析cookies，数量:', Array.isArray(cookies) ? cookies.length : 0);
+                    } catch (parseError) {
+                        console.error('处理cookies时发生错误:', parseError);
+                        cookies = [];
+                    }
+                } else {
+                    console.log('没有找到cookies或latestTask为空');
+                    cookies = [];
+                }
+
+                await fs.writeFile(cookieFilePath, JSON.stringify(cookies, null, 2));
+                console.log(`Cookies 已保存到文件: ${cookieFilePath}`);
+            } else {
+                console.error('读取 cookie 文件时发生错误:', error);
+                cookies = [];
+            }
+        }
+        // 如果是京东外卖任务，从美团外卖的数据中获取分类名称
+        if (task_name === 'waimai_jingdong') {
+            if ( workflowFile==='test_jingdong_1.json'){
+                console.log('正在获取美团外卖的分类数据...');
+                const allproducts = await findTaskCategoryNames("waimai_meituan", user_id, '商品图片信息');
+                categoryNames = allproducts.categoryNames;
+            }
+            else if ( workflowFile==='test_jingdong_2.json'){
+                try {
+                    console.log('正在获取美团外卖的分类数据...');
+                    const allproducts = await findTaskCategoryNames("waimai_meituan", user_id, '商品图片信息');
+                    categoryNames = allproducts.categoryNames;
+                    let products = allproducts.products;
+                    
+                    // 获取商品详情信息
+                    console.log('正在获取商品详情信息...');
+                    const productDetails = await findTaskDetail("waimai_meituan", user_id, '详细商品信息');
+                    console.log(`获取到的商品详情: 共${productDetails.length}项`);
+                    
+                    // 通过商品名称关联商品ID
+                    if (products && products.length > 0 && productDetails && productDetails.length > 0) {
+                        console.log('开始通过商品名称关联商品ID...');
+                        products = products.map(product => {
+                            // 查找商品详情中匹配当前商品名称的记录
+                            const matchedDetail = productDetails.find(detail => 
+                                detail.商品名称 && product.name && 
+                                detail.商品名称.trim() === product.name.trim()
+                            );
+                            
+                            // 如果找到匹配的记录，添加商品ID
+                            if (matchedDetail && matchedDetail.商品ID) {
+                                console.log(`为商品 ${product.name} 关联到ID: ${matchedDetail.商品ID}`);
+                                return {
+                                    ...product,
+                                    商品ID: matchedDetail.商品ID
+                                };
+                            }
+                            return product;
+                        });
+                        console.log(`成功关联商品ID，处理后商品数: ${products.length}`);
+                    }
+                    console.log(`获取到的分类名称: ${JSON.stringify(categoryNames)}`);
+                    // console.log(`获取到的商品信息: ${JSON.stringify(products)}`);
+                    // 获取店铺位置信息
+                    console.log('正在获取店铺位置信息...');
+                    const storeAddress = await findTaskinfo("waimai_meituan", user_id, '店铺信息');
+                    console.log(`获取到的店铺地址: ${storeAddress}`);
+                    
+                    // 从地址中提取城市信息
+                    let cityName = '';
+                    if (storeAddress && storeAddress !== '暂无地址信息' && storeAddress !== '解析错误，无法获取地址信息') {
+                        // 尝试从地址中提取城市名称（通常是地址的第二部分）
+                        const addressParts = storeAddress.split('市');
+                        if (addressParts.length > 1) {
+                            // 提取第一个“市”前面的内容
+                            const cityWithPrefix = addressParts[0];
+                            // 如果有省份则去除
+                            const provinceSuffix = cityWithPrefix.lastIndexOf('省');
+                            cityName = provinceSuffix !== -1 ? 
+                                cityWithPrefix.substring(provinceSuffix + 1) : 
+                                cityWithPrefix.split(/[省自治区特别行政区]/).pop();
+                            // 添加“市”后缀
+                            cityName = cityName + '市';
+                        } else {
+                            // 如果没有“市”字，尝试其他方式提取
+                            const cityMatches = storeAddress.match(/(?:[一-龥]+(?:省|自治区|特别行政区))?([^省区县]+?(?:市|地区|盟))/);
+                            if (cityMatches && cityMatches.length > 1) {
+                                cityName = cityMatches[1];
+                            }
+                        }
+                    }
+                    console.log(`提取到的城市名称: ${cityName}`);
+                    
+    
+                    try {
+                        // 读取Excel文件
+                        console.log('读取BatchHandleAddProductBySelf.xls文件...');
+                        const excelPath = path.join(process.cwd(), 'BatchHandleAddProductBySelf.xls');
+                        console.log(`Excel路径: ${excelPath}`);
+                        
+                        // 读取Excel文件
+                        const workbook = xlsx.readFile(excelPath);
+                        
+                        // 获取第一个sheet（商品信息）和第四个sheet（销售城市）
+                        const productSheet = workbook.Sheets[workbook.SheetNames[0]];
+                        const citySheet = workbook.Sheets[workbook.SheetNames[3]];
+                        
+                        // 将第四个sheet转换为JSON
+                        const cityData = xlsx.utils.sheet_to_json(citySheet);
+                        
+                        // 在城市数据中查找对应的城市ID
+                        let cityId = '';
+                        if (cityName) {
+                            const cityMatch = cityData.find(city => city['城市名称'] === cityName);
+                            if (cityMatch) {
+                                cityId = cityMatch['城市ID'];
+                                console.log(`找到城市ID: ${cityId}`);
+                            } else {
+                                console.log(`未找到城市 ${cityName} 的ID`);
+                            }
+                        }
+                        
+                        // 获取第一个sheet的数据
+                        const productData = xlsx.utils.sheet_to_json(productSheet, {header: 'A'});
+                        
+                        // 读取并打印表头数据，帮助确认列结构
+                        console.log('表格头部数据:');
+                        console.log(JSON.stringify(productData[0], null, 2));
+                        console.log('第二行数据:');
+                        console.log(JSON.stringify(productData[1], null, 2));
+                        
+                        // 从第四行开始填写商品数据
+                        let startRow = 3; // Excel中第4行（索引从0开始）
+                        
+                        // 动态确定列标识
+                        // 首先分析表头找到对应的列
+                        let PRODUCT_NAME_COL = null;  // 商品名称*
+                        let SKU_COL = null;           // 商家sku编码
+                        let WEIGHT_COL = null;        // 商品重量* （单位：kg）
+                        let PRICE_COL = null;          // 商品价格* （单位：元）
+                        let CATEGORY_COL = null;       // 一级店内分类
+                        let CITY_ID_COL = null;        // 销售城市ID
+                        let FINAL_CATEGORY_ID_COL = null; // 商品类目（末级类目ID）
+                        
+                        // 遍历表头行找到对应列
+                        const headers = productData[0] || {};
+                        const headerRow = productData[1] || {}; // 有时第二行才是真正的标题
+                        
+                        // 检查所有列提取列标识
+                        Object.keys(headers).forEach(col => {
+                            // 检查第一行
+                            if (headers[col] && typeof headers[col] === 'string') {
+                                if (headers[col].includes('商品名称')) PRODUCT_NAME_COL = col;
+                                if (headers[col].includes('sku') || headers[col].includes('商家sku编码')) SKU_COL = col;
+                                if (headers[col].includes('重量')) WEIGHT_COL = col;
+                                if (headers[col].includes('价格')) PRICE_COL = col;
+                                if (headers[col].includes('店内分类')) CATEGORY_COL = col;
+                                if (headers[col].includes('销售城市ID')) CITY_ID_COL = col;
+                                if (headers[col].includes('类目') || headers[col].includes('末级类目ID')) FINAL_CATEGORY_ID_COL = col;
+                            }
+                            
+                            // 检查第二行
+                            if (headerRow[col] && typeof headerRow[col] === 'string') {
+                                if (headerRow[col].includes('商品名称')) PRODUCT_NAME_COL = col;
+                                if (headerRow[col].includes('sku') || headerRow[col].includes('商家sku编码')) SKU_COL = col;
+                                if (headerRow[col].includes('重量')) WEIGHT_COL = col;
+                                if (headerRow[col].includes('价格')) PRICE_COL = col;
+                                if (headerRow[col].includes('店内分类')) CATEGORY_COL = col;
+                                if (headerRow[col].includes('销售城市ID')) CITY_ID_COL = col;
+                                if (headerRow[col].includes('类目') || headerRow[col].includes('末级类目ID')) FINAL_CATEGORY_ID_COL = col;
+                            }
+                        });
+                        
+                        // 如果没有找到，使用默认值
+                        PRODUCT_NAME_COL = PRODUCT_NAME_COL || 'C';
+                        SKU_COL = SKU_COL || 'D';
+                        WEIGHT_COL = WEIGHT_COL || 'F';
+                        PRICE_COL = PRICE_COL || 'G';
+                        CATEGORY_COL = CATEGORY_COL || 'K';
+                        CITY_ID_COL = CITY_ID_COL || 'N';
+                        FINAL_CATEGORY_ID_COL = FINAL_CATEGORY_ID_COL || 'I';
+                        
+                        // 输出最终确定的列标识
+                        console.log('确定的列标识:');
+                        console.log(`商品名称列: ${PRODUCT_NAME_COL}`);
+                        console.log(`商家sku编码列: ${SKU_COL}`);
+                        console.log(`商品重量列: ${WEIGHT_COL}`);
+                        console.log(`商品价格列: ${PRICE_COL}`);
+                        console.log(`一级店内分类列: ${CATEGORY_COL}`);
+                        console.log(`销售城市ID列: ${CITY_ID_COL}`);
+                        console.log(`商品类目(末级类目ID)列: ${FINAL_CATEGORY_ID_COL}`);
+                        
+                        // 根据图片中展示的Excel表格结构，进行手动确认
+                        // 基于用户提供的图片和要求，这里还可以手动确认
+                        // 如果自动检测不准确，可以考虑按照图片中的列序手动设置
+                        
+                        // 如果有商品详情，填入Excel
+                        if (productDetails && productDetails.length > 0) {
+                            for (let i = 0; i < productDetails.length; i++) {
+                                const product = productDetails[i];
+                                const targetRow = startRow + i;
+                                
+                                // 确保在范围内
+                                if (targetRow >= productData.length) {
+                                    // 需要添加新行
+                                    const newRow = {};
+                                    productData.push(newRow);
+                                }
+                                
+                                // 填写各字段
+                                productData[targetRow][PRODUCT_NAME_COL] = product.商品名称 || '';
+                                productData[targetRow][SKU_COL] = product.商品ID || '';
+                                const weight = product['重量(g)'] ? parseInt(product['重量(g)']) : 0;
+                                productData[targetRow][WEIGHT_COL] = weight <= 0 ? '0.500' : (weight / 1000).toFixed(3);
+                                productData[targetRow][PRICE_COL] = product.价格 || '';
+                                productData[targetRow][CATEGORY_COL] = product.分类名称 || '';
+                                productData[targetRow][CITY_ID_COL] = cityId || '';
+                                productData[targetRow][FINAL_CATEGORY_ID_COL] = '31251'; // 固定值末级类目ID
+    
+                            }
+                            
+                            // 创建新的工作簿，不修改原文件
+                            const newWorkbook = xlsx.utils.book_new();
+                            
+                            // 创建带有偏移列的数据（从第二列开始插入，第一列保持为空）
+                            const offsetData = [];
+                            for (const row of productData) {
+                                const newRow = {};
+                                // 显式设置第一列为空
+                                newRow['A'] = '';
+                                // 根据原始数据中的列位置调整到新位置（B列开始）
+                                Object.keys(row).forEach(key => {
+                                    if (key === 'A') {
+                                        // A列数据放到B列
+                                        newRow['B'] = row[key];
+                                    } else {
+                                        // 其他列向右偏移一列
+                                        const newColIndex = String.fromCharCode(key.charCodeAt(0) + 1);
+                                        newRow[newColIndex] = row[key];
+                                    }
+                                });
+                                offsetData.push(newRow);
+                            }
+                            
+                            // 将更新后的数据建立为新的sheet
+                            const newSheet = xlsx.utils.json_to_sheet(offsetData, {skipHeader: true});
+                            
+                            // 将该sheet添加到新工作簿中，并指定名称为"商品信息"
+                            xlsx.utils.book_append_sheet(newWorkbook, newSheet, '商品信息');
+                            
+                            // 生成新文件名，带有user_id后缀
+                            const newExcelPath = path.join(process.cwd(), `BatchHandleAddProductBySelf_${user_id}.xls`);
+                            
+                            // 将新工作簿写入到新文件
+                            xlsx.writeFile(newWorkbook, newExcelPath);
+                            console.log(`成功将数据写入新Excel文件: ${newExcelPath}，数据从第二列开始插入`);
+                        } else {
+                            console.log('没有商品详情数据可填写');
+                        }
+    
+                        // 处理商品图片
+                        console.log('开始处理商品图片...');
+                        try {
+                            if (products && products.length > 0) {
+                                // await processProductImages(products.slice(0, 5), user_id);
+                                await processProductImages(products, user_id);
+                            } else {
+                                console.log('没有商品图片数据可处理');
+                            }
+                        } catch (imgErr) {
+                            console.error('图片处理错误:', imgErr);
+                        }
+                        
+                    } catch (excelErr) {
+                        console.error('Excel处理错误:', excelErr);
+                    }
+                    
+                } catch (error) {
+                    console.error('获取分类名称失败:', error.message);
+                    categoryNames = [['热销推荐', '主食', '小吃', '饮品']];
+                    console.log(`使用默认分类名称: ${JSON.stringify(categoryNames)}`);
+                }}
+            else null;
+
+        }
+        // 发送浏览器初始化状态
+       
+        res.write(JSON.stringify({
+            status: 'browser_initializing',
+            message: '正在初始化浏览器'
+        }) + '\n');
+
+        // browser = await launchBrowser(config.puppeteerConfig);
+
+        browser = await launchBrowser_adsPower_lianjie_local_api(adsPowerUserId,BASE_URL);
+        // page = await setupPage(browser, cookies);
+        page = await setupPage_adsPower(browser, cookies);
+        
+
+        // 发送浏览器就绪状态
+        res.write(JSON.stringify({
+            status: 'browser_ready',
+            message: '浏览器初始化完成'
+        }) + '\n');
+
+        console.log('rowscheck:', rows);
+        
+        const sortedData_new = matchAndReplace(sortedData, rows[0])
+        let cityname = rows[0].cityname;
+        console.log('cityname:', cityname);
+        console.log('task_name:', task_name);
+        console.log('sortedData_new:', sortedData_new);
+
+        // 处理非循环事件
+        for (const [index, event] of sortedData_new.entries()) {
+            try {
+                const { type, time } = event;
+                console.log('正在处理事件:', event);
+
+                // 发送事件处理状态
+                res.write(JSON.stringify({
+                    status: 'processing',
+                    progress: `${index + 1}/${sortedData_new.length}`,
+                    message: `正在处理事件: ${type}`
+                }) + '\n');
+
+                await new Promise(resolve => setTimeout(resolve, 2000));
+                await page.bringToFront();
+
+                if (type === 'loop' && event.loopEvents) {
+                    console.log('处理循环事件的 loopEvents');
+                    event.loopEvents = matchAndReplace(event.loopEvents, rows[0]);
+                    console.log('处理后的 loopEvents:', event.loopEvents);
+                }
+
+                page = await handleEvent(event, page, browser, index, sortedData_new, task_name, cityname, user_id,categoryNames);
+
+                const currentTime = new Date(time).getTime();
+                const nextTime = sortedData_new[index + 1]
+                    ? new Date(sortedData_new[index + 1].time).getTime()
+                    : currentTime;
+                const waitTime = Math.max(2000, Math.min(nextTime - currentTime, 120000));
+                await new Promise(resolve => setTimeout(resolve, waitTime));
+
+            } catch (error) {
+                console.error(`处理非循环事件 ${index} 时出错:`, error);
+                res.write(JSON.stringify({
+                    status: 'event_error',
+                    message: `事件处理错误: ${error.message}`,
+                    eventIndex: index
+                }) + '\n');
+            }
+        }
+
+        // 发送完成状态
+        res.write(JSON.stringify({
+            status: 'success',
+            message: '任务执行完成'
+        }) + '\n');
+
+
+        
+
+    } catch (error) {
+        console.error('任务执行过程中发生错误:', error);
+        if (!res.headersSent) {
+            res.status(500).json({
+                status: 'error',
+                message: '任务执行失败',
+                error: error.message
+            });
+        } else {
+            res.write(JSON.stringify({
+                status: 'error',
+                message: '任务执行失败',
+                error: error.message
+            }) + '\n');
+            res.end();
+        }
+    } finally {
+        // 确保资源被清理
+        try {
+            await new Promise(resolve => setTimeout(resolve, 600000));
+            await page.close();
+            await browser.close();
+        } catch (cleanupError) {
+            console.error('清理资源时出错:', cleanupError);
+        }
+    }
 }
 
 
-
-
-// export async function handler_run(req, res) {
-//     console.log('开始处理任务请求');
-//     const environment = process.env.ENVIRONMENT;
-//     let config;
-//     if (environment === 'cloud') {
-//         config = loadConfig('config/config.json');
-//     } else {
-//         config = loadConfig('config/config_off.json');
-//     }
-//     const sortedData = req.body.sortedData;
-//     //变量配置match文件
-//     // const row = req.body.row;
-//     console.log('req.body.row:', req.body.row);
-//     const rows = Array.isArray(req.body.row) ? req.body.row : [req.body.row];
-//     const task_name = req.body.task_name;
-//     const leixing = req.body.leixing;
-//     const adsPowerUserId = req.body.adsPowerUserId || 'kn8o287';
-//     const BASE_URL = req.body.BASE_URL;
-//     const adsPowerId = req.body.adsPowerId || '10.128.0.3';
-
-
-//     //获取执行代码
-//     await taskExecutor(task_name);
-//     await eventHandler(task_name);
-
-//     const handleEvent = await importHandleEvent(task_name);
-//     // console.log('handleEvent_final:', handleEvent);
-//     // const task_name = 'douyin';
-//     console.log('task_name_0:', task_name);
-//     console.log('leixing:', leixing);
-//     // const TaskList = await findTaskcookies(task_name);
-//     // TaskList.sort((a, b) => b.id - a.id);
-//     // const latestTask = TaskList.length > 0 ? TaskList[0] : null;
-//     let cookies = [];
-//     const cookieFilePath = path.join(process.cwd(), `cookie_${task_name}.json`);
-//     try {
-//         // 尝试读取 cookie 文件
-//         const cookieFileContent = await fs.readFile(cookieFilePath, 'utf-8');
-//         cookies = JSON.parse(cookieFileContent);
-//         // console.log(`成功从文件读取 cookies: ${cookieFilePath}`);
-//     } catch (error) {
-//         if (error.code === 'ENOENT') {
-//             console.log(`Cookie 文件不存在: ${cookieFilePath}，将从数据库获取`);
-//             // 如果文件不存在，使用原有的查询逻辑
-//             const TaskList = await findTaskcookies(task_name);
-//             TaskList.sort((a, b) => b.id - a.id);
-//             const latestTask = TaskList.length > 0 ? TaskList[0] : null;
-
-//             if (latestTask && latestTask.cookies) {
-//                 try {
-//                     const jsonString = JSON.parse(latestTask.cookies);
-//                     cookies = JSON.parse(jsonString);
-//                 } catch (parseError) {
-//                     console.error('解析 task_cookies 失败:', parseError);
-//                     cookies = []; // 如果解析失败，设置为空数组
-//                 }
-//             } else {
-//                 cookies = []; // 如果没有找到 cookie，设置为空数组
-//             }
-
-//             // 无论是否找到 cookie，都将当前的 cookies 保存到文件
-//             await fs.writeFile(cookieFilePath, JSON.stringify(cookies, null, 2));
-//             console.log(`Cookies 已保存到文件: ${cookieFilePath}`);
-//         } else {
-//             console.error('读取 cookie 文件时发生错误:', error);
-//             cookies = []; // 如果发生其他错误，也设置为空数组
-//         }
-//     }
-
-//     // console.log('cookies', cookies);
-//     let browser, page;
-//     if (leixing == 'RPA') {        
-//         // 本地浏览器
-//         browser = await launchBrowser(config.puppeteerConfig);
-//         page = await setupPage(browser, cookies);
-//     } else {
-//         // adsPower浏览器
-//         if (environment === 'cloud') {
-//             browser = await launchBrowser_adsPower_lianjie(adsPowerUserId, adsPowerId);
-//         } else {
-//             browser = await launchBrowser_adsPower_lianjie_local(adsPowerUserId,BASE_URL);
-//             // browser = await launchBrowser_adsPower_lianjie_local(adsPowerUserId, adsPowerId);
-//         }
-//         page = await setupPage_adsPower(browser, cookies);
-//     }
-
-
-//     const monitorResults = {
-//         clicks: [],
-//         navigations: [],
-//         inputs: [],
-//         scrolls: [],
-//         keydowns: [],
-//     };
-
-//     const dataProcessor = new DataProcessor(monitorResults);
-//     dataProcessor.addMonitor(page);
-//     console.log('rowscheck:', rows);
-    
-//     const sortedData_new = matchAndReplace(sortedData, rows[0])
-//     let cityname = rows[0].cityname;
-//     console.log('cityname:', cityname);
-//     console.log('task_name:', task_name);
-//     console.log('sortedData_new:', sortedData_new);
-//     for (const [index, event] of sortedData_new.entries()) {
-//         if (event.type !== 'loop_new') {
-//             try {
-//                 const { type, time } = event;
-//                 console.log('正在处理事件:', event);
-//                 await new Promise(resolve => setTimeout(resolve, 2000));
-
-//                 await page.bringToFront();
-//                 // 如果是循环事件，先处理 loopEvents
-//                 if (type === 'loop' && event.loopEvents) {
-//                     console.log('处理循环事件的 loopEvents');
-//                     event.loopEvents = matchAndReplace(event.loopEvents, rows[0]);
-//                     console.log('处理后的 loopEvents:', event.loopEvents);
-//                 }
-//                 page = await handleEvent(event, page, browser, index, sortedData_new, task_name, cityname);
-
-//                 const currentTime = new Date(time).getTime();
-//                 const nextTime = sortedData_new[index + 1]
-//                     ? new Date(sortedData_new[index + 1].time).getTime()
-//                     : currentTime;
-//                 const waitTime = Math.max(2000, Math.min(nextTime - currentTime, 120000));
-//                 await new Promise(resolve => setTimeout(resolve, waitTime));
-//             } catch (error) {
-//                 console.error(`处理非循环事件 ${index} 时出错:`, error);
-//             }
-//         }
-//     }
-
-
-//     // 然后处理循环事件
-//     for (const [index, event] of sortedData.entries()) {
-//         if (event.type === 'loop_new') {
-//             for (const row of rows) {
-//                 try {
-//                     console.log('处理循环事件，数据行:', row);
-//                     let cityname = row.cityname;
-//                     console.log('cityname:', cityname);
-//                     await new Promise(resolve => setTimeout(resolve, 2000));
-//                     const loopEvents_new = matchAndReplace(event.loopEvents, row)
-//                     for (const loopEvent of loopEvents_new) {
-//                         try {
-//                             console.log('执行循环子事件:', loopEvent);
-//                             const { type, time } = loopEvent;
-//                             await page.bringToFront();
-//                             page = await handleEvent(loopEvent, page, browser, index, sortedData, task_name, cityname);
-//                             const currentTime = new Date(time).getTime();
-//                             const nextTime = loopEvent[index + 1]
-//                                 ? new Date(loopEvent[index + 1].time).getTime()
-//                                 : currentTime;
-//                             const waitTime = Math.max(2000, Math.min(nextTime - currentTime, 120000));
-//                             await new Promise(resolve => setTimeout(resolve, waitTime));
-//                         } catch (error) {
-//                             console.error(`处理循环子事件时出错:`, error);
-//                         }
-//                     }
-
-//                 } catch (error) {
-//                     console.error(`处理行 ${JSON.stringify(row)} 的循环事件时出错:`, error);
-//                 }
-//             }
-//         }
-//     }
-
-
-//     if (leixing == 'RPA') {
-//         // 本地浏览器
-//         await browser.close();
-//     } else {
-//         if (page && !page.isClosed()) {
-//             await page.close();
-//             console.log('adsPower页面已关闭');
-//         }
-//         // await page.close()
-//     }
-
-//     // 任务成功完成，返回成功响应
-//     res.status(200).json({
-//         status: 'success',
-//         message: '任务执行完成'
-//     });
-    
-   
-// }
 
 
 export async function handler_run(req, res) {
@@ -282,6 +684,8 @@ export async function handler_run(req, res) {
         console.log('req.body.row:', req.body.row);
         const rows = Array.isArray(req.body.row) ? req.body.row : [req.body.row];
         const task_name = req.body.task_name;
+
+        console.log('task_name:', task_name);
         const leixing = req.body.leixing;
         const adsPowerUserId = req.body.adsPowerUserId || 'kn8o287';
         const BASE_URL = req.body.BASE_URL;
@@ -327,13 +731,52 @@ export async function handler_run(req, res) {
 
                 if (latestTask && latestTask.cookies) {
                     try {
-                        const jsonString = JSON.parse(latestTask.cookies);
-                        cookies = JSON.parse(jsonString);
+                        // 检查cookies类型
+                        if (typeof latestTask.cookies === 'string') {
+                            try {
+                                // 先尝试解析一次
+                                cookies = JSON.parse(latestTask.cookies);
+                                console.log('第一次解析后的类型:', typeof cookies);
+                                
+                                // 如果得到的仍然是字符串，可能是字符串形式的JSON，再解析一次
+                                if (typeof cookies === 'string') {
+                                    try {
+                                        cookies = JSON.parse(cookies);
+                                        console.log('第二次解析后的类型:', typeof cookies);
+                                    } catch (e) {
+                                        console.log('第二次解析失败，使用原始字符串:', e);
+                                    }
+                                }
+                                
+                                // 确保cookies是数组
+                                if (!Array.isArray(cookies)) {
+                                    console.log('解析结果不是数组，将其转换为数组');
+                                    cookies = [cookies];
+                                }
+                            } catch (parseError) {
+                                console.error('解析 task_cookies 字符串失败:', parseError);
+                                cookies = [];
+                            }
+                        } else if (typeof latestTask.cookies === 'object') {
+                            // 如果已经是对象，直接使用
+                            console.log('cookies已经是对象类型');
+                            cookies = latestTask.cookies;
+                            if (!Array.isArray(cookies)) {
+                                console.log('cookies对象不是数组格式，将其转换为数组');
+                                cookies = [cookies];
+                            }
+                        } else {
+                            console.error('意外的cookies类型:', typeof latestTask.cookies);
+                            cookies = [];
+                        }
+                        
+                        console.log('成功解析cookies，数量:', Array.isArray(cookies) ? cookies.length : 0);
                     } catch (parseError) {
-                        console.error('解析 task_cookies 失败:', parseError);
+                        console.error('处理cookies时发生错误:', parseError);
                         cookies = [];
                     }
                 } else {
+                    console.log('没有找到cookies或latestTask为空');
                     cookies = [];
                 }
 
@@ -597,4 +1040,3 @@ export async function handler_run_test(params) {
     // await browser.close();
     await closeBrowser_adsPower(browser, config_adsPower.adsPowerUserId);
 }
-
