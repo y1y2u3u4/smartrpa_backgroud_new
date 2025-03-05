@@ -765,6 +765,8 @@ export async function handler_run(req, res) {
         }) + '\n');
         browser = await launchBrowser_adsPower_lianjie_local_api(adsPowerUserId,BASE_URL);
         page = await setupPage_adsPower(browser, cookies);
+        ///
+
 
         // if (leixing == 'RPA') {        
         //     browser = await launchBrowser(config.puppeteerConfig);
