@@ -188,17 +188,7 @@ export async function handler_run_base(req, res) {
         const adsPowerUserId = req.body.adsPowerUserId || 'kn8o287';
         const BASE_URL = req.body.BASE_URL;
 
-        // 初始化响应头
-        res.writeHead(200, {
-            'Content-Type': 'application/json',
-            'Transfer-Encoding': 'chunked'
-        });
 
-        // 发送初始状态
-        res.write(JSON.stringify({
-            status: 'initializing',
-            message: '开始执行代码'
-        }) + '\n');
 
         //获取执行代码
         await taskExecutor(task_name);
@@ -207,11 +197,6 @@ export async function handler_run_base(req, res) {
         const handleEvent = await importHandleEvent(task_name);
         console.log('task_name_0:', task_name);
 
-        // 发送状态更新
-        res.write(JSON.stringify({
-            status: 'loading',
-            message: '正在加载Cookie'
-        }) + '\n');
 
         let cookies = [];
         let categoryNames = [];
@@ -279,11 +264,16 @@ export async function handler_run_base(req, res) {
 
                 await fs.writeFile(cookieFilePath, JSON.stringify(cookies, null, 2));
                 console.log(`Cookies 已保存到文件: ${cookieFilePath}`);
+
+
             } else {
                 console.error('读取 cookie 文件时发生错误:', error);
                 cookies = [];
             }
         }
+
+
+
         // 如果是京东外卖任务，从美团外卖的数据中获取分类名称
         if (task_name === 'waimai_jingdong') {
             if ( workflowFile==='test_jingdong_1.json'){
@@ -551,23 +541,16 @@ export async function handler_run_base(req, res) {
         }
         // 发送浏览器初始化状态
        
-        res.write(JSON.stringify({
-            status: 'browser_initializing',
-            message: '正在初始化浏览器'
-        }) + '\n');
+
 
         // browser = await launchBrowser(config.puppeteerConfig);
 
-        browser = await launchBrowser_adsPower_lianjie_local_api(adsPowerUserId,BASE_URL);
+        browser = await launchBrowser_adsPower_lianjie_local(adsPowerUserId,BASE_URL);
         // page = await setupPage(browser, cookies);
         page = await setupPage_adsPower(browser, cookies);
         
 
-        // 发送浏览器就绪状态
-        res.write(JSON.stringify({
-            status: 'browser_ready',
-            message: '浏览器初始化完成'
-        }) + '\n');
+
 
         console.log('rowscheck:', rows);
         
@@ -583,12 +566,6 @@ export async function handler_run_base(req, res) {
                 const { type, time } = event;
                 console.log('正在处理事件:', event);
 
-                // 发送事件处理状态
-                res.write(JSON.stringify({
-                    status: 'processing',
-                    progress: `${index + 1}/${sortedData_new.length}`,
-                    message: `正在处理事件: ${type}`
-                }) + '\n');
 
                 await new Promise(resolve => setTimeout(resolve, 2000));
                 await page.bringToFront();
@@ -610,45 +587,38 @@ export async function handler_run_base(req, res) {
 
             } catch (error) {
                 console.error(`处理非循环事件 ${index} 时出错:`, error);
-                res.write(JSON.stringify({
-                    status: 'event_error',
-                    message: `事件处理错误: ${error.message}`,
-                    eventIndex: index
-                }) + '\n');
             }
         }
 
+        // if (page && !page.isClosed()) {
+        //     await page.close();
+        //     console.log('adsPower页面已关闭');
+        // }
+
         // 发送完成状态
-        res.write(JSON.stringify({
+        res.json({
             status: 'success',
             message: '任务执行完成'
-        }) + '\n');
+          });
+
 
 
         
 
     } catch (error) {
         console.error('任务执行过程中发生错误:', error);
-        if (!res.headersSent) {
-            res.status(500).json({
-                status: 'error',
-                message: '任务执行失败',
-                error: error.message
-            });
-        } else {
-            res.write(JSON.stringify({
-                status: 'error',
-                message: '任务执行失败',
-                error: error.message
-            }) + '\n');
-            res.end();
-        }
-    } finally {
+        res.status(500).json({
+            status: 'error',
+            message: '任务执行失败',
+            error: error.message
+        });
+    }
+    finally {
         // 确保资源被清理
         try {
-            await new Promise(resolve => setTimeout(resolve, 600000));
+            // await new Promise(resolve => setTimeout(resolve, 600000));
             await page.close();
-            await browser.close();
+            // await browser.close();
         } catch (cleanupError) {
             console.error('清理资源时出错:', cleanupError);
         }
@@ -793,18 +763,20 @@ export async function handler_run(req, res) {
             status: 'browser_initializing',
             message: '正在初始化浏览器'
         }) + '\n');
+        browser = await launchBrowser_adsPower_lianjie_local_api(adsPowerUserId,BASE_URL);
+        page = await setupPage_adsPower(browser, cookies);
 
-        if (leixing == 'RPA') {        
-            browser = await launchBrowser(config.puppeteerConfig);
-            page = await setupPage(browser, cookies);
-        } else {
-            if (environment === 'cloud') {
-                browser = await launchBrowser_adsPower_lianjie(adsPowerUserId, adsPowerId);
-            } else {
-                browser = await launchBrowser_adsPower_lianjie_local_api(adsPowerUserId,BASE_URL);
-            }
-            page = await setupPage_adsPower(browser, cookies);
-        }
+        // if (leixing == 'RPA') {        
+        //     browser = await launchBrowser(config.puppeteerConfig);
+        //     page = await setupPage(browser, cookies);
+        // } else {
+        //     if (environment === 'cloud') {
+        //         browser = await launchBrowser_adsPower_lianjie(adsPowerUserId, adsPowerId);
+        //     } else {
+        //         browser = await launchBrowser_adsPower_lianjie_local_api(adsPowerUserId,BASE_URL);
+        //     }
+        //     page = await setupPage_adsPower(browser, cookies);
+        // }
 
         // 发送浏览器就绪状态
         res.write(JSON.stringify({
@@ -919,15 +891,6 @@ export async function handler_run(req, res) {
             }
         }
 
-        // 清理资源
-        if (leixing == 'RPA') {
-            await browser.close();
-        } else {
-            if (page && !page.isClosed()) {
-                await page.close();
-                console.log('adsPower页面已关闭');
-            }
-        }
 
         // 发送完成状态
         res.write(JSON.stringify({
@@ -957,13 +920,12 @@ export async function handler_run(req, res) {
     } finally {
         // 确保资源被清理
         try {
-            if (browser) {
-                if (leixing == 'RPA') {
-                    await browser.close();
-                } else if (page && !page.isClosed()) {
-                    await page.close();
-                }
-            }
+        // 清理资源
+        if (page && !page.isClosed()) {
+            await page.close();
+            console.log('adsPower页面已关闭');
+        }
+        
         } catch (cleanupError) {
             console.error('清理资源时出错:', cleanupError);
         }

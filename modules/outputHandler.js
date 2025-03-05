@@ -29,7 +29,7 @@ export class onlineOutputHandler extends OutputHandler {
         const rows = items.map(item => Object.values(item).map(value => `"${value}"`).join(','));
         return [header, ...rows].join('\n');
     }
-    async handle(data, type, task_name, cityname, user_id, tuiguang_phonenumber) {
+    async handle(data, type, task_name, cityname, user_id, tuiguang_phonenumber,log_detail) {
         const maxRetries = 10;
         const retryDelay = 5000; // 1秒
 
@@ -102,7 +102,7 @@ export class onlineOutputHandler extends OutputHandler {
                 run_code: 'test',
                 run_sop: 'test',
                 run_output: jsonData,
-                log_detail: 'test',
+                log_detail: log_detail,
                 created_at: new Date().toISOString(),
                 status: 1,
             };
