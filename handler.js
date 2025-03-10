@@ -170,7 +170,7 @@ export async function handler_run_base(req, res) {
     let browser, page;
     
     try {
-        console.log('开始处理任务请求');
+        console.log('开始处理任务请求_base');
         const environment = process.env.ENVIRONMENT;
         let config;
         if (environment === 'cloud') {
@@ -185,10 +185,16 @@ export async function handler_run_base(req, res) {
         const task_name = req.body.task_name;
         const user_id = req.body.user_id;
         const workflowFile = req.body.workflowFile;
+        console.log('task_name值:', task_name, '类型:', typeof task_name);
+        console.log('条件判断结果:', task_name === 'waimai_meituan');
         let adsPowerUserId = req.body.adsPowerUserId || 'kn8o287';
-        if (task_name === 'test_meituan') {
-            adsPowerUserId ='kubsdhs';
+        console.log('初始adsPowerUserId:', adsPowerUserId);
+        if (task_name === 'waimai_meituan') {
+            adsPowerUserId = 'kubsdhs';
+            console.log('已替换为新的adsPowerUserId:', adsPowerUserId);
         } 
+        console.log('最终adsPowerUserId:', adsPowerUserId);
+        
         const BASE_URL = req.body.BASE_URL;
 
 
@@ -277,12 +283,13 @@ export async function handler_run_base(req, res) {
         function cleanCategoryNames(categoryNames) {
             console.log('原始分类名称:', categoryNames);
             if (typeof categoryNames === 'string') {
-                // 移除【】中的内容、所有表情符号和\r换行符
+                // 移除【】中的内容、所有表情符号、\r换行符和— —符号
                 return categoryNames
                     .replace(/【.*?】/g, '')
                     // 扩展表情符号匹配范围
                     .replace(/[\u{1F000}-\u{1F9FF}\u{2600}-\u{27BF}\u{2B50}\u{2B55}\u{2700}-\u{27BF}\u{2934}-\u{2935}\u{2B05}-\u{2B07}\u{3030}\u{303D}\u{3297}\u{3299}\u{FE0F}]/gu, '')
-                    .replace(/\r/g, ''); // 移除\r换行符
+                    .replace(/\r/g, '') // 移除\r换行符
+                    .replace(/—\s*—/g, ''); // 移除— —符号
             } else if (Array.isArray(categoryNames)) {
                 return categoryNames.map(item => {
                     if (Array.isArray(item)) {
@@ -292,7 +299,8 @@ export async function handler_run_base(req, res) {
                                     .replace(/【.*?】/g, '')
                                     // 扩展表情符号匹配范围
                                     .replace(/[\u{1F000}-\u{1F9FF}\u{2600}-\u{27BF}\u{2B50}\u{2B55}\u{2700}-\u{27BF}\u{2934}-\u{2935}\u{2B05}-\u{2B07}\u{3030}\u{303D}\u{3297}\u{3299}\u{FE0F}]/gu, '')
-                                    .replace(/\r/g, ''); // 移除\r换行符
+                                    .replace(/\r/g, '') // 移除\r换行符
+                                    .replace(/—\s*—/g, ''); // 移除— —符号
                             }
                             return subItem;
                         });
@@ -301,7 +309,8 @@ export async function handler_run_base(req, res) {
                             .replace(/【.*?】/g, '')
                             // 扩展表情符号匹配范围
                             .replace(/[\u{1F000}-\u{1F9FF}\u{2600}-\u{27BF}\u{2B50}\u{2B55}\u{2700}-\u{27BF}\u{2934}-\u{2935}\u{2B05}-\u{2B07}\u{3030}\u{303D}\u{3297}\u{3299}\u{FE0F}]/gu, '')
-                            .replace(/\r/g, ''); // 移除\r换行符
+                            .replace(/\r/g, '') // 移除\r换行符
+                            .replace(/—\s*—/g, ''); // 移除— —符号
                     }
                     return item;
                 });

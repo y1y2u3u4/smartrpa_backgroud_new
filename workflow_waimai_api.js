@@ -361,16 +361,6 @@ app.post('/api/workflow/start', async (req, res) => {
 app.get('/api/workflow/status', (req, res) => {
   // 从查询参数获取用户ID
   const userId = req.query.userId;
-    // 如果需要，确保正确解码
-  if (userId) {
-    try {
-      // 尝试解码一次，以防万一没有被自动解码
-      userId = decodeURIComponent(userId);
-      console.log(`处理用户ID查询: ${userId}`);
-    } catch (e) {
-      console.error(`解码用户ID失败: ${e.message}`);
-    }
-  }
     
   // 如果没有提供用户ID，返回所有工作流状态
   if (!userId) {

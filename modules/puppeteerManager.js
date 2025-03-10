@@ -632,13 +632,6 @@ export async function setupPage(browser, cookies) {
 }
 
 
-// export async function setupPage_adsPower(browser, cookies) {
-//     const page = await browser.newPage();
-//     await page.setViewport({ width: 1280, height: 720 });
-//     await page.setCookie(...cookies);
-
-//     return page;
-// }
 
 
 export async function setupPage_adsPower(browser, cookies) {
