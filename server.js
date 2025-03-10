@@ -56,6 +56,6 @@ app.listen(PORT, () => {
 
 
 // nohup  node server.js > server.log 2>&1 &
-
+// nohup  node workflow_waimai_api.js > workflow_waimai_api.log 2>&1 &
 
 // https://test1-container-001-506455378112.us-central1.run.app/novnc/vnc_session.html?port=6082&password=4c0e65e97298d181

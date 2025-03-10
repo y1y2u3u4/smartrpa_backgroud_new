@@ -47,7 +47,8 @@ const workflowStatus = {
   error: null,        // 错误信息
   startTime: null,    // 当前工作流开始时间
   endTime: null,      // 当前工作流结束时间
-  results: {}         // 每个工作流的执行结果
+  results: {},        // 每个工作流的执行结果
+  errors: []          // 错误记录
 };
 
 // 任务基础配置
@@ -360,7 +361,17 @@ app.post('/api/workflow/start', async (req, res) => {
 app.get('/api/workflow/status', (req, res) => {
   // 从查询参数获取用户ID
   const userId = req.query.userId;
-  
+    // 如果需要，确保正确解码
+  if (userId) {
+    try {
+      // 尝试解码一次，以防万一没有被自动解码
+      userId = decodeURIComponent(userId);
+      console.log(`处理用户ID查询: ${userId}`);
+    } catch (e) {
+      console.error(`解码用户ID失败: ${e.message}`);
+    }
+  }
+    
   // 如果没有提供用户ID，返回所有工作流状态
   if (!userId) {
     const totalWorkflows = workflowStatus.completed.length + workflowStatus.queue.length;
@@ -379,8 +390,10 @@ app.get('/api/workflow/status', (req, res) => {
   // 根据用户ID筛选工作流
   const userCompleted = workflowStatus.completed.filter(workflow => workflow.userId === userId);
   const userQueue = workflowStatus.queue.filter(workflow => workflow.userId === userId);
-  const userRunning = workflowStatus.running.filter(workflow => workflow.userId === userId);
-  const userErrors = workflowStatus.errors.filter(workflow => workflow.userId === userId);
+  const userRunning = workflowStatus.currentWorkflow && workflowStatus.currentWorkflow.userId === userId 
+    ? [workflowStatus.currentWorkflow] 
+    : [];
+  const userErrors = workflowStatus.errors ? workflowStatus.errors.filter(workflow => workflow.userId === userId) : [];
   
   // 计算用户特定的总体进度
   const userTotalWorkflows = userCompleted.length + userQueue.length;
