@@ -1,0 +1,187 @@
+{
+  "queue": [],
+  "running": [],
+  "completed": [],
+  "errors": [
+    {
+      "workflowFile": "kandeng.json",
+      "userId": "user_1741187015",
+      "taskConfig": {
+        "user_id": "user_1741187015",
+        "adsPowerUserId": "kn8o287",
+        "tuiguang_phonenumber": "1234567890",
+        "task_name": "kandeng_004",
+        "cityname": "Dongnanfeng_1214230147711",
+        "row": {
+          "Unnamed: 0": null,
+          "task_name": "kandeng_004",
+          "cityname": "Dongnanfeng_1214230147711",
+          "刊登店铺": "Dongnanfeng",
+          "系统SKU": 1214230147711
+        }
+      },
+      "status": "error",
+      "progress": 90,
+      "createdAt": "2025-03-05T15:03:35.086Z",
+      "startTime": "2025-03-05T15:04:16.147Z",
+      "error": "invalid json response body at http://localhost:8082/scrape reason: Unexpected non-whitespace character after JSON at position 45 (line 2 column 1)",
+      "errorAt": "2025-03-05T15:07:27.071Z"
+    },
+    {
+      "workflowFile": "kandeng.json",
+      "userId": "user_1741187015",
+      "taskConfig": {
+        "user_id": "user_1741187015",
+        "adsPowerUserId": "kn8o287",
+        "tuiguang_phonenumber": "1234567890",
+        "task_name": "kandeng_004",
+        "cityname": "Dongnanfeng_1214230147811",
+        "row": {
+          "Unnamed: 0": null,
+          "task_name": "kandeng_004",
+          "cityname": "Dongnanfeng_1214230147811",
+          "刊登店铺": "Dongnanfeng",
+          "系统SKU": 1214230147811
+        }
+      },
+      "status": "error",
+      "progress": 90,
+      "createdAt": "2025-03-05T15:03:35.466Z",
+      "startTime": "2025-03-05T15:07:27.624Z",
+      "error": "invalid json response body at http://localhost:8082/scrape reason: Unexpected non-whitespace character after JSON at position 45 (line 2 column 1)",
+      "errorAt": "2025-03-05T15:10:20.929Z"
+    },
+    {
+      "workflowFile": "kandeng.json",
+      "userId": "user_1741187015",
+      "taskConfig": {
+        "user_id": "user_1741187015",
+        "adsPowerUserId": "kn8o287",
+        "tuiguang_phonenumber": "1234567890",
+        "task_name": "kandeng_004",
+        "cityname": "Dongnanfeng_1214230147911",
+        "row": {
+          "Unnamed: 0": null,
+          "task_name": "kandeng_004",
+          "cityname": "Dongnanfeng_1214230147911",
+          "刊登店铺": "Dongnanfeng",
+          "系统SKU": 1214230147911
+        }
+      },
+      "status": "error",
+      "progress": 90,
+      "createdAt": "2025-03-05T15:03:35.876Z",
+      "startTime": "2025-03-05T15:10:20.979Z",
+      "error": "invalid json response body at http://localhost:8082/scrape reason: Unexpected non-whitespace character after JSON at position 45 (line 2 column 1)",
+      "errorAt": "2025-03-05T15:13:33.951Z"
+    },
+    {
+      "workflowFile": "kandeng.json",
+      "userId": "user_1741187016",
+      "taskConfig": {
+        "user_id": "user_1741187016",
+        "adsPowerUserId": "kn8o287",
+        "tuiguang_phonenumber": "1234567890",
+        "task_name": "kandeng_004",
+        "cityname": "Dongnanfeng_1214230148011",
+        "row": {
+          "Unnamed: 0": null,
+          "task_name": "kandeng_004",
+          "cityname": "Dongnanfeng_1214230148011",
+          "刊登店铺": "Dongnanfeng",
+          "系统SKU": 1214230148011
+        }
+      },
+      "status": "error",
+      "progress": 90,
+      "createdAt": "2025-03-05T15:03:36.269Z",
+      "startTime": "2025-03-05T15:13:34.376Z",
+      "error": "invalid json response body at http://localhost:8082/scrape reason: Unexpected non-whitespace character after JSON at position 45 (line 2 column 1)",
+      "errorAt": "2025-03-05T15:16:42.370Z"
+    },
+    {
+      "workflowFile": "kandeng.json",
+      "userId": "user_1741187016",
+      "taskConfig": {
+        "user_id": "user_1741187016",
+        "adsPowerUserId": "kn8o287",
+        "tuiguang_phonenumber": "1234567890",
+        "task_name": "kandeng_004",
+        "cityname": "Dongnanfeng_1214230150511",
+        "row": {
+          "Unnamed: 0": null,
+          "task_name": "kandeng_004",
+          "cityname": "Dongnanfeng_1214230150511",
+          "刊登店铺": "Dongnanfeng",
+          "系统SKU": 1214230150511
+        }
+      },
+      "status": "error",
+      "progress": 90,
+      "createdAt": "2025-03-05T15:03:36.439Z",
+      "startTime": "2025-03-05T15:16:42.623Z",
+      "error": "invalid json response body at http://localhost:8082/scrape reason: Unexpected non-whitespace character after JSON at position 45 (line 2 column 1)",
+      "errorAt": "2025-03-05T15:19:33.916Z"
+    },
+    {
+      "workflowFile": "kandeng.json",
+      "userId": "user_1741187016",
+      "taskConfig": {
+        "user_id": "user_1741187016",
+        "adsPowerUserId": "kn8o287",
+        "tuiguang_phonenumber": "1234567890",
+        "task_name": "kandeng_004",
+        "cityname": "Dongnanfeng_1214230151711",
+        "row": {
+          "Unnamed: 0": null,
+          "task_name": "kandeng_004",
+          "cityname": "Dongnanfeng_1214230151711",
+          "刊登店铺": "Dongnanfeng",
+          "系统SKU": 1214230151711
+        }
+      },
+      "status": "error",
+      "progress": 90,
+      "createdAt": "2025-03-05T15:03:36.671Z",
+      "startTime": "2025-03-05T15:21:42.504Z",
+      "error": "Invalid response body while trying to fetch http://localhost:8082/scrape: Premature close",
+      "errorAt": "2025-03-05T15:22:50.530Z"
+    },
+    {
+      "workflowFile": "kandeng.json",
+      "userId": "user_1741187014",
+      "taskConfig": {
+        "user_id": "user_1741187014",
+        "adsPowerUserId": "kn8o287",
+        "tuiguang_phonenumber": "1234567890",
+        "task_name": "kandeng_004",
+        "cityname": "Dongnanfeng_1214230146712",
+        "row": {
+          "Unnamed: 0": null,
+          "task_name": "kandeng_004",
+          "cityname": "Dongnanfeng_1214230146712",
+          "刊登店铺": "Dongnanfeng",
+          "系统SKU": 1214230146712
+        }
+      },
+      "status": "error",
+      "progress": 0,
+      "createdAt": "2025-03-05T15:03:34.639Z",
+      "startTime": "2025-03-05T15:22:50.920Z",
+      "error": "request to http://localhost:8082/scrape failed, reason: ",
+      "errorAt": "2025-03-05T15:22:50.931Z"
+    }
+  ],
+  "status": "completed",
+  "error": null,
+  "results": {
+    "kandeng.json": {
+      "success": false,
+      "error": "request to http://localhost:8082/scrape failed, reason: ",
+      "timestamp": "2025-03-05T15:22:50.931Z",
+      "userId": "user_1741187014"
+    }
+  },
+  "isProcessing": false,
+  "lastUpdated": "2025-03-05T15:26:49.553Z"
+}

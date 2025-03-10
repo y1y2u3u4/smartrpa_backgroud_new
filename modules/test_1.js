@@ -1,3 +1,7 @@
+
+
+
+
 (async () => {
     try {
         // 用于存储所有站点的侵权词/敏感词信息
@@ -57,34 +61,44 @@
             
             console.log(`找到 ${allCheckButtons.length} 个检测按钮`);
             
-            // 尝试找到当前可见的检测按钮
+            // 输出所有检测按钮的详细信息
+            allCheckButtons.forEach((button, idx) => {
+                const style = window.getComputedStyle(button);
+                const rect = button.getBoundingClientRect();
+                console.log(`检测按钮 ${idx+1} 详情:`);
+                console.log(`- 文本: "${button.textContent.trim()}"`);
+                console.log(`- 显示状态: display=${style.display}, visibility=${style.visibility}`);
+                console.log(`- 尺寸: width=${rect.width}, height=${rect.height}`);
+                console.log(`- 位置: top=${rect.top}, left=${rect.left}, bottom=${rect.bottom}, right=${rect.right}`);
+                console.log(`- 在视口内: ${rect.top >= 0 && rect.left >= 0 && 
+                    rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) && 
+                    rect.right <= (window.innerWidth || document.documentElement.clientWidth)}`);
+            });
+            
+            // 尝试找到当前可见的检测按钮 - 放宽条件
             let targetButton = null;
             for (const button of allCheckButtons) {
-                // 检查按钮是否可见
+                // 检查按钮是否可见 - 放宽条件
                 const style = window.getComputedStyle(button);
                 const rect = button.getBoundingClientRect();
                 
+                // 只检查基本可见性，不要求完全在视口内
                 if (style.display !== 'none' && 
                     style.visibility !== 'hidden' && 
                     rect.width > 0 && 
                     rect.height > 0) {
                     
-                    // 检查按钮是否在当前视口内
-                    const isInViewport = (
-                        rect.top >= 0 &&
-                        rect.left >= 0 &&
-                        rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
-                        rect.right <= (window.innerWidth || document.documentElement.clientWidth)
-                    );
-                    
-                    if (isInViewport) {
-                        targetButton = button;
-                        console.log('找到当前可见的检测按钮');
-                        break;
-                    }
+                    targetButton = button;
+                    console.log('找到可见的检测按钮（放宽条件）:', button.textContent.trim());
+                    break;
                 }
             }
             
+            // 如果仍然找不到按钮，尝试使用第一个按钮
+            if (!targetButton && allCheckButtons.length > 0) {
+                targetButton = allCheckButtons[0];
+                console.log('未找到可见的检测按钮，使用第一个检测按钮:', targetButton.textContent.trim());
+            }
             
             if (targetButton) {
                 console.log('找到检测按钮，准备点击');

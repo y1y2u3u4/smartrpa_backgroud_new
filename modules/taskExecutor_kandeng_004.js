@@ -134,10 +134,12 @@ export class Task {
 }
 
 export class ClickTask extends Task {
-    constructor(element, index, browser) {
+    constructor(element, index, browser,task_name, cityname) {
         super('click', element);
         this.index = index;  // 添加这一行
         this.browser = browser;
+        this.task_name = task_name;
+        this.cityname = cityname;
     }
     async execute(page) {
         console.log('page URL:', page.url());
@@ -333,7 +335,8 @@ export class ClickTask extends Task {
                 await page.evaluate(async () => {
                     // 查找包含"侵权词/敏感词"文本的span元素
                     const spans = document.querySelectorAll('.vxe-table--header .vxe-cell--title span');
-                    const sensitiveWordSpan = Array.from(spans).find(span => span.textContent.includes('侵权词/敏感词'));
+                    const sensitiveWordSpan = Array.from(spans).find(span => span.textContent.includes('侵权词') || 
+                                                                                span.textContent.includes('敏感词'));
 
                     if (sensitiveWordSpan) {
                         // 找到包含这个span的模态框
@@ -443,34 +446,44 @@ export class ClickTask extends Task {
                         
                         console.log(`找到 ${allCheckButtons.length} 个检测按钮`);
                         
-                        // 尝试找到当前可见的检测按钮
+                        // 输出所有检测按钮的详细信息
+                        allCheckButtons.forEach((button, idx) => {
+                            const style = window.getComputedStyle(button);
+                            const rect = button.getBoundingClientRect();
+                            console.log(`检测按钮 ${idx+1} 详情:`);
+                            console.log(`- 文本: "${button.textContent.trim()}"`);
+                            console.log(`- 显示状态: display=${style.display}, visibility=${style.visibility}`);
+                            console.log(`- 尺寸: width=${rect.width}, height=${rect.height}`);
+                            console.log(`- 位置: top=${rect.top}, left=${rect.left}, bottom=${rect.bottom}, right=${rect.right}`);
+                            console.log(`- 在视口内: ${rect.top >= 0 && rect.left >= 0 && 
+                                rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) && 
+                                rect.right <= (window.innerWidth || document.documentElement.clientWidth)}`);
+                        });
+                        
+                        // 尝试找到当前可见的检测按钮 - 放宽条件
                         let targetButton = null;
                         for (const button of allCheckButtons) {
-                            // 检查按钮是否可见
+                            // 检查按钮是否可见 - 放宽条件
                             const style = window.getComputedStyle(button);
                             const rect = button.getBoundingClientRect();
                             
+                            // 只检查基本可见性，不要求完全在视口内
                             if (style.display !== 'none' && 
                                 style.visibility !== 'hidden' && 
                                 rect.width > 0 && 
                                 rect.height > 0) {
                                 
-                                // 检查按钮是否在当前视口内
-                                const isInViewport = (
-                                    rect.top >= 0 &&
-                                    rect.left >= 0 &&
-                                    rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
-                                    rect.right <= (window.innerWidth || document.documentElement.clientWidth)
-                                );
-                                
-                                if (isInViewport) {
-                                    targetButton = button;
-                                    console.log('找到当前可见的检测按钮');
-                                    break;
-                                }
+                                targetButton = button;
+                                console.log('找到可见的检测按钮（放宽条件）:', button.textContent.trim());
+                                break;
                             }
                         }
                         
+                        // 如果仍然找不到按钮，尝试使用第一个按钮
+                        if (!targetButton && allCheckButtons.length > 0) {
+                            targetButton = allCheckButtons[0];
+                            console.log('未找到可见的检测按钮，使用第一个检测按钮:', targetButton.textContent.trim());
+                        }
                         
                         if (targetButton) {
                             console.log('找到检测按钮，准备点击');
@@ -479,9 +492,9 @@ export class ClickTask extends Task {
                             targetButton.scrollIntoView({ behavior: 'smooth', block: 'center' });
                             await new Promise(resolve => setTimeout(resolve, 1000));
                             
-                            // 直接点击
                             console.log('点击检测按钮');
                             targetButton.click();
+                            console.log('已点击检测按钮');
                             
                             // 等待模态框出现
                             console.log('等待模态框出现...');
@@ -1152,44 +1165,190 @@ export class OutputTask extends Task {
         else if (this.element.leixing === '自定义4') {
             this.data = await page.evaluate(() => {
                 return new Promise((resolve) => {
-                    setTimeout(() => {
+                    // 定义等待按钮可点击的函数
+                    function waitForButtonClickable(buttonSelector, maxWaitTime = 600000) { // 默认最长等待10分钟
+                        return new Promise((resolveButton, rejectButton) => {
+                            console.log(`开始等待按钮 ${buttonSelector} 可点击，最长等待时间: ${maxWaitTime / 1000}秒`);
+                            
+                            // 查找按钮的函数（处理包含文本的选择器）
+                            function findButtonByText(text) {
+                                const buttons = document.querySelectorAll('button.ivu-btn.ivu-btn-primary');
+                                for (const button of buttons) {
+                                    const span = button.querySelector('span');
+                                    if (span && span.textContent.trim() === text) {
+                                        return button;
+                                    }
+                                }
+                                return null;
+                            }
+                            
+                            // 获取按钮元素
+                            let button;
+                            if (buttonSelector.includes(':contains(')) {
+                                const text = buttonSelector.match(/:contains\("(.+?)"\)/)[1];
+                                button = findButtonByText(text);
+                            } else {
+                                button = document.querySelector(buttonSelector);
+                            }
+                            
+                            if (!button) {
+                                console.log(`未找到按钮 ${buttonSelector}，将继续执行`);
+                                return resolveButton();
+                            }
+                            
+                            // 检查按钮是否可点击
+                            function isButtonClickable(btn) {
+                                if (!btn) return false;
+                                
+                                // 检查按钮是否可见
+                                const style = window.getComputedStyle(btn);
+                                if (style.display === 'none' || style.visibility === 'hidden' || style.opacity === '0') {
+                                    return false;
+                                }
+                                
+                                // 检查按钮是否被禁用
+                                if (btn.disabled || btn.classList.contains('disabled') || btn.getAttribute('disabled')) {
+                                    return false;
+                                }
+                                
+                                return true;
+                            }
+                            
+                            // 如果按钮已经可点击，立即返回
+                            if (isButtonClickable(button)) {
+                                console.log(`按钮 ${buttonSelector} 已可点击，无需等待`);
+                                return resolveButton();
+                            }
+                            
+                            // 设置超时
+                            const timeout = setTimeout(() => {
+                                clearInterval(intervalCheck);
+                                console.log(`等待按钮 ${buttonSelector} 可点击超时，将继续执行`);
+                                resolveButton();
+                            }, maxWaitTime);
+                            
+                            // 设置轮询检查
+                            const intervalCheck = setInterval(() => {
+                                if (isButtonClickable(button)) {
+                                    clearInterval(intervalCheck);
+                                    clearTimeout(timeout);
+                                    console.log(`按钮 ${buttonSelector} 已可点击，等待结束`);
+                                    resolveButton();
+                                }
+                            }, 3000); // 每秒检查一次
+                        });
+                    }
+                    
+                    // 主执行流程
+                    async function extractData() {
                         try {
+                            // 等待"保存并提交所有站点"按钮可点击
+                            await waitForButtonClickable(':contains("保存并提交所有站点")');
+                            
+                            // 等待5秒，确保数据已加载
+                            console.log('等待5秒，确保数据已加载...');
+                            await new Promise(r => setTimeout(r, 5000));
+                            
+                            console.log('开始提取数据...');
+                            
                             // 选择包含提示内容的所有元素
                             const messages = document.querySelectorAll('.mess-box span');
-
+                            console.log(`找到 ${messages.length} 个span元素`);
+                            
+                            // 如果没有找到元素，尝试输出.mess-box的HTML结构
+                            if (messages.length === 0) {
+                                const messBox = document.querySelector('.mess-box');
+                                if (messBox) {
+                                    console.log('提示框HTML结构:');
+                                    console.log(messBox.outerHTML);
+                                } else {
+                                    console.log('未找到.mess-box元素');
+                                }
+                                
+                                // 尝试查找所有可能的消息元素
+                                console.log('尝试查找所有可能包含消息的元素...');
+                                const allSpans = document.querySelectorAll('span');
+                                
+                                // 查找包含关键词的span
+                                const relevantSpans = Array.from(allSpans).filter(span => 
+                                    span.innerText.includes('刊登失败') || 
+                                    span.innerText.includes('发现侵权词') || 
+                                    span.innerText.includes('敏感词')
+                                );
+                                
+                                console.log(`找到 ${relevantSpans.length} 个包含关键词的span元素`);
+                                
+                                if (relevantSpans.length > 0) {
+                                    // 定义一个数组来存储组合后的信息
+                                    let combinedMessages = [];
+                                    
+                                    // 处理找到的相关span
+                                    for (const span of relevantSpans) {
+                                        // 尝试找到站点名称
+                                        let siteName = '';
+                                        let message = span.innerText.trim();
+                                        
+                                        // 尝试从同级元素中找到站点名称
+                                        const siblings = span.parentElement.querySelectorAll('span');
+                                        if (siblings.length > 1) {
+                                            for (const sibling of siblings) {
+                                                if (sibling !== span && sibling.innerText.length < 20) {
+                                                    siteName = sibling.innerText.trim();
+                                                    break;
+                                                }
+                                            }
+                                        }
+                                        
+                                        // 如果没有找到站点名称，尝试从消息中提取
+                                        if (!siteName && message.includes('[') && message.includes(']')) {
+                                            const match = message.match(/\[(.*?)\]/);
+                                            if (match && match[1]) {
+                                                siteName = match[1].split('-')[0];
+                                            }
+                                        }
+                                        
+                                        const combinedMessage = `${siteName}: ${message}`;
+                                        combinedMessages.push(combinedMessage);
+                                        console.log(combinedMessage);
+                                    }
+                                    
+                                    return combinedMessages;
+                                }
+                                
+                                return [];
+                            }
+                            
                             // 定义一个数组来存储组合后的信息
                             let combinedMessages = [];
-
+                            
                             // 遍历所有的提示信息，并两两组合
                             for (let i = 0; i < messages.length; i += 2) {
                                 const combinedMessage = `${messages[i].innerText}: ${messages[i + 1] ? messages[i + 1].innerText : ''}`;
                                 combinedMessages.push(combinedMessage);
                             }
-
+                            
                             // 输出组合后的内容
                             combinedMessages.forEach(message => {
                                 console.log(message);
                             });
-
-                            resolve(combinedMessages);
+                            
+                            return combinedMessages;
                         } catch (error) {
                             console.error('数据提取过程中出错:', error);
-                            resolve([]);
+                            return [];
                         }
-                    }, 5000); // 保留5秒延迟
+                    }
+                    
+                    // 执行数据提取
+                    extractData().then(result => {
+                        resolve(result);
+                    });
                 });
             });
 
             console.log('提取的数据:', this.data);
-
-            // if (this.data && this.data.length > 0) {
-            //     outputHandler.handle(this.data, 'output', this.task_name, this.cityname);
-            // } else {
-            //     console.log('没有提取到数据或数据为空');
-            // }
             outputHandler.handle(this.data, 'output', this.task_name, this.cityname);
         }
-
         else if (this.element.leixing === '自定义0') {
             this.data = await page.evaluate(() => {
                 const shops = [];

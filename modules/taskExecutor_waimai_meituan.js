@@ -804,7 +804,6 @@ export class ClickTask extends Task {
                 }
             }
 
-
             else if (this.element.leixing === '自定义4.2') {
                 console.log('自定义4_start - 美团外卖商品获取');
                 try {
@@ -842,7 +841,7 @@ export class ClickTask extends Task {
                     // 处理可能出现的各种弹窗
                     try {
                         console.log('开始依次处理弹窗...');
-
+            
                         // 首先检测是否有iframe
                         const checkAndGetIframe = async () => {
                             const iframes = await page.$$('iframe');
@@ -888,7 +887,7 @@ export class ClickTask extends Task {
                         // 获取目标帧（iframe或主帧）
                         const targetFrame = await checkAndGetIframe() || page;
                         console.log(`将在${targetFrame === page ? '主页面' : 'iframe'}上执行操作`);
-
+            
                         
                         
                         // 检查页面上是否有弹窗，使用更全面的检测方式
@@ -1217,16 +1216,16 @@ export class ClickTask extends Task {
                             console.log('最终恢复策略也失败:', finalError.message);
                         }
                     }
-
+            
                     
                     // 等待页面内容加载完成
-
-
+            
+            
                     // 刷新页面
                     console.log('刷新页面...');
                     await page.reload({ waitUntil: 'networkidle0' });
                     console.log('页面刷新完成');
-
+            
                     // 等待页面加载
                     await new Promise(resolve => setTimeout(resolve, 3000));
                     // 收集所有分类和商品数据
@@ -1246,13 +1245,9 @@ export class ClickTask extends Task {
                     // 使用正确的frame执行评估函数
                     const frameToUse = targetFrame || page;
                     
-                    this.data = await frameToUse.evaluate(async () => {
-                        function sleep(ms) {
-                            return new Promise(resolve => setTimeout(resolve, ms));
-                        }
-                        
-                        // 获取所有分类标签
-                        const categories = Array.from(document.querySelectorAll('.tag-item_1KIyLi')).map(item => {
+                    // 1. 获取所有分类
+                    const categories = await frameToUse.evaluate(() => {
+                        return Array.from(document.querySelectorAll('.tag-item_1KIyLi')).map(item => {
                             const nameElement = item.querySelector('.name_1LJueu');
                             const countElement = item.querySelector('.count-info_2EQ9Mk');
                             return {
@@ -1260,195 +1255,304 @@ export class ClickTask extends Task {
                                 count: countElement ? countElement.textContent.replace(/[()]/g, '').trim() : '0'
                             };
                         });
+                    });
+            
+                    const allProducts = [];
+            
+                // 2. 逐个处理分类
+                for (let i = 0; i < categories.length; i++) {
+                    try {
+                        const category = categories[i];
+                        console.log(`正在处理分类: ${category.name}, 预计商品数: ${category.count}`);
                         
-                        const allProducts = [];
-                        
-                        // 对每个分类进行点击和数据收集
-                        for (let i = 0; i < categories.length; i++) {
-                            const category = categories[i];
-                            console.log(`正在处理分类: ${category.name}, 预计商品数: ${category.count}`);
-                            
-                            // 点击分类
-                            try {
+                        // 2.1 点击分类
+                        try {
+                            await frameToUse.evaluate((index) => {
                                 const tags = document.querySelectorAll('.tag-item_1KIyLi');
-                                if (tags[i]) {
-                                    tags[i].click();
-                                    await sleep(3000); // 增加商品加载等待时间
-                                    
-                                    // 检查页面是否有懒加载元素或加载指示器
-                                    const checkForLazyLoadElements = () => {
-                                        const lazyLoadElements = document.querySelectorAll('.lazy-load-image-background:not(.lazy-load-image-loaded)');
-                                        const loadingIndicators = document.querySelectorAll('.loading, .spinner, .skeleton');
-                                        return lazyLoadElements.length > 0 || loadingIndicators.length > 0;
-                                    };
-                                    
-                                    // 使用固定滚动距离，只滚动两次长距离确保所有商品加载
-                                    console.log('开始执行优化后的滚动策略，确保全部图片加载');
-                                    
-                                    // 优化的滚动策略 - 只滚动两次但距离更长
-                                    // 第一次滚动 - 滚动到页面中间
-                                    const middlePosition = Math.floor(document.body.scrollHeight / 2);
-                                    window.scrollTo(0, middlePosition);
-                                    console.log(`第一次滚动: 滚动到页面中间位置 ${middlePosition}px`);
-                                    await sleep(2000); // 给足够时间确保图片加载
-                                    
-                                    // 第二次滚动 - 直接滚动到底部，确保触发所有懒加载
-                                    window.scrollTo(0, document.body.scrollHeight);
-                                    console.log(`第二次滚动: 滚动到页面底部 ${document.body.scrollHeight}px`);
-                                    await sleep(2200); // 给底部商品够的加载时间
-                                    
-                                    // 最后滚动回顶部
-                                    window.scrollTo(0, 0);
-                                    await sleep(1000); // 等待时间缩短
-                                    console.log('滚动完成，使用优化后的滚动次数，应该已加载全部图片');
-                                    
-                                    // 如果还有懒加载元素，额外等待
-                                    if (checkForLazyLoadElements()) {
-                                        await sleep(2000); // 额外等待懒加载元素
-                                    }
-                                    
-                                    // 收集当前分类下的所有商品
-                                    const products = Array.from(document.querySelectorAll('.product-card_3h3efl')).map(card => {
-                                        try {
-                                            const nameElement = card.querySelector('.title_1jeSVk input.roo-input');
-                                            const priceElement = card.querySelector('.price_2yPEAp span');
-                                            const salesElement = card.querySelector('.sell-count_1zxp8m span');
-                                            const stockElement = card.querySelector('.sell-count_1zxp8m span:nth-child(2)');
-                                            // 进一步优化图片选择器，适配各种嵌套结构
-                                            let imageElement = null;
-                                            // 尝试多种选择器组合 - 优化选择器的顺序和方式
-                                            const selectors = [
-                                                '.card-image_ipCCmq img', 
-                                                '.card-image_2XwWXy img',
-                                                '.picture-container img',
-                                                '.roo-b-lazy-image img',
-                                                'img'
-                                            ];
-                                            
-                                            // 逐层深入查找图片元素
-                                            for (const selector of selectors) {
-                                                try {
-                                                    const img = card.querySelector(selector);
-                                                    if (img) {
-                                                        imageElement = img;
-                                                        break;
-                                                    }
-                                                } catch (err) {
-                                                    console.log(`选择器 ${selector} 查找失败: ${err.message}`);
-                                                }
-                                            }
-                                            
-                                            // 如果还是没找到图片元素，尝试其他方法
-                                            if (!imageElement) {
-                                                // 尝试直接获取卡片内的所有img元素
-                                                const allImages = card.querySelectorAll('img');
-                                                if (allImages && allImages.length > 0) {
-                                                    imageElement = allImages[0];
-                                                }
-                                            }
-                                            const newTagElement = card.querySelector('.tag_3zi8jG');
-                                            
-                                            // 深度提取图片链接 - 增强提取能力
-                                            let imageUrl = '';
-                                            try {
-                                                if (imageElement) {
-                                                    // 方法1: 直接通过src属性
-                                                    if (imageElement.src) {
-                                                        imageUrl = imageElement.src;
-                                                    } 
-                                                    // 方法2: 通过getAttribute获取src
-                                                    else if (imageElement.getAttribute && imageElement.getAttribute('src')) {
-                                                        imageUrl = imageElement.getAttribute('src');
-                                                    }
-                                                    // 方法3: 通过dataset获取
-                                                    else if (imageElement.dataset && imageElement.dataset.src) {
-                                                        imageUrl = imageElement.dataset.src;
-                                                    }
-                                                    // 方法4: 查找style中的背景图片
-                                                    else if (imageElement.style && imageElement.style.backgroundImage) {
-                                                        const bgImg = imageElement.style.backgroundImage;
-                                                        const urlMatch = bgImg.match(/url\(['"](.*?)['"]\)/i);
-                                                        if (urlMatch && urlMatch[1]) {
-                                                            imageUrl = urlMatch[1];
-                                                        }
-                                                    }
-                                                    // 方法5: 检查父元素是否有背景图片
-                                                    else if (imageElement.parentElement) {
-                                                        const parentStyle = window.getComputedStyle(imageElement.parentElement);
-                                                        if (parentStyle && parentStyle.backgroundImage && parentStyle.backgroundImage !== 'none') {
-                                                            const bgImg = parentStyle.backgroundImage;
-                                                            const urlMatch = bgImg.match(/url\(['"](.*?)['"]\)/i);
-                                                            if (urlMatch && urlMatch[1]) {
-                                                                imageUrl = urlMatch[1];
-                                                            }
-                                                        }
-                                                    }
-                                                }
-                                                
-                                                // 如果还是没找到图片URL，尝试直接查找卡片中所有可能的图片URL
-                                                if (!imageUrl) {
-                                                    // 查找卡片中所有具有src属性的元素
-                                                    const elementsWithSrc = card.querySelectorAll('[src]');
-                                                    if (elementsWithSrc && elementsWithSrc.length > 0) {
-                                                        for (const el of elementsWithSrc) {
-                                                            if (el.src && el.src.includes('meituan')) {
-                                                                imageUrl = el.src;
-                                                                break;
-                                                            }
-                                                        }
-                                                    }
-                                                }
-                                                
-                                                // 检查是否是相对路径，如果是就转换为绝对路径
-                                                if (imageUrl && imageUrl.startsWith('/')) {
-                                                    imageUrl = 'https://waimaie.meituan.com' + imageUrl;
-                                                }
-                                            } catch (err) {
-                                                console.log(`提取图片URL时出错: ${err.message}`);
-                                            }
-                                            
-                                            return {
-                                                category: category.name,
-                                                name: nameElement ? nameElement.value.trim() : 'unknown',
-                                                price: priceElement ? priceElement.textContent.replace('¥', '').trim() : '0',
-                                                sales: salesElement ? salesElement.textContent.replace('月售', '').trim() : '0',
-                                                stock: stockElement ? stockElement.textContent.replace('库存', '').trim() : 'unknown',
-                                                image: imageUrl,
-                                                isNew: newTagElement ? newTagElement.textContent.includes('新品') : false,
-                                                timestamp: new Date().toISOString()
-                                            };
-                                        } catch (error) {
-                                            console.error(`解析商品卡片出错: ${error.message}`);
-                                            return null;
-                                        }
-                                    }).filter(Boolean);
-                                    
-                                    // 将商品添加到总列表中
-                                    products.forEach(product => {
-                                        allProducts.push(product);
-                                    });
-                                    
-                                    console.log(`已收集 ${products.length} 个商品`);
+                                if (tags[index]) {
+                                    tags[index].click();
                                 }
-                            } catch (clickError) {
-                                console.error(`点击分类 ${category.name} 时出错: ${clickError.message}`);
-                            }
+                            }, i);
+                        } catch (error) {
+                            console.error(`点击分类时出错: ${error.message}，继续执行`);
                         }
                         
-                        return {
-                            categories: categories,
-                            products: allProducts,
-                            totalProductCount: allProducts.length,
-                            shopInfo: {
-                                timestamp: new Date().toISOString(),
-                                platform: '美团外卖'
+                        // 等待加载
+                        await frameToUse.waitForTimeout(3000);
+                        
+                        // 2.2 执行滚动加载
+                        try {
+                            await frameToUse.evaluate(() => {
+                                return new Promise((resolve) => {
+                                    const scrollStep = 400;
+                                    let currentPosition = 0;
+                                    let scrollCount = 0;
+                                    
+                                    const scrollInterval = setInterval(() => {
+                                        currentPosition += scrollStep;
+                                        window.scrollTo({
+                                            top: currentPosition,
+                                            behavior: 'smooth'
+                                        });
+                                        
+                                        scrollCount++;
+                                        if (scrollCount >= 10) {
+                                            clearInterval(scrollInterval);
+                                            window.scrollTo(0, 0);
+                                            resolve();
+                                        }
+                                    }, 1200);
+                                });
+                            });
+                        } catch (error) {
+                            console.error(`滚动加载时出错: ${error.message}，继续执行`);
+                        }
+                        
+                        // 2.3 获取总页数
+                        let totalPages = 1;
+                        try {
+                            totalPages = await frameToUse.evaluate(() => {
+                                try {
+                                    const hasPagination = document.querySelector('.pagination-wrap_2TyJ2R') !== null;
+                                    if (!hasPagination) return 1;
+                                    
+                                    const pageItems = Array.from(document.querySelectorAll('.roo-pagination li:not(.arrow)'));
+                                    const pageNumbers = pageItems
+                                        .map(item => {
+                                            const text = item.textContent.trim();
+                                            return isNaN(parseInt(text)) ? 0 : parseInt(text);
+                                        })
+                                        .filter(num => num > 0);
+                                    
+                                    return pageNumbers.length > 0 ? Math.max(...pageNumbers) : 1;
+                                } catch (error) {
+                                    return 1;
+                                }
+                            });
+                        } catch (error) {
+                            console.error(`获取总页数时出错: ${error.message}，默认为1页`);
+                        }
+                        
+                        // 2.4 逐页处理
+                        let currentCategory = category && category.name ? category.name : "未知分类";
+                        for (let currentPage = 1; currentPage <= totalPages; currentPage++) {
+                            try {
+                                console.log(`正在处理分类 ${currentCategory} 的第 ${currentPage}/${totalPages} 页...`);
+                                
+                                // 如果不是第一页，点击翻页
+                                if (currentPage > 1) {
+                                    let pageChanged = false;
+                                    try {
+                                        pageChanged = await frameToUse.evaluate((page) => {
+                                            try {
+                                                const specificPageBtn = Array.from(document.querySelectorAll('.roo-pagination li:not(.arrow)'))
+                                                    .find(item => item.textContent.trim() === page.toString());
+                                                
+                                                if (specificPageBtn) {
+                                                    specificPageBtn.click();
+                                                    return true;
+                                                } else {
+                                                    const nextPageBtn = document.querySelector('.roo-pagination li.arrow:not(.disabled) a');
+                                                    if (nextPageBtn) {
+                                                        nextPageBtn.click();
+                                                        return true;
+                                                    }
+                                                }
+                                                return false;
+                                            } catch (error) {
+                                                return false;
+                                            }
+                                        }, currentPage);
+                                    } catch (error) {
+                                        console.error(`翻页操作出错: ${error.message}，继续执行`);
+                                    }
+                                    
+                                    if (!pageChanged) {
+                                        console.log('无法翻页，但将继续尝试处理当前页');
+                                    }
+                                    
+                                    // 等待页面加载
+                                    await frameToUse.waitForTimeout(2500);
+                                    
+                                    // 执行滚动
+                                    try {
+                                        await frameToUse.evaluate(() => {
+                                            return new Promise((resolve) => {
+                                                const scrollStep = 400;
+                                                let currentPosition = 0;
+                                                let scrollCount = 0;
+                                                
+                                                const scrollInterval = setInterval(() => {
+                                                    currentPosition += scrollStep;
+                                                    window.scrollTo({
+                                                        top: currentPosition,
+                                                        behavior: 'smooth'
+                                                    });
+                                                    
+                                                    scrollCount++;
+                                                    if (scrollCount >= 10) {
+                                                        clearInterval(scrollInterval);
+                                                        window.scrollTo(0, 0);
+                                                        resolve();
+                                                    }
+                                                }, 1200);
+                                            });
+                                        });
+                                    } catch (error) {
+                                        console.error(`滚动页面时出错: ${error.message}，继续执行`);
+                                    }
+                                }
+                                
+                                // 2.5 提取当前页商品数据
+                                let pageProducts = [];
+                                try {
+                                    pageProducts = await frameToUse.evaluate((currentCategoryParam) => {
+                                        console.log('开始提取商品数据...');
+                                        const currentCategory = currentCategoryParam || "未知分类";
+                                        
+                                        // 尝试多种可能的商品卡片选择器
+                                        const selectors = [
+                                            '.product-card_3h3efl',
+                                            '.item-card_2VWbNS',
+                                            '.product-item',
+                                            '[class*="product-card"]',
+                                            '[class*="item-card"]',
+                                            '.food-card',
+                                            '.dish-item'
+                                        ];
+                                        
+                                        let productElements = [];
+                                        let usedSelector = '';
+                                        
+                                        // 尝试所有可能的选择器
+                                        for (const selector of selectors) {
+                                            const elements = document.querySelectorAll(selector);
+                                            console.log(`选择器 "${selector}" 匹配了 ${elements.length} 个元素`);
+                                            
+                                            if (elements.length > 0) {
+                                                productElements = Array.from(elements);
+                                                usedSelector = selector;
+                                                break;
+                                            }
+                                        }
+                                        
+                                        if (productElements.length === 0) {
+                                            console.log('未找到任何商品元素，输出页面结构以帮助调试:');
+                                            // 输出页面中的一些关键元素
+                                            const bodyClasses = document.body.className;
+                                            const mainContainers = document.querySelectorAll('div[class*="container"]').length;
+                                            console.log(`Body类名: ${bodyClasses}, 主容器数量: ${mainContainers}`);
+                                            console.log(`页面HTML片段: ${document.body.innerHTML.substring(0, 500)}`);
+                                            return [];
+                                        }
+                                        
+                                        console.log(`使用选择器 "${usedSelector}" 找到 ${productElements.length} 个商品`);
+                                        
+                                        // 根据找到的选择器调整数据提取逻辑
+                                        return productElements.map((card, index) => {
+                                            try {
+                                                console.log(`提取第 ${index+1} 个商品数据`);
+                                                
+                                                // 尝试多种可能的名称选择器
+                                                let name = '未知商品';
+                                                const nameSelectors = [
+                                                    '.title_1jeSVk input.roo-input',
+                                                    '.title input',
+                                                    '[class*="title"] input',
+                                                    '[class*="name"]',
+                                                    '[class*="title"]'
+                                                ];
+                                                
+                                                for (const selector of nameSelectors) {
+                                                    const element = card.querySelector(selector);
+                                                    if (element) {
+                                                        name = element.value || element.textContent.trim();
+                                                        if (name) break;
+                                                    }
+                                                }
+                                                
+                                                // 尝试多种可能的价格选择器
+                                                let price = '0';
+                                                const priceSelectors = [
+                                                    '.price_2yPEAp span',
+                                                    '[class*="price"] span',
+                                                    '[class*="price"]'
+                                                ];
+                                                
+                                                for (const selector of priceSelectors) {
+                                                    const element = card.querySelector(selector);
+                                                    if (element) {
+                                                        price = element.textContent.trim();
+                                                        if (price) break;
+                                                    }
+                                                }
+                                                
+                                                // 尝试获取图片
+                                                let imgSrc = '';
+                                                const img = card.querySelector('img');
+                                                if (img) imgSrc = img.src || '';
+                                                
+                                                return {
+                                                    category: currentCategory,
+                                                    name,
+                                                    price,
+                                                    image: imgSrc
+                                                };
+                                            } catch (error) {
+                                                console.log(`提取商品 ${index+1} 数据时出错: ${error.message}`);
+                                                return {
+                                                    category: currentCategory,
+                                                    name: '提取错误',
+                                                    price: '0',
+                                                    image: '',
+                                                    error: error.message
+                                                };
+                                            }
+                                        });
+                                    }, currentCategory);
+                                } catch (error) {
+                                    console.error(`提取商品数据时出错: ${error.message}，继续执行`);
+                                    pageProducts = [];
+                                }
+                                
+                                try {
+                                    if (pageProducts && pageProducts.length > 0 && pageProducts[0]) {
+                                        console.log(`第一个商品分类: ${pageProducts[0].category || '未知'}`);
+                                    }
+                                    console.log(`从分类 ${currentCategory} 第 ${currentPage} 页提取到 ${pageProducts.length} 个商品`);
+                                    
+                                    // 添加到总结果
+                                    if (pageProducts && pageProducts.length > 0) {
+                                        allProducts.push(...pageProducts);
+                                    }
+                                } catch (error) {
+                                    console.error(`处理提取结果时出错: ${error.message}，继续执行`);
+                                }
+                            } catch (pageError) {
+                                console.error(`处理第 ${currentPage} 页时出错: ${pageError.message}，继续下一页`);
+                                continue;
                             }
-                        };
-                    });
-                    
+                        }
+                    } catch (categoryError) {
+                        console.error(`处理分类 ${i} 时出错: ${categoryError.message}，继续下一个分类`);
+                        continue;
+                    }
+                }
+                    // 在最后添加这些代码
+                    console.log(`所有分类处理完毕，总共收集到 ${allProducts.length} 个商品`);
+                    this.data = {
+                        categories: categories,
+                        products: allProducts,
+                        totalProductCount: allProducts.length,
+                        shopInfo: {
+                            timestamp: new Date().toISOString(),
+                            platform: '美团外卖'
+                        }
+                    };
+            
                     console.log(`数据收集完成! 总共收集 ${this.data.products ? this.data.products.length : 0} 个商品，${this.data.categories ? this.data.categories.length : 0} 个分类`);
                     
-                    if (this.data && this.data.products && this.data.products.length > 0) {
+                    if (this.data && this.data.products.length > 0) {
                         outputHandler.handle(this.data, 'output_waimai', this.task_name,"商品图片信息", this.user_id, this.tuiguang_phonenumber);
                         console.log('商品数据已成功保存');
                     } else {
@@ -1459,427 +1563,11 @@ export class ClickTask extends Task {
                     throw error;
                 }
             }
+
+
             else if (this.element.leixing === '自定义5') {
                 console.log('自定义4_start - 美团外卖商品获取');
                 try {
-                    // 第一步：点击商品管理
-                    // console.log('正在查找并点击商品管理...');
-                    // await page.waitForSelector('div.menu-item_1AO3bt i.icon-wmbmenu-productmanage', { timeout: 10000 });
-                    // await page.evaluate(() => {
-                    //     const menuItem = document.querySelector('div.menu-item_1AO3bt i.icon-wmbmenu-productmanage').closest('div.menu-item_1AO3bt');
-                    //     if (!menuItem) {
-                    //         throw new Error('未找到商品管理菜单');
-                    //     }
-                    //     menuItem.click();
-                    //     console.log('已点击商品管理菜单');
-                    // });
-                    
-                    // // 等待子菜单加载
-                    // await new Promise(resolve => setTimeout(resolve, 1000));
-                    
-                    // // 第二步：点击商品列表
-                    // console.log('正在查找并点击商品列表...');
-                    // await page.waitForSelector('li.sub-menu-item_12D-nq span.txt_3ycVal', { timeout: 5000 });
-                    // await page.evaluate(() => {
-                    //     const subMenuItems = Array.from(document.querySelectorAll('li.sub-menu-item_12D-nq span.txt_3ycVal'));
-                    //     const productListItem = subMenuItems.find(item => item.textContent.includes('商品列表'));
-                    //     if (!productListItem) {
-                    //         throw new Error('未找到商品列表子菜单');
-                    //     }
-                    //     productListItem.click();
-                    //     console.log('已点击商品列表子菜单');
-                    // });
-                    
-                    // // 等待页面加载
-                    // await new Promise(resolve => setTimeout(resolve, 2000));
-                    
-                    // // 处理可能出现的各种弹窗
-                    // try {
-                    //     console.log('开始依次处理弹窗...');
-
-                    //     // 首先检测是否有iframe
-                    //     const checkAndGetIframe = async () => {
-                    //         const iframes = await page.$$('iframe');
-                    //         console.log(`在主页面上找到 ${iframes.length} 个iframe`);
-                            
-                    //         if (iframes.length > 0) {
-                    //             // 列出iframe的一些属性便于调试
-                    //             const iframeInfo = await page.evaluate(() => {
-                    //                 return Array.from(document.querySelectorAll('iframe')).map(iframe => {
-                    //                     return {
-                    //                         id: iframe.id,
-                    //                         name: iframe.name,
-                    //                         src: iframe.src,
-                    //                         class: iframe.className
-                    //                     };
-                    //                 });
-                    //             });
-                                
-                    //             console.log('找到的iframe信息:', JSON.stringify(iframeInfo, null, 2));
-                                
-                    //             // 获取所有帧
-                    //             const frames = await page.frames();
-                    //             console.log(`总共有 ${frames.length} 个帧`);
-                                
-                    //             // 优先查找名为 hashframe 的iframe
-                    //             let targetFrame = frames.find(f => f.name() === 'hashframe');
-                                
-                    //             // 如果没找到，则选择第一个非主帧
-                    //             if (!targetFrame) {
-                    //                 targetFrame = frames.find(f => f !== page.mainFrame());
-                    //             }
-                                
-                    //             if (targetFrame) {
-                    //                 console.log(`已定位到目标iframe: ${targetFrame.name() || '未命名'}`);
-                    //                 return targetFrame;
-                    //             }
-                    //         }
-                            
-                    //         console.log('未找到iframe，将在主页面上操作');
-                    //         return null;
-                    //     };
-                        
-                    //     // 获取目标帧（iframe或主帧）
-                    //     const targetFrame = await checkAndGetIframe() || page;
-                    //     console.log(`将在${targetFrame === page ? '主页面' : 'iframe'}上执行操作`);
-
-                        
-                        
-                    //     // 检查页面上是否有弹窗，使用更全面的检测方式
-                    //     const checkForModal = async () => {
-                    //         return await targetFrame.evaluate(() => {
-                    //             // 输出整个页面中所有的modal和弹窗相关元素，帮助调试
-                    //             console.log('调试: 开始检查所有可能的弹窗元素');
-                                
-                    //             // 获取所有可能是弹窗的元素
-                    //             const allModals = document.querySelectorAll('.roo-modal, .roo-modal-dialog, [class*="Modal"], [class*="modal"]');
-                    //             console.log(`调试: 找到 ${allModals.length} 个可能的弹窗元素`);
-                                
-                    //             // 特别检测高z-index的全屏覆盖元素（可能是弹窗背景或容器）
-                    //             const highZIndexElements = Array.from(document.querySelectorAll('body > div'))
-                    //                 .filter(div => {
-                    //                     const style = window.getComputedStyle(div);
-                    //                     const zIndex = parseInt(style.zIndex);
-                    //                     const position = style.position;
-                    //                     // 打印所有顶层div的z-index和定位信息
-                    //                     console.log(`调试: 顶层div - id=${div.id}, class=${div.className}, z-index=${zIndex}, position=${position}`);
-                    //                     return !isNaN(zIndex) && zIndex > 100 && (position === 'absolute' || position === 'fixed');
-                    //                 });
-                    //             console.log(`调试: 找到 ${highZIndexElements.length} 个高z-index的全屏元素`);
-                                
-                    //             // 输出每个可能的弹窗的类名和内容摘要
-                    //             allModals.forEach((modal, index) => {
-                    //                 console.log(`调试: 弹窗 #${index+1} 类名=${modal.className}, 内容=${modal.textContent.substring(0, 50)}...`);
-                    //             });
-                                
-                    //             highZIndexElements.forEach((elem, index) => {
-                    //                 console.log(`调试: 高z-index元素 #${index+1} id=${elem.id}, 类名=${elem.className}, 内容=${elem.textContent.substring(0, 50)}...`);
-                    //             });
-                                
-                    //             // 检查所有带"我知道了"按钮的元素
-                    //             const knowButtons = Array.from(document.querySelectorAll('button'))
-                    //                 .filter(btn => btn.textContent.includes('我知道了'));
-                    //             console.log(`调试: 找到 ${knowButtons.length} 个"我知道了"按钮`);
-                                
-                    //             // 检查是否有任何套餐相关的元素
-                    //             const comboElements = document.querySelectorAll('[class*="combo"], [class*="Combo"]');
-                    //             console.log(`调试: 找到 ${comboElements.length} 个套餐相关元素`);
-                                
-                    //             // 检查普通弹窗
-                    //             const hasRegularModal = document.querySelector('.roo-modal') !== null;
-                                
-                    //             // 检查各种可能的套餐弹窗选择器
-                    //             const hasComboModal = document.querySelector('[class*="comboModalWrap"]') !== null;
-                                
-                    //             // 检查弹窗中是否包含特定标题
-                    //             const hasTitleModal = Array.from(document.querySelectorAll('.roo-modal-title'))
-                    //                 .some(title => title.textContent.includes('新版套餐功能上线'));
-                                
-                    //             // 检查高z-index元素
-                    //             const hasHighZIndexOverlay = highZIndexElements.length > 0;
-                                
-                    //             // 特别为用户提供的HTML代码检查特定结构
-                    //             const hasSpecificLayout = document.querySelector('div[style*="position: absolute"][style*="z-index: 1001"]') !== null;
-                                
-                    //             // 检查按钮
-                    //             const hasKnowButton = knowButtons.length > 0;
-                                
-                    //             console.log(`检测弹窗: 普通=${hasRegularModal}, 套餐=${hasComboModal}, 标题=${hasTitleModal}, 高z元素=${hasHighZIndexOverlay}, 特定结构=${hasSpecificLayout}, 按钮=${hasKnowButton}`);
-                                
-                    //             // 任何一种弹窗存在都返回true
-                    //             return hasRegularModal || hasComboModal || hasTitleModal || hasKnowButton || hasHighZIndexOverlay || hasSpecificLayout || (allModals.length > 0);
-                    //         });
-                    //     };
-                        
-                    //     // 点击空白处或弹窗按钮关闭弹窗
-                    //     const clickEmptySpace = async () => {
-                    //         // 执行页面内的点击逻辑
-                    //         return await targetFrame.evaluate(() => {
-                    //             console.log('开始处理弹窗...');
-                                
-                    //             // 辅助函数：记录点击操作
-                    //             const logClick = (element, description) => {
-                    //                 console.log(`点击了 ${description}: ${element ? 
-                    //                     (element.tagName + (element.className ? '.' + element.className : '')) : 
-                    //                     '未知元素'}`);
-                    //                 return true;
-                    //             };
-                                
-                    //             // 1. 优先查找并点击所有"我知道了"按钮
-                    //             const knowButtons = Array.from(document.querySelectorAll('button'))
-                    //                 .filter(btn => btn.textContent.includes('我知道了'));
-                                
-                    //             if (knowButtons.length > 0) {
-                    //                 knowButtons[0].click();
-                    //                 return logClick(knowButtons[0], '"我知道了"按钮');
-                    //             }
-                                
-                    //             // 2. 查找任何可能的弹窗按钮
-                    //             const modalButtons = document.querySelectorAll('.roo-modal button, .roo-modal-dialog button, [class*="modal"] button');
-                    //             if (modalButtons.length > 0) {
-                    //                 // 点击第一个按钮
-                    //                 modalButtons[0].click();
-                    //                 return logClick(modalButtons[0], '弹窗按钮');
-                    //             }
-                                
-                    //             // 3. 特别检查套餐相关按钮
-                    //             const comboButtons = document.querySelectorAll('[class*="combo"] button, [class*="Combo"] button');
-                    //             if (comboButtons.length > 0) {
-                    //                 comboButtons[0].click();
-                    //                 return logClick(comboButtons[0], '套餐相关按钮');
-                    //             }
-                                
-                    //             // 4. 查找任何弹窗关闭按钮
-                    //             const closeButtons = document.querySelectorAll('.roo-modal-close, .close, [class*="close"]');
-                    //             if (closeButtons.length > 0) {
-                    //                 closeButtons[0].click();
-                    //                 return logClick(closeButtons[0], '关闭按钮');
-                    //             }
-                                
-                    //             // 5. 检查高z-index元素 - 重新定义以解决作用域问题
-                    //             const highZElements = Array.from(document.querySelectorAll('body > div'))
-                    //                 .filter(div => {
-                    //                     const style = window.getComputedStyle(div);
-                    //                     const zIndex = parseInt(style.zIndex);
-                    //                     const position = style.position;
-                    //                     return !isNaN(zIndex) && zIndex > 100 && (position === 'absolute' || position === 'fixed');
-                    //                 });
-                                
-                    //             if (highZElements.length > 0) {
-                    //                 // 找到最高z-index的元素
-                    //                 const topElement = highZElements.sort((a, b) => {
-                    //                     const aZIndex = parseInt(window.getComputedStyle(a).zIndex) || 0;
-                    //                     const bZIndex = parseInt(window.getComputedStyle(b).zIndex) || 0;
-                    //                     return bZIndex - aZIndex;
-                    //                 })[0];
-                                    
-                    //                 console.log(`尝试点击高z-index元素: z-index=${window.getComputedStyle(topElement).zIndex}`);
-                                    
-                    //                 // 先尝试点击该元素内的按钮
-                    //                 const buttons = topElement.querySelectorAll('button');
-                    //                 if (buttons.length > 0) {
-                    //                     buttons[0].click();
-                    //                     return logClick(buttons[0], '高z-index元素内的按钮');
-                    //                 }
-                                    
-                    //                 // 如果没有按钮，点击元素本身
-                    //                 topElement.click();
-                    //                 return logClick(topElement, '高z-index元素');
-                    //             }
-                                
-                    //             // 6. 检查特定结构元素
-                    //             const specificElements = [
-                    //                 'div[style*="position: absolute"][style*="z-index: 1001"]',
-                    //                 'div[style*="z-index: 1001"]',
-                    //                 'div[style*="position: absolute"][style*="width: 100%"][style*="top: 0px"]'
-                    //             ];
-                                
-                    //             for (const selector of specificElements) {
-                    //                 const element = document.querySelector(selector);
-                    //                 if (element) {
-                    //                     console.log(`找到匹配选择器 ${selector} 的元素`);
-                                        
-                    //                     // 检查元素内的按钮
-                    //                     const buttons = element.querySelectorAll('button');
-                    //                     if (buttons.length > 0) {
-                    //                         buttons[0].click();
-                    //                         return logClick(buttons[0], `特定元素内的按钮`);
-                    //                     }
-                                        
-                    //                     element.click();
-                    //                     return logClick(element, `匹配 ${selector} 的元素`);
-                    //                 }
-                    //             }
-                                
-                    //             // 7. 如果找不到明确的按钮，尝试点击弹窗空白处
-                    //             const modals = document.querySelectorAll('.roo-modal, .roo-modal-dialog, [class*="modal"]');
-                    //             if (modals.length > 0) {
-                    //                 modals[0].click();
-                    //                 return logClick(modals[0], '弹窗空白处');
-                    //             }
-                                
-                    //             // 6. 最后尝试点击页面左上角
-                    //             console.log('找不到明确的弹窗元素，尝试点击页面左上角');
-                                
-                    //             // 创建点击事件
-                    //             const clickEvent = new MouseEvent('click', {
-                    //                 view: window,
-                    //                 bubbles: true,
-                    //                 cancelable: true,
-                    //                 clientX: 5,
-                    //                 clientY: 5
-                    //             });
-                                
-                    //             // 尝试点击页面左上角的元素
-                    //             const element = document.elementFromPoint(5, 5);
-                    //             if (element) {
-                    //                 element.dispatchEvent(clickEvent);
-                    //                 return logClick(element, '页面左上角元素');
-                    //             }
-                                
-                    //             // 最后尝试点击document.body
-                    //             document.body.dispatchEvent(clickEvent);
-                    //             return logClick(document.body, 'body元素');
-                    //         }).catch(err => {
-                    //             console.log('点击过程中出错:', err.message);
-                    //             return false;
-                    //         });
-                    //     };
-                        
-                    //     // 直接使用puppeteer的鼠标点击功能
-                    //     const clickWithPuppeteer = async () => {
-                    //         try {
-                    //             // 先获取iframe的位置
-                    //             if (targetFrame !== page) {
-                    //                 // 如果是iframe，需要获取它在页面上的位置
-                    //                 const framePosition = await page.evaluate(() => {
-                    //                     const iframe = document.querySelector('iframe#hashframe') || document.querySelector('iframe');
-                    //                     if (iframe) {
-                    //                         const rect = iframe.getBoundingClientRect();
-                    //                         return {
-                    //                             x: rect.left + 5, // 在iframe内偏移5像素
-                    //                             y: rect.top + 5  // 在iframe内偏移5像素
-                    //                         };
-                    //                     }
-                    //                     return null;
-                    //                 });
-                                    
-                    //                 if (framePosition) {
-                    //                     console.log(`在iframe位置点击: x=${framePosition.x}, y=${framePosition.y}`);
-                    //                     await page.mouse.click(framePosition.x, framePosition.y);
-                    //                 } else {
-                    //                     // 如果无法获取iframe位置，就在左上角点击
-                    //                     console.log('无法获取iframe位置，在页面左上角点击');
-                    //                     await page.mouse.click(5, 5);
-                    //                 }
-                    //             } else {
-                    //                 // 如果是主页面，直接点击
-                    //                 await page.mouse.click(5, 5);
-                    //                 console.log('在主页面上点击坐标(5,5)');
-                    //             }
-                    //             return true;
-                    //         } catch (err) {
-                    //             console.log('Puppeteer点击失败:', err.message);
-                    //             return false;
-                    //         }
-                    //     };
-                        
-                        
-                    //     // 等待按钮点击后的反应
-                    //     await new Promise(resolve => setTimeout(resolve, 2000));
-                        
-                    //     // 依次处理每个弹窗
-                    //     const requiredClicks = 3; // 需要处理的弹窗数量
-                    //     let clickCount = 0;
-                    //     let startTime = Date.now();
-                    //     const maxWaitTime = 20000; // 最多等待20秒
-                        
-                    //     while (clickCount < requiredClicks) {
-                    //         // 检查是否超时
-                    //         if (Date.now() - startTime > maxWaitTime) {
-                    //             console.log(`等待超过${maxWaitTime/1000}秒，停止等待更多弹窗`);
-                    //             break;
-                    //         }
-                            
-                    //         console.log(`尝试处理第 ${clickCount + 1} 个弹窗...`);
-                            
-                    //         // 检查是否有弹窗
-                    //         const modalExists = await checkForModal();
-                    //         if (!modalExists) {
-                    //             console.log(`没有找到第 ${clickCount + 1} 个弹窗，等待...`);
-                                
-                    //             // 如果已经点击了至少一个弹窗，但找不到更多，可能已经处理完成
-                    //             if (clickCount > 0) {
-                    //                 console.log('已处理至少一个弹窗，但没有找到更多，可能已经完成');
-                    //                 // 尝试再次点击，以防有未检测到的弹窗
-                    //                 await clickWithPuppeteer();
-                    //                 clickCount++;
-                    //             }
-                                
-                    //             await new Promise(resolve => setTimeout(resolve, 2000));
-                    //             continue;
-                    //         }
-                            
-                    //         console.log(`找到第 ${clickCount + 1} 个弹窗，开始处理...`);
-                            
-                    //         // 尝试智能点击
-                    //         let clicked = await clickEmptySpace();
-                            
-                    //         // 如果智能点击失败，尝试使用puppeteer直接点击
-                    //         if (!clicked) {
-                    //             console.log('智能点击失败，尝试使用Puppeteer直接点击');
-                    //             clicked = await clickWithPuppeteer();
-                    //         }
-                            
-                    //         if (clicked) {
-                    //             clickCount++;
-                    //             console.log(`成功处理了 ${clickCount} 个弹窗`);
-                    //             // 等待下一个弹窗出现或当前弹窗完全消失
-                    //             await new Promise(resolve => setTimeout(resolve, 3000));
-                    //         } else {
-                    //             console.log('所有点击方法均失败，等待后重试');
-                    //             await new Promise(resolve => setTimeout(resolve, 2000));
-                    //         }
-                    //     }
-                        
-                    //     console.log(`已完成弹窗处理，共处理了 ${clickCount} 个弹窗`);
-                        
-                    //     // 最后处理关闭按钮
-                    //     console.log('尝试处理最后的关闭按钮...');
-                    //     await targetFrame.evaluate(() => {
-                    //         const closeButton = document.querySelector('button.close[data-dismiss="roo-modal"]');
-                    //         if (closeButton) {
-                    //             console.log('找到关闭按钮，点击它');
-                    //             closeButton.click();
-                    //             return true;
-                    //         }
-                    //         console.log('未找到关闭按钮');
-                    //         return false;
-                    //     });
-                        
-                    //     // 等待关闭按钮点击后的反应
-                    //     await new Promise(resolve => setTimeout(resolve, 2000));
-                    // } catch (modalError) {
-                    //     console.log('弹窗处理过程中出现错误，继续执行:', modalError.message);
-                    //     // 尝试直接点击几次，作为错误恢复策略
-                    //     try {
-                    //         for (let i = 0; i < 3; i++) {
-                    //             await page.mouse.click(5, 5);
-                    //             await new Promise(resolve => setTimeout(resolve, 1500));
-                    //         }
-                    //     } catch (finalError) {
-                    //         console.log('最终恢复策略也失败:', finalError.message);
-                    //     }
-                    // }
-
-                    
-                    // // 等待页面内容加载完成
-
-
-                    // // 刷新页面
-                    // console.log('刷新页面...');
-                    // await page.reload({ waitUntil: 'networkidle0' });
-                    // console.log('页面刷新完成');
 
                     // 等待页面加载
                     await new Promise(resolve => setTimeout(resolve, 3000));
@@ -2404,6 +2092,9 @@ export class ClickTask extends Task {
                     throw error;
                 }
             }
+
+
+            
         } catch (error) {
             console.error('执行点击操作时发生错误:', error);
         }

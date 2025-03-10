@@ -5,6 +5,7 @@ import { OutputFactory } from './outputHandler.js';
 import XLSX from 'xlsx';
 import path from 'path';
 import fs from 'fs';
+import { fileURLToPath } from 'url';
 
 function isUniqueAttribute(attribute, event, events) {
     if (!event) {
@@ -1019,8 +1020,8 @@ export class ClickTask extends Task {
                     // 等待批量传图页面加载
                     await new Promise(resolve => setTimeout(resolve, 3000));
                     // 获取所有要上传的文件
-                    const fs = require('fs');
-                    const path = require('path');
+                    const __filename = fileURLToPath(import.meta.url);
+                    const __dirname = path.dirname(__filename);
                     const basePath = process.cwd();
                     
                     // 判断有多少个分卷ZIP文件需要上传

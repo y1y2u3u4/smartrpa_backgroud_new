@@ -271,52 +271,176 @@ export async function handler_run_base(req, res) {
                 cookies = [];
             }
         }
-
-
+        function cleanCategoryNames(categoryNames) {
+            console.log('原始分类名称:', categoryNames);
+            if (typeof categoryNames === 'string') {
+                // 移除【】中的内容、所有表情符号和\r换行符
+                return categoryNames
+                    .replace(/【.*?】/g, '')
+                    // 扩展表情符号匹配范围
+                    .replace(/[\u{1F000}-\u{1F9FF}\u{2600}-\u{27BF}\u{2B50}\u{2B55}\u{2700}-\u{27BF}\u{2934}-\u{2935}\u{2B05}-\u{2B07}\u{3030}\u{303D}\u{3297}\u{3299}\u{FE0F}]/gu, '')
+                    .replace(/\r/g, ''); // 移除\r换行符
+            } else if (Array.isArray(categoryNames)) {
+                return categoryNames.map(item => {
+                    if (Array.isArray(item)) {
+                        return item.map(subItem => {
+                            if (typeof subItem === 'string') {
+                                return subItem
+                                    .replace(/【.*?】/g, '')
+                                    // 扩展表情符号匹配范围
+                                    .replace(/[\u{1F000}-\u{1F9FF}\u{2600}-\u{27BF}\u{2B50}\u{2B55}\u{2700}-\u{27BF}\u{2934}-\u{2935}\u{2B05}-\u{2B07}\u{3030}\u{303D}\u{3297}\u{3299}\u{FE0F}]/gu, '')
+                                    .replace(/\r/g, ''); // 移除\r换行符
+                            }
+                            return subItem;
+                        });
+                    } else if (typeof item === 'string') {
+                        return item
+                            .replace(/【.*?】/g, '')
+                            // 扩展表情符号匹配范围
+                            .replace(/[\u{1F000}-\u{1F9FF}\u{2600}-\u{27BF}\u{2B50}\u{2B55}\u{2700}-\u{27BF}\u{2934}-\u{2935}\u{2B05}-\u{2B07}\u{3030}\u{303D}\u{3297}\u{3299}\u{FE0F}]/gu, '')
+                            .replace(/\r/g, ''); // 移除\r换行符
+                    }
+                    return item;
+                });
+            }
+            console.log('处理后分类名称:', categoryNames);
+            return categoryNames || '';
+        }
 
         // 如果是京东外卖任务，从美团外卖的数据中获取分类名称
         if (task_name === 'waimai_jingdong') {
+
             if ( workflowFile==='test_jingdong_1.json'){
                 console.log('正在获取美团外卖的分类数据...');
                 const allproducts = await findTaskCategoryNames("waimai_meituan", user_id, '商品图片信息');
                 categoryNames = allproducts.categoryNames;
+                // 剔除类别名称中的表情符号（如【🥤】或【❤️】）
+                if (categoryNames && Array.isArray(categoryNames)) {
+                    console.log('原始分类名称:', categoryNames);
+                    
+                    // 使用cleanCategoryNames函数处理
+                    const cleanedCategoryNames = cleanCategoryNames(categoryNames);
+                    
+                    // 如果需要详细日志，可以添加比较逻辑
+                    if (Array.isArray(cleanedCategoryNames)) {
+                        cleanedCategoryNames.forEach((item, index) => {
+                            const original = categoryNames[index];
+                            if (JSON.stringify(item) !== JSON.stringify(original)) {
+                                console.log(`处理前: "${JSON.stringify(original)}", 处理后: "${JSON.stringify(item)}"`);
+                            }
+                        });
+                    }
+                    
+                    categoryNames = cleanedCategoryNames;
+                    console.log('处理后分类名称:', categoryNames);
+                }
             }
             else if ( workflowFile==='test_jingdong_2.json'){
                 try {
+
+
                     console.log('正在获取美团外卖的分类数据...');
                     const allproducts = await findTaskCategoryNames("waimai_meituan", user_id, '商品图片信息');
                     categoryNames = allproducts.categoryNames;
+                    if (categoryNames && Array.isArray(categoryNames)) {
+                        console.log('原始分类名称:', categoryNames);
+                        
+                        // 使用cleanCategoryNames函数处理
+                        const cleanedCategoryNames = cleanCategoryNames(categoryNames);
+                        
+                        // 如果需要详细日志，可以添加比较逻辑
+                        if (Array.isArray(cleanedCategoryNames)) {
+                            cleanedCategoryNames.forEach((item, index) => {
+                                const original = categoryNames[index];
+                                if (JSON.stringify(item) !== JSON.stringify(original)) {
+                                    console.log(`处理前: "${JSON.stringify(original)}", 处理后: "${JSON.stringify(item)}"`);
+                                }
+                            });
+                        }
+                        
+                        categoryNames = cleanedCategoryNames;
+                        console.log('处理后分类名称:', categoryNames);
+                    }
                     let products = allproducts.products;
                     
                     // 获取商品详情信息
                     console.log('正在获取商品详情信息...');
-                    const productDetails = await findTaskDetail("waimai_meituan", user_id, '详细商品信息');
+                    let productDetails = await findTaskDetail("waimai_meituan", user_id, '详细商品信息');
                     console.log(`获取到的商品详情: 共${productDetails.length}项`);
+
+
+                    console.log('开始预处理商品详情，确保相同商品名称只对应一个商品ID...');
+                    // 创建一个映射，用于存储商品名称到商品ID的唯一映射
+                    const uniqueProductMap = {};
+                    
+                    // 预处理商品详情
+                    productDetails.forEach(detail => {
+                        if (detail.商品名称 && detail.商品ID) {
+                            const productName = detail.商品名称.trim();
+                            // 如果这个商品名称还没有对应的ID，则添加
+                            if (!uniqueProductMap[productName]) {
+                                uniqueProductMap[productName] = detail.商品ID;
+                                console.log(`为商品 "${productName}" 设置唯一ID: ${detail.商品ID}`);
+                            }
+                        }
+                    });
+                    
+                    // 更新productDetails，确保相同名称的商品使用相同的ID
+                    productDetails = productDetails.map(detail => {
+                        if (detail.商品名称) {
+                            const productName = detail.商品名称.trim();
+                            if (uniqueProductMap[productName]) {
+                                return {
+                                    ...detail,
+                                    // 商品ID: uniqueProductMap[productName]
+                                    spu_id: `${uniqueProductMap[productName]}0`
+                                };
+                            }
+                        }
+                        return detail;
+                    });
+                    
+                    console.log(`预处理完成，唯一商品映射数量: ${Object.keys(uniqueProductMap).length}`);
                     
                     // 通过商品名称关联商品ID
                     if (products && products.length > 0 && productDetails && productDetails.length > 0) {
                         console.log('开始通过商品名称关联商品ID...');
-                        products = products.map(product => {
-                            // 查找商品详情中匹配当前商品名称的记录
-                            const matchedDetail = productDetails.find(detail => 
+                        
+                        // 创建一个新的产品数组来存储扩展后的产品
+                        let expandedProducts = [];
+                        
+                        products.forEach(product => {
+                            // 查找所有匹配当前商品名称的记录
+                            const matchedDetails = productDetails.filter(detail => 
                                 detail.商品名称 && product.name && 
                                 detail.商品名称.trim() === product.name.trim()
                             );
                             
-                            // 如果找到匹配的记录，添加商品ID
-                            if (matchedDetail && matchedDetail.商品ID) {
-                                console.log(`为商品 ${product.name} 关联到ID: ${matchedDetail.商品ID}`);
-                                return {
-                                    ...product,
-                                    商品ID: matchedDetail.商品ID
-                                };
+                            if (matchedDetails && matchedDetails.length > 0) {
+                                console.log(`为商品 ${product.name} 找到 ${matchedDetails.length} 个匹配的SKU`);
+                                
+                                // 为每个匹配的详情创建一个新的产品对象
+                                matchedDetails.forEach(detail => {
+                                    if (detail.商品ID) {
+                                        console.log(`为商品 ${product.name} 关联到ID: ${detail.商品ID}`);
+                                        expandedProducts.push({
+                                            ...product,
+                                            spu_id: detail.spu_id,
+                                            sku_id: detail.商品ID
+                                        });
+                                    }
+                                });
+                            } else {
+                                // 如果没有匹配项，保留原始产品
+                                expandedProducts.push(product);
                             }
-                            return product;
                         });
+                        
+                        // 用扩展后的产品替换原始产品数组
+                        products = expandedProducts;
                         console.log(`成功关联商品ID，处理后商品数: ${products.length}`);
                     }
-                    console.log(`获取到的分类名称: ${JSON.stringify(categoryNames)}`);
-                    // console.log(`获取到的商品信息: ${JSON.stringify(products)}`);
+                    console.log(`获取到的商品信息: ${JSON.stringify(products)}`);
                     // 获取店铺位置信息
                     console.log('正在获取店铺位置信息...');
                     const storeAddress = await findTaskinfo("waimai_meituan", user_id, '店铺信息');
@@ -350,8 +474,8 @@ export async function handler_run_base(req, res) {
     
                     try {
                         // 读取Excel文件
-                        console.log('读取BatchHandleAddProductBySelf.xls文件...');
-                        const excelPath = path.join(process.cwd(), 'BatchHandleAddProductBySelf.xls');
+                        console.log('读取BatchHandleCreateLightFoodSpu.xls文件...');
+                        const excelPath = path.join(process.cwd(), 'BatchHandleCreateLightFoodSpu.xls');
                         console.log(`Excel路径: ${excelPath}`);
                         
                         // 读取Excel文件
@@ -386,17 +510,22 @@ export async function handler_run_base(req, res) {
                         console.log(JSON.stringify(productData[1], null, 2));
                         
                         // 从第四行开始填写商品数据
-                        let startRow = 3; // Excel中第4行（索引从0开始）
+                        let startRow = 4; // Excel中第4行（索引从0开始）
                         
                         // 动态确定列标识
                         // 首先分析表头找到对应的列
                         let PRODUCT_NAME_COL = null;  // 商品名称*
-                        let SKU_COL = null;           // 商家sku编码
+                        let SPU_COL = null;           // 商家spu编码
+                        let SKU_COL =null;
                         let WEIGHT_COL = null;        // 商品重量* （单位：kg）
                         let PRICE_COL = null;          // 商品价格* （单位：元）
                         let CATEGORY_COL = null;       // 一级店内分类
                         let CITY_ID_COL = null;        // 销售城市ID
                         let FINAL_CATEGORY_ID_COL = null; // 商品类目（末级类目ID）
+                        let Xiaoshoushuxing_COL = null; // 销售属性名称
+                        let Xiaoshoushuxing_value_COL = null; // 销售属性值
+                        let Zidingyishuxing_COL = null; // 自定义属性名称
+                        let Shangpinpinpaiid_COL = null; // 商品品牌ID
                         
                         // 遍历表头行找到对应列
                         const headers = productData[0] || {};
@@ -406,40 +535,49 @@ export async function handler_run_base(req, res) {
                         Object.keys(headers).forEach(col => {
                             // 检查第一行
                             if (headers[col] && typeof headers[col] === 'string') {
-                                if (headers[col].includes('商品名称')) PRODUCT_NAME_COL = col;
-                                if (headers[col].includes('sku') || headers[col].includes('商家sku编码')) SKU_COL = col;
+                                if (headers[col].includes('商品名称*')) PRODUCT_NAME_COL = col;
+                                if (headers[col].includes('商家spu编码')) SPU_COL = col;
+                                if (headers[col].includes('商家sku编码')) SKU_COL = col;
                                 if (headers[col].includes('重量')) WEIGHT_COL = col;
                                 if (headers[col].includes('价格')) PRICE_COL = col;
-                                if (headers[col].includes('店内分类')) CATEGORY_COL = col;
+                                if (headers[col].includes('一级店内分类')) CATEGORY_COL = col;
                                 if (headers[col].includes('销售城市ID')) CITY_ID_COL = col;
-                                if (headers[col].includes('类目') || headers[col].includes('末级类目ID')) FINAL_CATEGORY_ID_COL = col;
+                                if (headers[col].includes('商品类目（末级类目ID）') || headers[col].includes('商品类目（末级类目ID）')) FINAL_CATEGORY_ID_COL = col;
+                                if (headers[col].includes('销售属性名称')) Xiaoshoushuxing_COL = col;
+                                if (headers[col].includes('销售属性值')) Xiaoshoushuxing_value_COL = col;
+                                if (headers[col].includes('自定义属性')) Zidingyishuxing_COL = col;
+                                if (headers[col].includes('商品品牌ID')) Shangpinpinpaiid_COL = col;
                             }
                             
                             // 检查第二行
                             if (headerRow[col] && typeof headerRow[col] === 'string') {
-                                if (headerRow[col].includes('商品名称')) PRODUCT_NAME_COL = col;
-                                if (headerRow[col].includes('sku') || headerRow[col].includes('商家sku编码')) SKU_COL = col;
+                                if (headerRow[col].includes('商品名称*')) PRODUCT_NAME_COL = col;
                                 if (headerRow[col].includes('重量')) WEIGHT_COL = col;
                                 if (headerRow[col].includes('价格')) PRICE_COL = col;
-                                if (headerRow[col].includes('店内分类')) CATEGORY_COL = col;
+                                if (headerRow[col].includes('一级店内分类')) CATEGORY_COL = col;
                                 if (headerRow[col].includes('销售城市ID')) CITY_ID_COL = col;
-                                if (headerRow[col].includes('类目') || headerRow[col].includes('末级类目ID')) FINAL_CATEGORY_ID_COL = col;
+                                if (headerRow[col].includes('商品类目（末级类目ID）') || headerRow[col].includes('商品类目（末级类目ID')) FINAL_CATEGORY_ID_COL = col;
                             }
                         });
                         
                         // 如果没有找到，使用默认值
-                        PRODUCT_NAME_COL = PRODUCT_NAME_COL || 'C';
-                        SKU_COL = SKU_COL || 'D';
-                        WEIGHT_COL = WEIGHT_COL || 'F';
-                        PRICE_COL = PRICE_COL || 'G';
-                        CATEGORY_COL = CATEGORY_COL || 'K';
-                        CITY_ID_COL = CITY_ID_COL || 'N';
-                        FINAL_CATEGORY_ID_COL = FINAL_CATEGORY_ID_COL || 'I';
+                        PRODUCT_NAME_COL = PRODUCT_NAME_COL || 'B';
+                        SPU_COL = SPU_COL || 'E';
+                        SKU_COL = SKU_COL || 'H';
+                        WEIGHT_COL = WEIGHT_COL || 'I';
+                        PRICE_COL = PRICE_COL || 'J';
+                        CATEGORY_COL = CATEGORY_COL || 'M';
+                        CITY_ID_COL = CITY_ID_COL || 'T';
+                        FINAL_CATEGORY_ID_COL = FINAL_CATEGORY_ID_COL || 'D';
+                        Xiaoshoushuxing_COL = Xiaoshoushuxing_COL || 'F';
+                        Xiaoshoushuxing_value_COL = Xiaoshoushuxing_value_COL || 'G';
+                        Zidingyishuxing_COL = Zidingyishuxing_COL || 'Q';
+                        Shangpinpinpaiid_COL = Shangpinpinpaiid_COL || 'L';
+
                         
                         // 输出最终确定的列标识
                         console.log('确定的列标识:');
-                        console.log(`商品名称列: ${PRODUCT_NAME_COL}`);
-                        console.log(`商家sku编码列: ${SKU_COL}`);
+                        console.log(`商品名称列: ${PRODUCT_NAME_COL}`)
                         console.log(`商品重量列: ${WEIGHT_COL}`);
                         console.log(`商品价格列: ${PRICE_COL}`);
                         console.log(`一级店内分类列: ${CATEGORY_COL}`);
@@ -464,14 +602,21 @@ export async function handler_run_base(req, res) {
                                 }
                                 
                                 // 填写各字段
-                                productData[targetRow][PRODUCT_NAME_COL] = product.商品名称 || '';
+                                productData[targetRow][PRODUCT_NAME_COL] = cleanCategoryNames(product.商品名称);
+                                productData[targetRow][SPU_COL] = product.spu_id || '';
                                 productData[targetRow][SKU_COL] = product.商品ID || '';
                                 const weight = product['重量(g)'] ? parseInt(product['重量(g)']) : 0;
                                 productData[targetRow][WEIGHT_COL] = weight <= 0 ? '0.500' : (weight / 1000).toFixed(3);
                                 productData[targetRow][PRICE_COL] = product.价格 || '';
-                                productData[targetRow][CATEGORY_COL] = product.分类名称 || '';
-                                productData[targetRow][CITY_ID_COL] = cityId || '';
-                                productData[targetRow][FINAL_CATEGORY_ID_COL] = '31251'; // 固定值末级类目ID
+                                productData[targetRow][CATEGORY_COL] = cleanCategoryNames(product.分类名称);
+                                productData[targetRow][Xiaoshoushuxing_COL]="规格"
+                                // 检查规格名称是否为空，如果为空则使用默认值
+                                productData[targetRow][Xiaoshoushuxing_value_COL] = product.规格名称 ? product.规格名称 : "标准份";
+                                productData[targetRow][Zidingyishuxing_COL]=product.属性;
+                                // productData[targetRow][CITY_ID_COL] = cityId || '';
+                                productData[targetRow][CITY_ID_COL] =0;
+                                productData[targetRow][FINAL_CATEGORY_ID_COL] = '31139'; // 固定值末级类目ID
+                                productData[targetRow][Shangpinpinpaiid_COL] = '35247'; // 固定值商品品牌ID
     
                             }
                             
@@ -505,7 +650,7 @@ export async function handler_run_base(req, res) {
                             xlsx.utils.book_append_sheet(newWorkbook, newSheet, '商品信息');
                             
                             // 生成新文件名，带有user_id后缀
-                            const newExcelPath = path.join(process.cwd(), `BatchHandleAddProductBySelf_${user_id}.xls`);
+                            const newExcelPath = path.join(process.cwd(), `BatchHandleCreateLightFoodSpu_${user_id}.xls`);
                             
                             // 将新工作簿写入到新文件
                             xlsx.writeFile(newWorkbook, newExcelPath);
@@ -541,16 +686,11 @@ export async function handler_run_base(req, res) {
         }
         // 发送浏览器初始化状态
        
-
-
         // browser = await launchBrowser(config.puppeteerConfig);
-
         browser = await launchBrowser_adsPower_lianjie_local(adsPowerUserId,BASE_URL);
         // page = await setupPage(browser, cookies);
         page = await setupPage_adsPower(browser, cookies);
         
-
-
 
         console.log('rowscheck:', rows);
         
@@ -666,6 +806,7 @@ export async function handler_run(req, res) {
             'Content-Type': 'application/json',
             'Transfer-Encoding': 'chunked'
         });
+        
 
         // 发送初始状态
         res.write(JSON.stringify({
@@ -763,22 +904,8 @@ export async function handler_run(req, res) {
             status: 'browser_initializing',
             message: '正在初始化浏览器'
         }) + '\n');
-        browser = await launchBrowser_adsPower_lianjie_local_api(adsPowerUserId,BASE_URL);
+        browser = await launchBrowser_adsPower_lianjie_local(adsPowerUserId,BASE_URL);
         page = await setupPage_adsPower(browser, cookies);
-        ///
-
-
-        // if (leixing == 'RPA') {        
-        //     browser = await launchBrowser(config.puppeteerConfig);
-        //     page = await setupPage(browser, cookies);
-        // } else {
-        //     if (environment === 'cloud') {
-        //         browser = await launchBrowser_adsPower_lianjie(adsPowerUserId, adsPowerId);
-        //     } else {
-        //         browser = await launchBrowser_adsPower_lianjie_local_api(adsPowerUserId,BASE_URL);
-        //     }
-        //     page = await setupPage_adsPower(browser, cookies);
-        // }
 
         // 发送浏览器就绪状态
         res.write(JSON.stringify({
@@ -894,30 +1021,30 @@ export async function handler_run(req, res) {
         }
 
 
-        // 发送完成状态
+        // 正常完成时发送成功响应
         res.write(JSON.stringify({
             status: 'success',
             message: '任务执行完成'
         }) + '\n');
-
-        // 结束响应
         res.end();
 
     } catch (error) {
         console.error('任务执行过程中发生错误:', error);
-        if (!res.headersSent) {
-            res.status(500).json({
-                status: 'error',
-                message: '任务执行失败',
-                error: error.message
-            });
-        } else {
-            res.write(JSON.stringify({
-                status: 'error',
-                message: '任务执行失败',
-                error: error.message
-            }) + '\n');
-            res.end();
+        if (!res.writableEnded) {
+            if (!res.headersSent) {
+                res.status(500).json({
+                    status: 'error',
+                    message: '任务执行失败',
+                    error: error.message
+                });
+            } else {
+                res.write(JSON.stringify({
+                    status: 'error',
+                    message: '任务执行失败',
+                    error: error.message
+                }) + '\n');
+                res.end();
+            }
         }
     } finally {
         // 确保资源被清理

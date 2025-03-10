@@ -409,7 +409,7 @@ export async function launchBrowser_adsPower_lianjie_local(adsPowerUserId, adsPo
             params: {
                 user_id: adsPowerUserId
             },
-            timeout: 60000
+            timeout: 800000
         });
         console.log('查询响应:', response.data);
 

@@ -1,0 +1,174 @@
+[
+    {
+        "url": "https://salecentersaas.yibainetwork.com/#/product_list",
+        "time": "2024-06-04T09:57:28.808Z",
+        "type": "navigation"
+    },
+    {
+        "element": {
+            "tagName": "",
+            "id": "",
+            "className": "ivu-menu-submenu-title",
+            "innerText": "",
+            "leixing": "自定义1"
+        },
+        "time": "2024-06-04T09:57:30.635Z",
+        "type": "click"
+    },
+    {
+        "element": {
+            "tagName": "TEXTAREA",
+            "id": "",
+            "className": "ivu-input",
+            "name": "",
+            "innerText": "",
+            "placeholder": "SKU"
+        },
+        "value": "",
+        "time": "2024-06-04T09:57:46.401Z",
+        "type": "click"
+    },
+    {
+        "element": {
+            "tagName": "TEXTAREA",
+            "id": "",
+            "className": "ivu-input",
+            "name": "",
+            "innerText": "",
+            "placeholder": "SKU",
+            "value": "10230202",
+            "label": ""
+        },
+        "value": "系统SKU",
+        "time": "2024-06-04T09:57:46.612Z",
+        "type": "input"
+    },
+    {
+        "element": {
+            "tagName": "BUTTON",
+            "id": "",
+            "className": "ivu-btn ivu-btn-primary",
+            "name": "",
+            "innerText": "查询"
+        },
+        "value": "",
+        "time": "2024-06-04T09:57:47.541Z",
+        "type": "click"
+    },
+    {
+        "element": {
+            "tagName": "SPAN",
+            "id": "",
+            "className": "",
+            "innerText": "精细刊登"
+        },
+        "time": "2024-06-04T09:57:49.547Z",
+        "type": "click"
+    },
+    {
+        "element": {
+            "tagName": "SPAN",
+            "id": "",
+            "className": "",
+            "innerText": "下一步"
+        },
+        "time": "2024-06-04T09:57:51.210Z",
+        "type": "click"
+    },
+    {
+        "element": {
+            "tagName": "INPUT",
+            "id": "",
+            "className": "ivu-select-input",
+            "name": "",
+            "innerText": "",
+            "placeholder": "请选择",
+            "leixing": "自定义2"
+        },
+        "value": "刊登店铺",
+        "time": "2024-06-04T09:57:54.014Z",
+        "type": "click"
+    },
+    {
+        "element": {
+            
+            "tagName": "SPAN",
+            "id": "",
+            "className": "",
+            "innerText": "一键检测侵权词/敏感词"
+        },
+        "time": "2024-06-04T09:58:00.014Z",
+        "type": "click"
+    },
+    {
+        "element": {
+            "tagName": "INPUT",
+            "id": "",
+            "className": "ivu-select-input",
+            "name": "",
+            "innerText": "",
+            "placeholder": "请选择",
+            "leixing": "自定义2.1"
+            
+        },
+        "time": "2024-06-04T09:58:03.014Z",
+        "type": "click"
+    },
+    {
+        "element": {
+            "tagName": "SPAN",
+            "id": "",
+            "className": "",
+            "innerText": "同步至未推送站点"
+        },
+        "time": "2024-06-04T09:58:05.014Z",
+        "type": "click"
+    },
+    {
+        "element": {
+            "tagName": "SPAN",
+            "id": "",
+            "className": "",
+            "innerText": "翻译"
+        },
+        "time": "2024-06-04T09:58:10.014Z",
+        "type": "click"
+    },
+    {
+        "element": {
+            "tagName": "INPUT",
+            "id": "",
+            "className": "ivu-select-input",
+            "name": "",
+            "innerText": "",
+            "placeholder": "请选择",
+            "leixing": "自定义2.2"
+            
+        },
+        "time": "2024-06-04T09:58:13.014Z",
+        "type": "click"
+    },
+
+    {
+        "element": {
+            "tagName": "SPAN",
+            "id": "",
+            "className": "",
+            "innerText": "保存并提交所有站点"
+        },
+        "time": "2024-06-04T09:58:20.014Z",
+        "type": "click"
+    },
+    {
+        "element": {
+            "tagName": "",
+            "id": "",
+            "className": "",
+            "name": "",
+            "innerText": "",
+            "leixing": "自定义4"
+        },
+        "time": "2024-06-04T09:58:30.014Z",
+        "type": "output"
+    }
+]

@@ -133,7 +133,7 @@ async function executeWorkflow(workflowFile) {
 
     // 设置请求超时
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 300000); // 5分钟超时
+    const timeoutId = setTimeout(() => controller.abort(), 3000000); // 5分钟超时
     
     try {
       // 发送请求到自动化服务
@@ -174,7 +174,7 @@ async function executeWorkflow(workflowFile) {
     } catch (fetchError) {
       // 处理fetch特定错误
       if (fetchError.name === 'AbortError') {
-        throw new Error('请求超时，执行时间超过5分钟');
+        throw new Error('请求超时，执行时间超过50分钟');
       } else {
         throw fetchError; // 重新抛出其他错误
       }
