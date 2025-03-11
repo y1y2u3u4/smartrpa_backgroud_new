@@ -193,7 +193,7 @@ export async function handler_run_base(req, res) {
             adsPowerUserId = 'kubsdhs';
             console.log('已替换为新的adsPowerUserId:', adsPowerUserId);
         } else if (task_name === 'waimai_jingdong') {
-            adsPowerUserId = 'kubsdhs';
+            adsPowerUserId = 'ku2klf2';
             console.log('已替换为新的adsPowerUserId:', adsPowerUserId);
         }
         console.log('最终adsPowerUserId:', adsPowerUserId);
@@ -771,7 +771,7 @@ export async function handler_run_base(req, res) {
         try {
             // await new Promise(resolve => setTimeout(resolve, 600000));
             await page.close();
-            // await browser.close();
+            await browser.close();
         } catch (cleanupError) {
             console.error('清理资源时出错:', cleanupError);
         }
