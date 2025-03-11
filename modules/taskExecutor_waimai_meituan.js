@@ -1228,7 +1228,7 @@ export class ClickTask extends Task {
                     } catch (error) {
                         console.log(`页面刷新超时: ${error.message}`);
                         console.log('等待60秒后继续执行...');
-                        await page.waitForTimeout(60000); // 等待60秒
+                        // await page.waitForTimeout(60000); // 等待60秒
                         console.log('等待结束，继续执行后续操作');
                     }
             
@@ -1721,7 +1721,7 @@ export class ClickTask extends Task {
                             } catch (error) {
                                 console.log(`页面刷新超时: ${error.message}`);
                                 console.log('等待60秒后继续执行...');
-                                await page.waitForTimeout(60000); // 等待60秒
+                                // await page.waitForTimeout(60000); // 等待60秒
                                 console.log('等待结束，继续执行后续操作');
                             }
                             

@@ -192,7 +192,10 @@ export async function handler_run_base(req, res) {
         if (task_name === 'waimai_meituan') {
             adsPowerUserId = 'kubsdhs';
             console.log('已替换为新的adsPowerUserId:', adsPowerUserId);
-        } 
+        } else if (task_name === 'waimai_jingdong') {
+            adsPowerUserId = 'kubsdhs';
+            console.log('已替换为新的adsPowerUserId:', adsPowerUserId);
+        }
         console.log('最终adsPowerUserId:', adsPowerUserId);
 
         const BASE_URL = req.body.BASE_URL;
@@ -697,7 +700,7 @@ export async function handler_run_base(req, res) {
         // 发送浏览器初始化状态
        
         // browser = await launchBrowser(config.puppeteerConfig);
-        browser = await launchBrowser_adsPower_lianjie_local_api(adsPowerUserId,BASE_URL);
+        browser = await launchBrowser_adsPower_lianjie_local(adsPowerUserId,BASE_URL);
         // page = await setupPage(browser, cookies);
         page = await setupPage_adsPower(browser, cookies);
         
