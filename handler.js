@@ -700,7 +700,7 @@ export async function handler_run_base(req, res) {
         // 发送浏览器初始化状态
        
         // browser = await launchBrowser(config.puppeteerConfig);
-        browser = await launchBrowser_adsPower_lianjie_local(adsPowerUserId,BASE_URL);
+        browser = await launchBrowser_adsPower_lianjie_local_api(adsPowerUserId,BASE_URL);
         // page = await setupPage(browser, cookies);
         page = await setupPage_adsPower(browser, cookies);
         

@@ -603,7 +603,25 @@ export class ClickTask extends Task {
                     } catch (error) {
                         console.log('处理商品管理新手引导弹窗时出错:', error.message);
                     }
-                    
+                    await new Promise(resolve => setTimeout(resolve, 10000));
+                    console.log('正在查找并点击SPU管理菜单项...');
+                    await page.evaluate(() => {
+                        // 使用选择器寻找SPU管理菜单项
+                        const menuItems = Array.from(document.querySelectorAll('li'));
+                        const spuManageItem = menuItems.find(item => {
+                            // 查找包含'SPU管理'文本的元素
+                            return item.textContent && item.textContent.includes('SPU管理');
+                        });
+                        
+                        if (spuManageItem) {
+                            console.log('找到SPU管理菜单项，点击它');
+                            spuManageItem.click();
+                            return true;
+                        }
+                        console.log('未找到SPU管理菜单项');
+                        return false;
+                    });
+                                        
                     // 5. 点击批量创建按钮
                     console.log('正在查找并点击批量创建按钮...');
                     await page.evaluate(() => {
@@ -758,7 +776,7 @@ export class ClickTask extends Task {
                     try {
                         // 获取用户ID用于找到正确的Excel文件
                         const userId = this.user_id; // 使用this.user_id而不是taskForm.user_id
-                        const fileName = `BatchHandleAddProductBySelf_${userId}.xls`;
+                        const fileName = `BatchHandleCreateLightFoodSpu_${userId}.xls`;
                         const filePath = path.join(process.cwd(), fileName);
                         
                         console.log(`尝试上传文件: ${filePath}`);
@@ -975,7 +993,7 @@ export class ClickTask extends Task {
                     });
                     
                     // 等待页面加载
-                    await new Promise(resolve => setTimeout(resolve, 3000));
+                    await new Promise(resolve => setTimeout(resolve, 10000));
                     
                     // 4. 处理可能出现的第二个新手引导弹窗 - 点击"跳过"按钮
                     try {
@@ -1016,242 +1034,234 @@ export class ClickTask extends Task {
                         console.log('未找到批量传图按钮');
                         return false;
                     });
-
+            
                     // 等待批量传图页面加载
                     await new Promise(resolve => setTimeout(resolve, 3000));
+                    
                     // 获取所有要上传的文件
                     const __filename = fileURLToPath(import.meta.url);
                     const __dirname = path.dirname(__filename);
                     const basePath = process.cwd();
                     
-                    // 判断有多少个分卷ZIP文件需要上传
-                    let zipFiles = [];
-                    let partIndex = 1;
-                    let partZipPath;
-                    
-                    do {
-                        partZipPath = path.join(basePath, `商品图片_${this.user_id}_part${partIndex}.zip`);
-                        if (fs.existsSync(partZipPath)) {
-                            zipFiles.push(partZipPath);
-                            partIndex++;
-                        } else {
-                            break;
+                    // 定义上传函数，处理SPU和SKU上传
+                    const uploadZipFiles = async (filePrefix, isSpuUpload) => {
+                        // 判断有多少个分卷ZIP文件需要上传
+                        let zipFiles = [];
+                        let partIndex = 1;
+                        let partZipPath;
+                        
+                        do {
+                            partZipPath = path.join(basePath, `${filePrefix}_${this.user_id}_part${partIndex}.zip`);
+                            if (fs.existsSync(partZipPath)) {
+                                zipFiles.push(partZipPath);
+                                partIndex++;
+                            } else {
+                                break;
+                            }
+                        } while (true);
+                        
+                        console.log(`发现 ${zipFiles.length} 个${isSpuUpload ? 'SPU' : 'SKU'}图片ZIP文件需要上传`);
+                        
+                        // 如果没有文件可上传，返回
+                        if (zipFiles.length === 0) {
+                            console.log(`未找到任何可上传的${isSpuUpload ? 'SPU' : 'SKU'}图片ZIP文件`);
+                            return;
                         }
-                    } while (true);
-                    
-                    console.log(`发现 ${zipFiles.length} 个ZIP文件需要上传`);
-                    
-                    // 如果没有文件可上传，返回失败
-                    if (zipFiles.length === 0) {
-                        console.error('未找到任何可上传的ZIP文件');
-                        return false;
-                    }
-                    
-                    // 为每个文件执行上传流程
-                    for (let zipIndex = 0; zipIndex < zipFiles.length; zipIndex++) {
-                        const currentZipFile = zipFiles[zipIndex];
-                        console.log(`开始处理第 ${zipIndex+1}/${zipFiles.length} 个文件: ${currentZipFile}`);
+                        
+                        // 选择上传类型
+                        console.log(`正在选择${isSpuUpload ? 'SPU' : 'SKU'}上传类型...`);
+                        await page.evaluate((isSpu) => {
+                            // 选择SPU或SKU上传类型
+                            const uploadTypeLabels = Array.from(document.querySelectorAll('.dj-radio-label'));
+                            const targetLabel = uploadTypeLabels.find(label => 
+                                isSpu 
+                                ? label.textContent.includes('使用商品编码批量上传，适用于SPU图片上传')
+                                : label.textContent.includes('使用SKU编码批量上传，适用于SKU或SPU-SKU图片上传')
+                            );
                             
-                        // 1. 点击上传按钮
-                        await page.evaluate(() => {
-                            const uploadButtons = Array.from(document.querySelectorAll('.dj-upload-demo .dj-upload__text a'));
-                            if (uploadButtons.length > 0) {
-                                console.log('找到上传按钮，点击它');
-                                uploadButtons[0].click();
+                            if (targetLabel) {
+                                console.log(`找到${isSpu ? 'SPU' : 'SKU'}上传类型选项，点击它`);
+                                targetLabel.click();
                                 return true;
                             }
-                            console.log('未找到上传按钮');
+                            console.log(`未找到${isSpu ? 'SPU' : 'SKU'}上传类型选项`);
                             return false;
-                        });
+                        }, isSpuUpload);
                         
-                        // 等待上传按钮点击后的反应
+                        // 等待选择反应
                         await new Promise(resolve => setTimeout(resolve, 2000));
                         
-                        // 2. 点击SKU编码单选框
-                        await page.evaluate(() => {
-                            const skuRadios = Array.from(document.querySelectorAll('.dj-radio-label'));
-                            const skuButton = skuRadios.find(radio => radio.textContent === 'SKU编码');
-                            if (skuButton) {
-                                console.log('找到SKU编码单选框，点击它');
-                                skuButton.click();
+                        // 选择编码类型
+                        console.log(`正在选择${isSpuUpload ? '商家SPU' : '商家SKU'}编码...`);
+                        await page.evaluate((isSpu) => {
+                            const codeTypeLabels = Array.from(document.querySelectorAll('.dj-radio-label'));
+                            const targetLabel = codeTypeLabels.find(label => 
+                                isSpu 
+                                ? label.textContent.includes('商家SPU编码')
+                                : label.textContent.includes('商家SKU编码')
+                            );
+                            
+                            if (targetLabel) {
+                                console.log(`找到${isSpu ? '商家SPU' : '商家SKU'}编码选项，点击它`);
+                                targetLabel.click();
                                 return true;
                             }
-                            console.log('未找到SKU编码单选框');
+                            console.log(`未找到${isSpu ? '商家SPU' : '商家SKU'}编码选项`);
+                            return false;
+                        }, isSpuUpload);
+                        
+                        // 等待选择反应
+                        await new Promise(resolve => setTimeout(resolve, 2000));
+                        
+                        // 选择替换方式
+                        console.log('正在选择替换方式...');
+                        await page.evaluate(() => {
+                            const replaceLabels = Array.from(document.querySelectorAll('.dj-radio-label'));
+                            const targetLabel = replaceLabels.find(label => 
+                                label.textContent.includes('根据编号替换对应位置的图片')
+                            );
+                            
+                            if (targetLabel) {
+                                console.log('找到替换方式选项，点击它');
+                                targetLabel.click();
+                                return true;
+                            }
+                            console.log('未找到替换方式选项');
                             return false;
                         });
                         
-                        // 等待SKU编码选择后的反应
-                        await new Promise(resolve => setTimeout(resolve, 1000));
+                        // 等待选择反应
+                        await new Promise(resolve => setTimeout(resolve, 2000));
                         
-                        // 3. 点击根据编号替换对应位置的图片单选框
-                        await page.evaluate(() => {
-                            const replaceRadios = Array.from(document.querySelectorAll('.dj-radio-label'));
-                            const replaceButton = replaceRadios.find(radio => radio.textContent === '根据编号替换对应位置的图片');
-                            if (replaceButton) {
-                                console.log('找到根据编号替换对应位置的图片单选框，点击它');
-                                replaceButton.click();
-                                return true;
-                            }
-                            console.log('未找到根据编号替换对应位置的图片单选框');
-                            return false;
-                        });
-                        
-                        // 等待替换方式选择后的反应
-                        await new Promise(resolve => setTimeout(resolve, 1000));
-                        
-                        // 4. 再次点击上传按钮并上传指定文件
-                        try {
-                            // 精确定位接受.zip文件的上传组件（第3个组件）
-                            const targetComponent = await page.evaluate(() => {
-                                // 查找所有上传组件
-                                const uploadComponents = document.querySelectorAll('.dj-upload');
-                                // 遍历寻找接受.zip文件的组件
-                                for (let i = 0; i < uploadComponents.length; i++) {
-                                    const component = uploadComponents[i];
-                                    const fileInput = component.querySelector('input[type="file"]');
-                                    const acceptAttr = fileInput ? fileInput.getAttribute('accept') : '';
-                                    
-                                    if (fileInput && acceptAttr === '.zip') {
-                                        console.log(`找到目标ZIP上传组件 #${i+1}`);
-                                        // 确保输入框可见
-                                        if (fileInput.classList.contains('hide')) {
-                                            fileInput.classList.remove('hide');
-                                        }
-                                        fileInput.style.display = 'block';
-                                        fileInput.style.opacity = '1';
-                                        fileInput.style.visibility = 'visible';
-                                        fileInput.style.zIndex = '9999';
-                                        
-                                        return {
-                                            index: i,
-                                            hasZipInput: true
-                                        };
-                                    }
-                                }
-                                
-                                return { index: -1, hasZipInput: false };
-                            });
+                        // 为每个文件执行上传流程
+                        for (let zipIndex = 0; zipIndex < zipFiles.length; zipIndex++) {
+                            const currentZipFile = zipFiles[zipIndex];
+                            console.log(`开始处理第 ${zipIndex+1}/${zipFiles.length} 个文件: ${currentZipFile}`);
                             
-                            if (!targetComponent.hasZipInput) {
-                                console.log('未找到接受ZIP文件的上传组件');
-                                return false;
-                            }
-                            
-                            console.log(`成功定位到第 ${targetComponent.index + 1} 个上传组件（支持ZIP文件）`);
-                            
-                            // 确保上传类型已被正确选中
-                            const selectionStatus = await page.evaluate(() => {
-                                // 检查SKU和替换方式选项
-                                const skuInputs = document.querySelectorAll('input[type="radio"][value="sku"]');
-                                const isSkuChecked = Array.from(skuInputs).some(input => input.checked);
-                                
-                                const coverInputs = document.querySelectorAll('input[type="radio"][value="cover"]');
-                                const isCoverChecked = Array.from(coverInputs).some(input => input.checked);
-                                
-                                return { isSkuChecked, isCoverChecked };
-                            });
-                            
-                            console.log(`上传类型选择状态: SKU编码=${selectionStatus.isSkuChecked}, 替换方式=${selectionStatus.isCoverChecked}`);
-                            
-                            // 定位上传链接并点击
+                            // 点击上传按钮
                             await page.evaluate(() => {
-                                // 查找目标上传组件中的链接
-                                const uploadComponents = document.querySelectorAll('.dj-upload');
-                                let targetLink = null;
-                                
-                                // 遍历寻找接受.zip文件的组件
-                                for (let i = 0; i < uploadComponents.length; i++) {
-                                    const component = uploadComponents[i];
-                                    const fileInput = component.querySelector('input[type="file"]');
-                                    const acceptAttr = fileInput ? fileInput.getAttribute('accept') : '';
-                                    
-                                    if (fileInput && acceptAttr === '.zip') {
-                                        // 找到目标组件中的链接
-                                        const link = component.querySelector('.dj-upload__text a');
-                                        if (link) {
-                                            console.log('找到上传链接，准备点击');
-                                            targetLink = link;
-                                            link.click();
-                                            return true;
-                                        }
-                                    }
+                                const uploadButtons = Array.from(document.querySelectorAll('.dj-upload-demo .dj-upload__text a'));
+                                if (uploadButtons.length > 0) {
+                                    console.log('找到上传按钮，点击它');
+                                    uploadButtons[0].click();
+                                    return true;
                                 }
-                                
+                                console.log('未找到上传按钮');
                                 return false;
                             });
                             
-                            // 等待文件选择对话框出现
-                            console.log('已点击上传链接，等待文件选择对话框...');
+                            // 等待上传按钮点击后的反应
                             await new Promise(resolve => setTimeout(resolve, 2000));
                             
-                            // 找到并上传文件 - 直接操作文件输入框
-                            const fileInput = await page.$('input[type="file"][accept=".zip"]');
-                            if (fileInput) {
-                                console.log('找到ZIP文件输入框，准备上传文件');
-                                // 设置要上传的文件路径
-                                const filePath = `./商品图片_${this.user_id}.zip`;
-                                await fileInput.uploadFile(filePath);
-                                
-                                // 手动触发多种事件
-                                await page.evaluate(() => {
-                                    const fileInputs = document.querySelectorAll('input[type="file"][accept=".zip"]');
-                                    for (const input of fileInputs) {
-                                        // 按先后顺序触发多个事件
-                                        ['click', 'focus', 'input', 'change'].forEach(eventType => {
-                                            const event = new Event(eventType, { bubbles: true });
-                                            input.dispatchEvent(event);
-                                        });
+                            try {
+                                // 精确定位接受.zip文件的上传组件
+                                const targetComponent = await page.evaluate(() => {
+                                    // 查找所有上传组件
+                                    const uploadComponents = document.querySelectorAll('.dj-upload');
+                                    // 遍历寻找接受.zip文件的组件
+                                    for (let i = 0; i < uploadComponents.length; i++) {
+                                        const component = uploadComponents[i];
+                                        const fileInput = component.querySelector('input[type="file"]');
+                                        const acceptAttr = fileInput ? fileInput.getAttribute('accept') : '';
+                                        
+                                        if (fileInput && acceptAttr === '.zip') {
+                                            console.log(`找到目标ZIP上传组件 #${i+1}`);
+                                            // 确保输入框可见
+                                            if (fileInput.classList.contains('hide')) {
+                                                fileInput.classList.remove('hide');
+                                            }
+                                            fileInput.style.display = 'block';
+                                            fileInput.style.opacity = '1';
+                                            fileInput.style.visibility = 'visible';
+                                            fileInput.style.zIndex = '9999';
+                                            
+                                            return {
+                                                index: i,
+                                                hasZipInput: true
+                                            };
+                                        }
                                     }
-                                });
-                                
-                                console.log(`文件已成功上传: ${filePath}`);
-                                
-                                // 等待文件处理
-                                await new Promise(resolve => setTimeout(resolve, 5000));
-                                
-                                // 查看是否有确认按钮需要点击
-                                const hasConfirmButton = await page.evaluate(() => {
-                                    const confirmButtons = Array.from(document.querySelectorAll('button')).filter(btn => 
-                                        btn.textContent.includes('确认') || 
-                                        btn.textContent.includes('提交') || 
-                                        btn.textContent.includes('确定'));
                                     
-                                    if (confirmButtons.length > 0) {
-                                        console.log('找到确认按钮，自动点击');
-                                        confirmButtons[0].click();
-                                        return true;
-                                    }
-                                    return false;
+                                    return { index: -1, hasZipInput: false };
                                 });
                                 
-                                console.log(`确认按钮状态: ${hasConfirmButton ? '已点击' : '未找到'}`);
+                                if (!targetComponent.hasZipInput) {
+                                    console.log('未找到接受ZIP文件的上传组件');
+                                    continue;
+                                }
                                 
-                                // 等待确认按钮操作完成
-                                await new Promise(resolve => setTimeout(resolve, 3000));
+                                console.log(`成功定位到第 ${targetComponent.index + 1} 个上传组件（支持ZIP文件）`);
                                 
-                                // 刷新当前页面
-                                console.log('正在刷新当前页面...');
-                                await page.reload({ waitUntil: 'networkidle2' });
-                                await new Promise(resolve => setTimeout(resolve, 3000));
-                                console.log('页面刷新完成');
-                                
-                                return true;
-                            } else {
-                                console.log('未找到ZIP文件输入框');
-                                return false;
+                                // 找到并上传文件 - 直接操作文件输入框
+                                const fileInput = await page.$('input[type="file"][accept=".zip"]');
+                                if (fileInput) {
+                                    console.log('找到ZIP文件输入框，准备上传文件');
+                                    // 上传当前文件
+                                    await fileInput.uploadFile(currentZipFile);
+                                    
+                                    // 手动触发多种事件
+                                    await page.evaluate(() => {
+                                        const fileInputs = document.querySelectorAll('input[type="file"][accept=".zip"]');
+                                        for (const input of fileInputs) {
+                                            // 按先后顺序触发多个事件
+                                            ['click', 'focus', 'input', 'change'].forEach(eventType => {
+                                                const event = new Event(eventType, { bubbles: true });
+                                                input.dispatchEvent(event);
+                                            });
+                                        }
+                                    });
+                                    
+                                    console.log(`文件已成功上传: ${currentZipFile}`);
+                                    
+                                    // 等待文件处理 - 30秒
+                                    console.log('等待30秒让文件处理完成...');
+                                    await new Promise(resolve => setTimeout(resolve, 30000));
+                                    
+                                    // 查看是否有确认按钮需要点击
+                                    const hasConfirmButton = await page.evaluate(() => {
+                                        const confirmButtons = Array.from(document.querySelectorAll('button')).filter(btn => 
+                                            btn.textContent.includes('确认') || 
+                                            btn.textContent.includes('提交') || 
+                                            btn.textContent.includes('确定'));
+                                        
+                                        if (confirmButtons.length > 0) {
+                                            console.log('找到确认按钮，自动点击');
+                                            confirmButtons[0].click();
+                                            return true;
+                                        }
+                                        return false;
+                                    });
+                                    
+                                    console.log(`确认按钮状态: ${hasConfirmButton ? '已点击' : '未找到'}`);
+                                    
+                                    // 等待确认按钮操作完成
+                                    await new Promise(resolve => setTimeout(resolve, 3000));
+                                } else {
+                                    console.log('未找到ZIP文件输入框');
+                                }
+                            } catch (error) {
+                                console.error('文件上传过程出错:', error.message);
                             }
-                            
-                        } catch (error) {
-                            console.error('文件上传过程出错:', error.message);
-                            return false;
                         }
-                    }
+                    };
+                    
+                    // 先上传SPU图片
+                    console.log('开始上传SPU图片...');
+                    await uploadZipFiles('product_images_spu_id', true);
+                    
+                    // 再上传SKU图片
+                    console.log('开始上传SKU图片...');
+                    await uploadZipFiles('product_images_sku_id', false);
+                    
+                    console.log('所有图片上传完成');
+                    return true;
                    
                 } catch (error) {
                     console.error('京东外卖商品获取失败:', error.message);
                     throw error;
                 }
             }
+            
 
         } catch (error) {
             console.error('执行点击操作时发生错误:', error);
