@@ -194,7 +194,7 @@ export async function handler_run_base(req, res) {
             console.log('已替换为新的adsPowerUserId:', adsPowerUserId);
         } 
         console.log('最终adsPowerUserId:', adsPowerUserId);
-        
+
         const BASE_URL = req.body.BASE_URL;
 
 
@@ -282,43 +282,41 @@ export async function handler_run_base(req, res) {
         }
         function cleanCategoryNames(categoryNames) {
             console.log('原始分类名称:', categoryNames);
-            if (typeof categoryNames === 'string') {
-                // 移除【】中的内容、所有表情符号、\r换行符和— —符号
-                return categoryNames
-                    .replace(/【.*?】/g, '')
+            
+            // 定义一个通用的清理函数
+            const cleanString = (str) => {
+                if (typeof str !== 'string') return str;
+                
+                return str
+                    .replace(/【.*?】/g, '')  // 移除【】中的内容
                     // 扩展表情符号匹配范围
                     .replace(/[\u{1F000}-\u{1F9FF}\u{2600}-\u{27BF}\u{2B50}\u{2B55}\u{2700}-\u{27BF}\u{2934}-\u{2935}\u{2B05}-\u{2B07}\u{3030}\u{303D}\u{3297}\u{3299}\u{FE0F}]/gu, '')
-                    .replace(/\r/g, '') // 移除\r换行符
-                    .replace(/—\s*—/g, ''); // 移除— —符号
+                    // 匹配类似 (￣▽￣)～■ 的表情组合
+                    .replace(/\([^\)]*\)[～~]?[■□◆◇○●]/g, '')
+                    // 匹配其他常见表情组合
+                    .replace(/\([^\)]*\)/g, '')  // 移除(...)形式的表情
+                    .replace(/（[^）]*）/g, '')   // 移除（...）形式的表情
+                    .replace(/[～~][■□◆◇○●]/g, '') // 移除～■等组合
+                    .replace(/\r/g, '')          // 移除\r换行符
+                    .replace(/—\s*—/g, '')       // 移除— —符号
+                    .trim();                     // 移除前后空格
+            };
+            
+            if (typeof categoryNames === 'string') {
+                return cleanString(categoryNames);
             } else if (Array.isArray(categoryNames)) {
                 return categoryNames.map(item => {
                     if (Array.isArray(item)) {
-                        return item.map(subItem => {
-                            if (typeof subItem === 'string') {
-                                return subItem
-                                    .replace(/【.*?】/g, '')
-                                    // 扩展表情符号匹配范围
-                                    .replace(/[\u{1F000}-\u{1F9FF}\u{2600}-\u{27BF}\u{2B50}\u{2B55}\u{2700}-\u{27BF}\u{2934}-\u{2935}\u{2B05}-\u{2B07}\u{3030}\u{303D}\u{3297}\u{3299}\u{FE0F}]/gu, '')
-                                    .replace(/\r/g, '') // 移除\r换行符
-                                    .replace(/—\s*—/g, ''); // 移除— —符号
-                            }
-                            return subItem;
-                        });
-                    } else if (typeof item === 'string') {
-                        return item
-                            .replace(/【.*?】/g, '')
-                            // 扩展表情符号匹配范围
-                            .replace(/[\u{1F000}-\u{1F9FF}\u{2600}-\u{27BF}\u{2B50}\u{2B55}\u{2700}-\u{27BF}\u{2934}-\u{2935}\u{2B05}-\u{2B07}\u{3030}\u{303D}\u{3297}\u{3299}\u{FE0F}]/gu, '')
-                            .replace(/\r/g, '') // 移除\r换行符
-                            .replace(/—\s*—/g, ''); // 移除— —符号
+                        return item.map(subItem => cleanString(subItem));
+                    } else {
+                        return cleanString(item);
                     }
-                    return item;
                 });
             }
+            
             console.log('处理后分类名称:', categoryNames);
             return categoryNames || '';
         }
-
         // 如果是京东外卖任务，从美团外卖的数据中获取分类名称
         if (task_name === 'waimai_jingdong') {
 

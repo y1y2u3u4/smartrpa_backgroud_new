@@ -1220,11 +1220,17 @@ export class ClickTask extends Task {
                     
                     // 等待页面内容加载完成
             
-            
                     // 刷新页面
                     console.log('刷新页面...');
-                    await page.reload({ waitUntil: 'networkidle0' });
-                    console.log('页面刷新完成');
+                    try {
+                        await page.reload({ waitUntil: 'networkidle0' });
+                        console.log('页面刷新完成');
+                    } catch (error) {
+                        console.log(`页面刷新超时: ${error.message}`);
+                        console.log('等待60秒后继续执行...');
+                        await page.waitForTimeout(60000); // 等待60秒
+                        console.log('等待结束，继续执行后续操作');
+                    }
             
                     // 等待页面加载
                     await new Promise(resolve => setTimeout(resolve, 3000));
@@ -1708,9 +1714,16 @@ export class ClickTask extends Task {
                         console.log('刷新页面并重新点击商品下载按钮...');
                         try {
                             // 刷新页面
-                            await page.reload({ waitUntil: 'networkidle0' });
-                            console.log('页面刷新完成');
-                            await new Promise(resolve => setTimeout(resolve, 3000));
+                            console.log('刷新页面...');
+                            try {
+                                await page.reload({ waitUntil: 'networkidle0' });
+                                console.log('页面刷新完成');
+                            } catch (error) {
+                                console.log(`页面刷新超时: ${error.message}`);
+                                console.log('等待60秒后继续执行...');
+                                await page.waitForTimeout(60000); // 等待60秒
+                                console.log('等待结束，继续执行后续操作');
+                            }
                             
                             // 重新点击商品下载按钮
                             const iframes = await page.$$('iframe');
