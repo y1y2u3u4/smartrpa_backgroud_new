@@ -637,7 +637,7 @@ app.get('/api/workflow/stats', (req, res) => {
 });
 
 // 启动服务器
-const PORT = process.env.PORT || 8083;
+const PORT = 8083;
 
 // 启动前加载任务状态
 loadTaskStatusFromFile().then(() => {
@@ -660,3 +660,5 @@ app.listen(PORT, () => {
   console.log('- GET  /api/workflow/stats         获取队列统计信息');
   console.log(`- 任务状态文件: ${TASK_STATUS_FILE}`);
 });
+
+// nohup  node task_manger_api.js > task_manger_api.log 2>&1 &

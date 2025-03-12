@@ -1,7 +1,123 @@
 {
   "queue": [],
   "running": [],
-  "completed": [],
+  "completed": [
+    {
+      "workflowFile": "kandeng.json",
+      "userId": "user_1741736924",
+      "taskConfig": {
+        "user_id": "user_1741736924",
+        "adsPowerUserId": "kn8o287",
+        "tuiguang_phonenumber": "1234567890",
+        "task_name": "kandeng_004",
+        "cityname": "Dongnanfeng_1214230127511",
+        "row": {
+          "Unnamed: 0": null,
+          "task_name": "kandeng_004",
+          "cityname": "Dongnanfeng_1214230127511",
+          "刊登店铺": "Dongnanfeng",
+          "系统SKU": 1214230127511
+        }
+      },
+      "status": "completed",
+      "progress": 100,
+      "createdAt": "2025-03-11T23:48:44.151Z",
+      "startTime": "2025-03-11T23:49:26.182Z",
+      "completedAt": "2025-03-11T23:50:26.881Z"
+    },
+    {
+      "workflowFile": "kandeng.json",
+      "userId": "user_1741737090",
+      "taskConfig": {
+        "user_id": "user_1741737090",
+        "adsPowerUserId": "kn8o287",
+        "tuiguang_phonenumber": "1234567890",
+        "task_name": "kandeng_004",
+        "cityname": "Dongnanfeng_1214230123511",
+        "row": {
+          "Unnamed: 0": null,
+          "task_name": "kandeng_004",
+          "cityname": "Dongnanfeng_1214230123511",
+          "刊登店铺": "Dongnanfeng",
+          "系统SKU": 1214230123511
+        }
+      },
+      "status": "completed",
+      "progress": 100,
+      "createdAt": "2025-03-11T23:51:30.406Z",
+      "startTime": "2025-03-11T23:51:30.430Z",
+      "completedAt": "2025-03-11T23:52:31.042Z"
+    },
+    {
+      "workflowFile": "kandeng.json",
+      "userId": "user_1741737090",
+      "taskConfig": {
+        "user_id": "user_1741737090",
+        "adsPowerUserId": "kn8o287",
+        "tuiguang_phonenumber": "1234567890",
+        "task_name": "kandeng_004",
+        "cityname": "Dongnanfeng_1216200043311",
+        "row": {
+          "Unnamed: 0": null,
+          "task_name": "kandeng_004",
+          "cityname": "Dongnanfeng_1216200043311",
+          "刊登店铺": "Dongnanfeng",
+          "系统SKU": 1216200043311
+        }
+      },
+      "status": "completed",
+      "progress": 100,
+      "createdAt": "2025-03-11T23:51:30.491Z",
+      "startTime": "2025-03-11T23:52:31.571Z",
+      "completedAt": "2025-03-11T23:53:31.648Z"
+    },
+    {
+      "workflowFile": "kandeng.json",
+      "userId": "user_1741737090",
+      "taskConfig": {
+        "user_id": "user_1741737090",
+        "adsPowerUserId": "kn8o287",
+        "tuiguang_phonenumber": "1234567890",
+        "task_name": "kandeng_004",
+        "cityname": "Dongnanfeng_1214230124212",
+        "row": {
+          "Unnamed: 0": null,
+          "task_name": "kandeng_004",
+          "cityname": "Dongnanfeng_1214230124212",
+          "刊登店铺": "Dongnanfeng",
+          "系统SKU": 1214230124212
+        }
+      },
+      "status": "completed",
+      "progress": 100,
+      "createdAt": "2025-03-11T23:51:30.700Z",
+      "startTime": "2025-03-11T23:53:31.675Z",
+      "completedAt": "2025-03-11T23:55:02.998Z"
+    },
+    {
+      "workflowFile": "kandeng.json",
+      "userId": "user_1741737732",
+      "taskConfig": {
+        "user_id": "user_1741737732",
+        "adsPowerUserId": "kn8o287",
+        "tuiguang_phonenumber": "1234567890",
+        "task_name": "kandeng_004",
+        "cityname": "Dongnanfeng_1214230127911",
+        "row": {
+          "Unnamed: 0": null,
+          "task_name": "kandeng_004",
+          "cityname": "Dongnanfeng_1214230127911",
+          "刊登店铺": "Dongnanfeng",
+          "系统SKU": 1214230127911
+        }
+      },
+      "status": "completed",
+      "progress": 100,
+      "createdAt": "2025-03-12T00:02:12.852Z",
+      "startTime": "2025-03-12T00:02:13.639Z",
+      "completedAt": "2025-03-12T00:02:13.662Z"
+    }
+  ],
   "errors": [
     {
       "workflowFile": "kandeng.json",
@@ -170,18 +286,930 @@
       "startTime": "2025-03-05T15:22:50.920Z",
       "error": "request to http://localhost:8082/scrape failed, reason: ",
       "errorAt": "2025-03-05T15:22:50.931Z"
+    },
+    {
+      "workflowFile": "kandeng.json",
+      "userId": "user_1741736852",
+      "taskConfig": {
+        "user_id": "user_1741736852",
+        "adsPowerUserId": "kn8o287",
+        "tuiguang_phonenumber": "1234567890",
+        "task_name": "kandeng_004",
+        "cityname": "Dongnanfeng_1214230123511",
+        "row": {
+          "Unnamed: 0": null,
+          "task_name": "kandeng_004",
+          "cityname": "Dongnanfeng_1214230123511",
+          "刊登店铺": "Dongnanfeng",
+          "系统SKU": 1214230123511
+        }
+      },
+      "status": "error",
+      "progress": 90,
+      "createdAt": "2025-03-11T23:47:32.724Z",
+      "startTime": "2025-03-11T23:47:32.729Z",
+      "error": "Invalid response body while trying to fetch http://localhost:8082/scrape: Premature close",
+      "errorAt": "2025-03-11T23:48:04.306Z"
+    },
+    {
+      "workflowFile": "kandeng.json",
+      "userId": "user_1741736852",
+      "taskConfig": {
+        "user_id": "user_1741736852",
+        "adsPowerUserId": "kn8o287",
+        "tuiguang_phonenumber": "1234567890",
+        "task_name": "kandeng_004",
+        "cityname": "Dongnanfeng_1216200043311",
+        "row": {
+          "Unnamed: 0": null,
+          "task_name": "kandeng_004",
+          "cityname": "Dongnanfeng_1216200043311",
+          "刊登店铺": "Dongnanfeng",
+          "系统SKU": 1216200043311
+        }
+      },
+      "status": "error",
+      "progress": 0,
+      "createdAt": "2025-03-11T23:47:32.815Z",
+      "startTime": "2025-03-11T23:48:04.762Z",
+      "error": "request to http://localhost:8082/scrape failed, reason: ",
+      "errorAt": "2025-03-11T23:48:04.767Z"
+    },
+    {
+      "workflowFile": "kandeng.json",
+      "userId": "user_1741736853",
+      "taskConfig": {
+        "user_id": "user_1741736853",
+        "adsPowerUserId": "kn8o287",
+        "tuiguang_phonenumber": "1234567890",
+        "task_name": "kandeng_004",
+        "cityname": "Dongnanfeng_1214230124212",
+        "row": {
+          "Unnamed: 0": null,
+          "task_name": "kandeng_004",
+          "cityname": "Dongnanfeng_1214230124212",
+          "刊登店铺": "Dongnanfeng",
+          "系统SKU": 1214230124212
+        }
+      },
+      "status": "error",
+      "progress": 0,
+      "createdAt": "2025-03-11T23:47:33.258Z",
+      "startTime": "2025-03-11T23:48:05.763Z",
+      "error": "request to http://localhost:8082/scrape failed, reason: ",
+      "errorAt": "2025-03-11T23:48:05.764Z"
+    },
+    {
+      "workflowFile": "kandeng.json",
+      "userId": "user_1741736853",
+      "taskConfig": {
+        "user_id": "user_1741736853",
+        "adsPowerUserId": "kn8o287",
+        "tuiguang_phonenumber": "1234567890",
+        "task_name": "kandeng_004",
+        "cityname": "Dongnanfeng_1214230127511",
+        "row": {
+          "Unnamed: 0": null,
+          "task_name": "kandeng_004",
+          "cityname": "Dongnanfeng_1214230127511",
+          "刊登店铺": "Dongnanfeng",
+          "系统SKU": 1214230127511
+        }
+      },
+      "status": "error",
+      "progress": 90,
+      "createdAt": "2025-03-11T23:47:33.643Z",
+      "startTime": "2025-03-11T23:48:06.763Z",
+      "error": "Invalid response body while trying to fetch http://localhost:8082/scrape: Premature close",
+      "errorAt": "2025-03-11T23:48:31.787Z"
+    },
+    {
+      "workflowFile": "kandeng.json",
+      "userId": "user_1741736853",
+      "taskConfig": {
+        "user_id": "user_1741736853",
+        "adsPowerUserId": "kn8o287",
+        "tuiguang_phonenumber": "1234567890",
+        "task_name": "kandeng_004",
+        "cityname": "Dongnanfeng_1214230127911",
+        "row": {
+          "Unnamed: 0": null,
+          "task_name": "kandeng_004",
+          "cityname": "Dongnanfeng_1214230127911",
+          "刊登店铺": "Dongnanfeng",
+          "系统SKU": 1214230127911
+        }
+      },
+      "status": "error",
+      "progress": 0,
+      "createdAt": "2025-03-11T23:47:33.969Z",
+      "startTime": "2025-03-11T23:48:31.908Z",
+      "error": "request to http://localhost:8082/scrape failed, reason: ",
+      "errorAt": "2025-03-11T23:48:31.914Z"
+    },
+    {
+      "workflowFile": "kandeng.json",
+      "userId": "user_1741736923",
+      "taskConfig": {
+        "user_id": "user_1741736923",
+        "adsPowerUserId": "kn8o287",
+        "tuiguang_phonenumber": "1234567890",
+        "task_name": "kandeng_004",
+        "cityname": "Dongnanfeng_1214230123511",
+        "row": {
+          "Unnamed: 0": null,
+          "task_name": "kandeng_004",
+          "cityname": "Dongnanfeng_1214230123511",
+          "刊登店铺": "Dongnanfeng",
+          "系统SKU": 1214230123511
+        }
+      },
+      "status": "error",
+      "progress": 90,
+      "createdAt": "2025-03-11T23:48:43.120Z",
+      "startTime": "2025-03-11T23:48:43.125Z",
+      "error": "Invalid response body while trying to fetch http://localhost:8082/scrape: Premature close",
+      "errorAt": "2025-03-11T23:49:23.969Z"
+    },
+    {
+      "workflowFile": "kandeng.json",
+      "userId": "user_1741736923",
+      "taskConfig": {
+        "user_id": "user_1741736923",
+        "adsPowerUserId": "kn8o287",
+        "tuiguang_phonenumber": "1234567890",
+        "task_name": "kandeng_004",
+        "cityname": "Dongnanfeng_1216200043311",
+        "row": {
+          "Unnamed: 0": null,
+          "task_name": "kandeng_004",
+          "cityname": "Dongnanfeng_1216200043311",
+          "刊登店铺": "Dongnanfeng",
+          "系统SKU": 1216200043311
+        }
+      },
+      "status": "error",
+      "progress": 0,
+      "createdAt": "2025-03-11T23:48:43.273Z",
+      "startTime": "2025-03-11T23:49:24.179Z",
+      "error": "request to http://localhost:8082/scrape failed, reason: ",
+      "errorAt": "2025-03-11T23:49:24.187Z"
+    },
+    {
+      "workflowFile": "kandeng.json",
+      "userId": "user_1741736923",
+      "taskConfig": {
+        "user_id": "user_1741736923",
+        "adsPowerUserId": "kn8o287",
+        "tuiguang_phonenumber": "1234567890",
+        "task_name": "kandeng_004",
+        "cityname": "Dongnanfeng_1214230124212",
+        "row": {
+          "Unnamed: 0": null,
+          "task_name": "kandeng_004",
+          "cityname": "Dongnanfeng_1214230124212",
+          "刊登店铺": "Dongnanfeng",
+          "系统SKU": 1214230124212
+        }
+      },
+      "status": "error",
+      "progress": 0,
+      "createdAt": "2025-03-11T23:48:43.658Z",
+      "startTime": "2025-03-11T23:49:25.181Z",
+      "error": "request to http://localhost:8082/scrape failed, reason: ",
+      "errorAt": "2025-03-11T23:49:25.182Z"
+    },
+    {
+      "workflowFile": "kandeng.json",
+      "userId": "user_1741737091",
+      "taskConfig": {
+        "user_id": "user_1741737091",
+        "adsPowerUserId": "kn8o287",
+        "tuiguang_phonenumber": "1234567890",
+        "task_name": "kandeng_004",
+        "cityname": "Dongnanfeng_1214230127511",
+        "row": {
+          "Unnamed: 0": null,
+          "task_name": "kandeng_004",
+          "cityname": "Dongnanfeng_1214230127511",
+          "刊登店铺": "Dongnanfeng",
+          "系统SKU": 1214230127511
+        }
+      },
+      "status": "error",
+      "progress": 90,
+      "createdAt": "2025-03-11T23:51:31.031Z",
+      "startTime": "2025-03-11T23:55:03.830Z",
+      "error": "Invalid response body while trying to fetch http://localhost:8082/scrape: Premature close",
+      "errorAt": "2025-03-11T23:55:51.985Z"
+    },
+    {
+      "workflowFile": "kandeng.json",
+      "userId": "user_1741737091",
+      "taskConfig": {
+        "user_id": "user_1741737091",
+        "adsPowerUserId": "kn8o287",
+        "tuiguang_phonenumber": "1234567890",
+        "task_name": "kandeng_004",
+        "cityname": "Dongnanfeng_1214230127911",
+        "row": {
+          "Unnamed: 0": null,
+          "task_name": "kandeng_004",
+          "cityname": "Dongnanfeng_1214230127911",
+          "刊登店铺": "Dongnanfeng",
+          "系统SKU": 1214230127911
+        }
+      },
+      "status": "error",
+      "progress": 0,
+      "createdAt": "2025-03-11T23:51:31.253Z",
+      "startTime": "2025-03-11T23:55:52.894Z",
+      "error": "request to http://localhost:8082/scrape failed, reason: ",
+      "errorAt": "2025-03-11T23:55:52.903Z"
+    },
+    {
+      "workflowFile": "kandeng.json",
+      "userId": "user_1741737091",
+      "taskConfig": {
+        "user_id": "user_1741737091",
+        "adsPowerUserId": "kn8o287",
+        "tuiguang_phonenumber": "1234567890",
+        "task_name": "kandeng_004",
+        "cityname": "Dongnanfeng_1214230128011",
+        "row": {
+          "Unnamed: 0": null,
+          "task_name": "kandeng_004",
+          "cityname": "Dongnanfeng_1214230128011",
+          "刊登店铺": "Dongnanfeng",
+          "系统SKU": 1214230128011
+        }
+      },
+      "status": "error",
+      "progress": 0,
+      "createdAt": "2025-03-11T23:51:31.678Z",
+      "startTime": "2025-03-11T23:55:53.896Z",
+      "error": "request to http://localhost:8082/scrape failed, reason: ",
+      "errorAt": "2025-03-11T23:55:53.899Z"
+    },
+    {
+      "workflowFile": "kandeng.json",
+      "userId": "user_1741737091",
+      "taskConfig": {
+        "user_id": "user_1741737091",
+        "adsPowerUserId": "kn8o287",
+        "tuiguang_phonenumber": "1234567890",
+        "task_name": "kandeng_004",
+        "cityname": "Dongnanfeng_1214230128911",
+        "row": {
+          "Unnamed: 0": null,
+          "task_name": "kandeng_004",
+          "cityname": "Dongnanfeng_1214230128911",
+          "刊登店铺": "Dongnanfeng",
+          "系统SKU": 1214230128911
+        }
+      },
+      "status": "error",
+      "progress": 0,
+      "createdAt": "2025-03-11T23:51:31.784Z",
+      "startTime": "2025-03-11T23:55:54.898Z",
+      "error": "request to http://localhost:8082/scrape failed, reason: ",
+      "errorAt": "2025-03-11T23:55:54.900Z"
+    },
+    {
+      "workflowFile": "kandeng.json",
+      "userId": "user_1741737092",
+      "taskConfig": {
+        "user_id": "user_1741737092",
+        "adsPowerUserId": "kn8o287",
+        "tuiguang_phonenumber": "1234567890",
+        "task_name": "kandeng_004",
+        "cityname": "Dongnanfeng_1214230129011",
+        "row": {
+          "Unnamed: 0": null,
+          "task_name": "kandeng_004",
+          "cityname": "Dongnanfeng_1214230129011",
+          "刊登店铺": "Dongnanfeng",
+          "系统SKU": 1214230129011
+        }
+      },
+      "status": "error",
+      "progress": 0,
+      "createdAt": "2025-03-11T23:51:32.261Z",
+      "startTime": "2025-03-11T23:55:55.900Z",
+      "error": "request to http://localhost:8082/scrape failed, reason: ",
+      "errorAt": "2025-03-11T23:55:55.904Z"
+    },
+    {
+      "workflowFile": "kandeng.json",
+      "userId": "user_1741737092",
+      "taskConfig": {
+        "user_id": "user_1741737092",
+        "adsPowerUserId": "kn8o287",
+        "tuiguang_phonenumber": "1234567890",
+        "task_name": "kandeng_004",
+        "cityname": "Dongnanfeng_1214230130011",
+        "row": {
+          "Unnamed: 0": null,
+          "task_name": "kandeng_004",
+          "cityname": "Dongnanfeng_1214230130011",
+          "刊登店铺": "Dongnanfeng",
+          "系统SKU": 1214230130011
+        }
+      },
+      "status": "error",
+      "progress": 0,
+      "createdAt": "2025-03-11T23:51:32.627Z",
+      "startTime": "2025-03-11T23:55:56.902Z",
+      "error": "request to http://localhost:8082/scrape failed, reason: ",
+      "errorAt": "2025-03-11T23:55:56.906Z"
+    },
+    {
+      "workflowFile": "kandeng.json",
+      "userId": "user_1741737092",
+      "taskConfig": {
+        "user_id": "user_1741737092",
+        "adsPowerUserId": "kn8o287",
+        "tuiguang_phonenumber": "1234567890",
+        "task_name": "kandeng_004",
+        "cityname": "Dongnanfeng_1214230131211",
+        "row": {
+          "Unnamed: 0": null,
+          "task_name": "kandeng_004",
+          "cityname": "Dongnanfeng_1214230131211",
+          "刊登店铺": "Dongnanfeng",
+          "系统SKU": 1214230131211
+        }
+      },
+      "status": "error",
+      "progress": 0,
+      "createdAt": "2025-03-11T23:51:32.868Z",
+      "startTime": "2025-03-11T23:55:57.904Z",
+      "error": "request to http://localhost:8082/scrape failed, reason: ",
+      "errorAt": "2025-03-11T23:55:57.908Z"
+    },
+    {
+      "workflowFile": "kandeng.json",
+      "userId": "user_1741737093",
+      "taskConfig": {
+        "user_id": "user_1741737093",
+        "adsPowerUserId": "kn8o287",
+        "tuiguang_phonenumber": "1234567890",
+        "task_name": "kandeng_004",
+        "cityname": "Dongnanfeng_1214230131312",
+        "row": {
+          "Unnamed: 0": null,
+          "task_name": "kandeng_004",
+          "cityname": "Dongnanfeng_1214230131312",
+          "刊登店铺": "Dongnanfeng",
+          "系统SKU": 1214230131312
+        }
+      },
+      "status": "error",
+      "progress": 0,
+      "createdAt": "2025-03-11T23:51:33.137Z",
+      "startTime": "2025-03-11T23:55:58.906Z",
+      "error": "request to http://localhost:8082/scrape failed, reason: ",
+      "errorAt": "2025-03-11T23:55:58.910Z"
+    },
+    {
+      "workflowFile": "kandeng.json",
+      "userId": "user_1741737093",
+      "taskConfig": {
+        "user_id": "user_1741737093",
+        "adsPowerUserId": "kn8o287",
+        "tuiguang_phonenumber": "1234567890",
+        "task_name": "kandeng_004",
+        "cityname": "Dongnanfeng_1214230132311",
+        "row": {
+          "Unnamed: 0": null,
+          "task_name": "kandeng_004",
+          "cityname": "Dongnanfeng_1214230132311",
+          "刊登店铺": "Dongnanfeng",
+          "系统SKU": 1214230132311
+        }
+      },
+      "status": "error",
+      "progress": 0,
+      "createdAt": "2025-03-11T23:51:33.543Z",
+      "startTime": "2025-03-11T23:55:59.908Z",
+      "error": "request to http://localhost:8082/scrape failed, reason: ",
+      "errorAt": "2025-03-11T23:55:59.911Z"
+    },
+    {
+      "workflowFile": "kandeng.json",
+      "userId": "user_1741737093",
+      "taskConfig": {
+        "user_id": "user_1741737093",
+        "adsPowerUserId": "kn8o287",
+        "tuiguang_phonenumber": "1234567890",
+        "task_name": "kandeng_004",
+        "cityname": "Dongnanfeng_1214230134311",
+        "row": {
+          "Unnamed: 0": null,
+          "task_name": "kandeng_004",
+          "cityname": "Dongnanfeng_1214230134311",
+          "刊登店铺": "Dongnanfeng",
+          "系统SKU": 1214230134311
+        }
+      },
+      "status": "error",
+      "progress": 0,
+      "createdAt": "2025-03-11T23:51:33.796Z",
+      "startTime": "2025-03-11T23:56:00.909Z",
+      "error": "request to http://localhost:8082/scrape failed, reason: ",
+      "errorAt": "2025-03-11T23:56:00.911Z"
+    },
+    {
+      "workflowFile": "kandeng.json",
+      "userId": "user_1741737094",
+      "taskConfig": {
+        "user_id": "user_1741737094",
+        "adsPowerUserId": "kn8o287",
+        "tuiguang_phonenumber": "1234567890",
+        "task_name": "kandeng_004",
+        "cityname": "Dongnanfeng_1214230136512",
+        "row": {
+          "Unnamed: 0": null,
+          "task_name": "kandeng_004",
+          "cityname": "Dongnanfeng_1214230136512",
+          "刊登店铺": "Dongnanfeng",
+          "系统SKU": 1214230136512
+        }
+      },
+      "status": "error",
+      "progress": 0,
+      "createdAt": "2025-03-11T23:51:34.232Z",
+      "startTime": "2025-03-11T23:56:01.914Z",
+      "error": "request to http://localhost:8082/scrape failed, reason: ",
+      "errorAt": "2025-03-11T23:56:01.915Z"
+    },
+    {
+      "workflowFile": "kandeng.json",
+      "userId": "user_1741737733",
+      "taskConfig": {
+        "user_id": "user_1741737733",
+        "adsPowerUserId": "kn8o287",
+        "tuiguang_phonenumber": "1234567890",
+        "task_name": "kandeng_004",
+        "cityname": "Dongnanfeng_1214230128011",
+        "row": {
+          "Unnamed: 0": null,
+          "task_name": "kandeng_004",
+          "cityname": "Dongnanfeng_1214230128011",
+          "刊登店铺": "Dongnanfeng",
+          "系统SKU": 1214230128011
+        }
+      },
+      "status": "error",
+      "progress": 90,
+      "createdAt": "2025-03-12T00:02:13.337Z",
+      "startTime": "2025-03-12T00:02:14.703Z",
+      "error": "Invalid response body while trying to fetch http://localhost:8082/scrape: Premature close",
+      "errorAt": "2025-03-12T00:03:22.689Z"
+    },
+    {
+      "workflowFile": "kandeng.json",
+      "userId": "user_1741737731",
+      "taskConfig": {
+        "user_id": "user_1741737731",
+        "adsPowerUserId": "kn8o287",
+        "tuiguang_phonenumber": "1234567890",
+        "task_name": "kandeng_004",
+        "cityname": "Dongnanfeng_1214230123511",
+        "row": {
+          "Unnamed: 0": null,
+          "task_name": "kandeng_004",
+          "cityname": "Dongnanfeng_1214230123511",
+          "刊登店铺": "Dongnanfeng",
+          "系统SKU": 1214230123511
+        }
+      },
+      "status": "error",
+      "progress": 90,
+      "createdAt": "2025-03-12T00:02:11.631Z",
+      "startTime": "2025-03-12T00:02:11.636Z",
+      "error": "Invalid response body while trying to fetch http://localhost:8082/scrape: Premature close",
+      "errorAt": "2025-03-12T00:03:22.694Z"
+    },
+    {
+      "workflowFile": "kandeng.json",
+      "userId": "user_1741737732",
+      "taskConfig": {
+        "user_id": "user_1741737732",
+        "adsPowerUserId": "kn8o287",
+        "tuiguang_phonenumber": "1234567890",
+        "task_name": "kandeng_004",
+        "cityname": "Dongnanfeng_1216200043311",
+        "row": {
+          "Unnamed: 0": null,
+          "task_name": "kandeng_004",
+          "cityname": "Dongnanfeng_1216200043311",
+          "刊登店铺": "Dongnanfeng",
+          "系统SKU": 1216200043311
+        }
+      },
+      "status": "error",
+      "progress": 90,
+      "createdAt": "2025-03-12T00:02:12.114Z",
+      "startTime": "2025-03-12T00:02:12.637Z",
+      "error": "Invalid response body while trying to fetch http://localhost:8082/scrape: Premature close",
+      "errorAt": "2025-03-12T00:03:22.695Z"
+    },
+    {
+      "workflowFile": "kandeng.json",
+      "userId": "user_1741737732",
+      "taskConfig": {
+        "user_id": "user_1741737732",
+        "adsPowerUserId": "kn8o287",
+        "tuiguang_phonenumber": "1234567890",
+        "task_name": "kandeng_004",
+        "cityname": "Dongnanfeng_1214230124212",
+        "row": {
+          "Unnamed: 0": null,
+          "task_name": "kandeng_004",
+          "cityname": "Dongnanfeng_1214230124212",
+          "刊登店铺": "Dongnanfeng",
+          "系统SKU": 1214230124212
+        }
+      },
+      "status": "error",
+      "progress": 90,
+      "createdAt": "2025-03-12T00:02:12.268Z",
+      "startTime": "2025-03-12T00:02:12.637Z",
+      "error": "Invalid response body while trying to fetch http://localhost:8082/scrape: Premature close",
+      "errorAt": "2025-03-12T00:03:22.695Z"
+    },
+    {
+      "workflowFile": "kandeng.json",
+      "userId": "user_1741737732",
+      "taskConfig": {
+        "user_id": "user_1741737732",
+        "adsPowerUserId": "kn8o287",
+        "tuiguang_phonenumber": "1234567890",
+        "task_name": "kandeng_004",
+        "cityname": "Dongnanfeng_1214230127511",
+        "row": {
+          "Unnamed: 0": null,
+          "task_name": "kandeng_004",
+          "cityname": "Dongnanfeng_1214230127511",
+          "刊登店铺": "Dongnanfeng",
+          "系统SKU": 1214230127511
+        }
+      },
+      "status": "error",
+      "progress": 90,
+      "createdAt": "2025-03-12T00:02:12.601Z",
+      "startTime": "2025-03-12T00:02:12.638Z",
+      "error": "Invalid response body while trying to fetch http://localhost:8082/scrape: Premature close",
+      "errorAt": "2025-03-12T00:03:22.696Z"
+    },
+    {
+      "workflowFile": "kandeng.json",
+      "userId": "user_1741737734",
+      "taskConfig": {
+        "user_id": "user_1741737734",
+        "adsPowerUserId": "kn8o287",
+        "tuiguang_phonenumber": "1234567890",
+        "task_name": "kandeng_004",
+        "cityname": "Dongnanfeng_1214230131211",
+        "row": {
+          "Unnamed: 0": null,
+          "task_name": "kandeng_004",
+          "cityname": "Dongnanfeng_1214230131211",
+          "刊登店铺": "Dongnanfeng",
+          "系统SKU": 1214230131211
+        }
+      },
+      "status": "error",
+      "progress": 0,
+      "createdAt": "2025-03-12T00:02:14.280Z",
+      "startTime": "2025-03-12T00:03:22.779Z",
+      "error": "request to http://localhost:8082/scrape failed, reason: ",
+      "errorAt": "2025-03-12T00:03:22.796Z"
+    },
+    {
+      "workflowFile": "kandeng.json",
+      "userId": "user_1741737733",
+      "taskConfig": {
+        "user_id": "user_1741737733",
+        "adsPowerUserId": "kn8o287",
+        "tuiguang_phonenumber": "1234567890",
+        "task_name": "kandeng_004",
+        "cityname": "Dongnanfeng_1214230130011",
+        "row": {
+          "Unnamed: 0": null,
+          "task_name": "kandeng_004",
+          "cityname": "Dongnanfeng_1214230130011",
+          "刊登店铺": "Dongnanfeng",
+          "系统SKU": 1214230130011
+        }
+      },
+      "status": "error",
+      "progress": 0,
+      "createdAt": "2025-03-12T00:02:13.855Z",
+      "startTime": "2025-03-12T00:03:22.779Z",
+      "error": "request to http://localhost:8082/scrape failed, reason: ",
+      "errorAt": "2025-03-12T00:03:22.798Z"
+    },
+    {
+      "workflowFile": "kandeng.json",
+      "userId": "user_1741737733",
+      "taskConfig": {
+        "user_id": "user_1741737733",
+        "adsPowerUserId": "kn8o287",
+        "tuiguang_phonenumber": "1234567890",
+        "task_name": "kandeng_004",
+        "cityname": "Dongnanfeng_1214230128911",
+        "row": {
+          "Unnamed: 0": null,
+          "task_name": "kandeng_004",
+          "cityname": "Dongnanfeng_1214230128911",
+          "刊登店铺": "Dongnanfeng",
+          "系统SKU": 1214230128911
+        }
+      },
+      "status": "error",
+      "progress": 0,
+      "createdAt": "2025-03-12T00:02:13.534Z",
+      "startTime": "2025-03-12T00:03:22.778Z",
+      "error": "request to http://localhost:8082/scrape failed, reason: ",
+      "errorAt": "2025-03-12T00:03:22.799Z"
+    },
+    {
+      "workflowFile": "kandeng.json",
+      "userId": "user_1741737733",
+      "taskConfig": {
+        "user_id": "user_1741737733",
+        "adsPowerUserId": "kn8o287",
+        "tuiguang_phonenumber": "1234567890",
+        "task_name": "kandeng_004",
+        "cityname": "Dongnanfeng_1214230129011",
+        "row": {
+          "Unnamed: 0": null,
+          "task_name": "kandeng_004",
+          "cityname": "Dongnanfeng_1214230129011",
+          "刊登店铺": "Dongnanfeng",
+          "系统SKU": 1214230129011
+        }
+      },
+      "status": "error",
+      "progress": 0,
+      "createdAt": "2025-03-12T00:02:13.715Z",
+      "startTime": "2025-03-12T00:03:22.778Z",
+      "error": "request to http://localhost:8082/scrape failed, reason: ",
+      "errorAt": "2025-03-12T00:03:22.800Z"
+    },
+    {
+      "workflowFile": "kandeng.json",
+      "userId": "user_1741737734",
+      "taskConfig": {
+        "user_id": "user_1741737734",
+        "adsPowerUserId": "kn8o287",
+        "tuiguang_phonenumber": "1234567890",
+        "task_name": "kandeng_004",
+        "cityname": "Dongnanfeng_1214230131312",
+        "row": {
+          "Unnamed: 0": null,
+          "task_name": "kandeng_004",
+          "cityname": "Dongnanfeng_1214230131312",
+          "刊登店铺": "Dongnanfeng",
+          "系统SKU": 1214230131312
+        }
+      },
+      "status": "error",
+      "progress": 0,
+      "createdAt": "2025-03-12T00:02:14.417Z",
+      "startTime": "2025-03-12T00:03:22.779Z",
+      "error": "request to http://localhost:8082/scrape failed, reason: ",
+      "errorAt": "2025-03-12T00:03:22.801Z"
+    },
+    {
+      "workflowFile": "kandeng.json",
+      "userId": "user_1741737734",
+      "taskConfig": {
+        "user_id": "user_1741737734",
+        "adsPowerUserId": "kn8o287",
+        "tuiguang_phonenumber": "1234567890",
+        "task_name": "kandeng_004",
+        "cityname": "Dongnanfeng_1214230132311",
+        "row": {
+          "Unnamed: 0": null,
+          "task_name": "kandeng_004",
+          "cityname": "Dongnanfeng_1214230132311",
+          "刊登店铺": "Dongnanfeng",
+          "系统SKU": 1214230132311
+        }
+      },
+      "status": "error",
+      "progress": 0,
+      "createdAt": "2025-03-12T00:02:14.564Z",
+      "startTime": "2025-03-12T00:03:23.780Z",
+      "error": "request to http://localhost:8082/scrape failed, reason: ",
+      "errorAt": "2025-03-12T00:03:23.783Z"
+    },
+    {
+      "workflowFile": "kandeng.json",
+      "userId": "user_1741737734",
+      "taskConfig": {
+        "user_id": "user_1741737734",
+        "adsPowerUserId": "kn8o287",
+        "tuiguang_phonenumber": "1234567890",
+        "task_name": "kandeng_004",
+        "cityname": "Dongnanfeng_1214230134311",
+        "row": {
+          "Unnamed: 0": null,
+          "task_name": "kandeng_004",
+          "cityname": "Dongnanfeng_1214230134311",
+          "刊登店铺": "Dongnanfeng",
+          "系统SKU": 1214230134311
+        }
+      },
+      "status": "error",
+      "progress": 0,
+      "createdAt": "2025-03-12T00:02:14.983Z",
+      "startTime": "2025-03-12T00:03:23.780Z",
+      "error": "request to http://localhost:8082/scrape failed, reason: ",
+      "errorAt": "2025-03-12T00:03:23.783Z"
+    },
+    {
+      "workflowFile": "kandeng.json",
+      "userId": "user_1741737735",
+      "taskConfig": {
+        "user_id": "user_1741737735",
+        "adsPowerUserId": "kn8o287",
+        "tuiguang_phonenumber": "1234567890",
+        "task_name": "kandeng_004",
+        "cityname": "Dongnanfeng_1214230136512",
+        "row": {
+          "Unnamed: 0": null,
+          "task_name": "kandeng_004",
+          "cityname": "Dongnanfeng_1214230136512",
+          "刊登店铺": "Dongnanfeng",
+          "系统SKU": 1214230136512
+        }
+      },
+      "status": "error",
+      "progress": 0,
+      "createdAt": "2025-03-12T00:02:15.402Z",
+      "startTime": "2025-03-12T00:03:23.780Z",
+      "error": "request to http://localhost:8082/scrape failed, reason: ",
+      "errorAt": "2025-03-12T00:03:23.784Z"
+    },
+    {
+      "workflowFile": "kandeng.json",
+      "userId": "user_1741737735",
+      "taskConfig": {
+        "user_id": "user_1741737735",
+        "adsPowerUserId": "kn8o287",
+        "tuiguang_phonenumber": "1234567890",
+        "task_name": "kandeng_004",
+        "cityname": "Dongnanfeng_1214230136911",
+        "row": {
+          "Unnamed: 0": null,
+          "task_name": "kandeng_004",
+          "cityname": "Dongnanfeng_1214230136911",
+          "刊登店铺": "Dongnanfeng",
+          "系统SKU": 1214230136911
+        }
+      },
+      "status": "error",
+      "progress": 0,
+      "createdAt": "2025-03-12T00:02:15.689Z",
+      "startTime": "2025-03-12T00:03:23.780Z",
+      "error": "request to http://localhost:8082/scrape failed, reason: ",
+      "errorAt": "2025-03-12T00:03:23.785Z"
+    },
+    {
+      "workflowFile": "kandeng.json",
+      "userId": "user_1741737735",
+      "taskConfig": {
+        "user_id": "user_1741737735",
+        "adsPowerUserId": "kn8o287",
+        "tuiguang_phonenumber": "1234567890",
+        "task_name": "kandeng_004",
+        "cityname": "Dongnanfeng_1214230137411",
+        "row": {
+          "Unnamed: 0": null,
+          "task_name": "kandeng_004",
+          "cityname": "Dongnanfeng_1214230137411",
+          "刊登店铺": "Dongnanfeng",
+          "系统SKU": 1214230137411
+        }
+      },
+      "status": "error",
+      "progress": 0,
+      "createdAt": "2025-03-12T00:02:15.981Z",
+      "startTime": "2025-03-12T00:03:23.780Z",
+      "error": "request to http://localhost:8082/scrape failed, reason: ",
+      "errorAt": "2025-03-12T00:03:23.786Z"
+    },
+    {
+      "workflowFile": "kandeng.json",
+      "userId": "user_1741737736",
+      "taskConfig": {
+        "user_id": "user_1741737736",
+        "adsPowerUserId": "kn8o287",
+        "tuiguang_phonenumber": "1234567890",
+        "task_name": "kandeng_004",
+        "cityname": "Dongnanfeng_1214230137911",
+        "row": {
+          "Unnamed: 0": null,
+          "task_name": "kandeng_004",
+          "cityname": "Dongnanfeng_1214230137911",
+          "刊登店铺": "Dongnanfeng",
+          "系统SKU": 1214230137911
+        }
+      },
+      "status": "error",
+      "progress": 0,
+      "createdAt": "2025-03-12T00:02:16.088Z",
+      "startTime": "2025-03-12T00:03:24.782Z",
+      "error": "request to http://localhost:8082/scrape failed, reason: ",
+      "errorAt": "2025-03-12T00:03:24.789Z"
+    },
+    {
+      "workflowFile": "kandeng.json",
+      "userId": "user_1741737736",
+      "taskConfig": {
+        "user_id": "user_1741737736",
+        "adsPowerUserId": "kn8o287",
+        "tuiguang_phonenumber": "1234567890",
+        "task_name": "kandeng_004",
+        "cityname": "Dongnanfeng_1214230138211",
+        "row": {
+          "Unnamed: 0": null,
+          "task_name": "kandeng_004",
+          "cityname": "Dongnanfeng_1214230138211",
+          "刊登店铺": "Dongnanfeng",
+          "系统SKU": 1214230138211
+        }
+      },
+      "status": "error",
+      "progress": 0,
+      "createdAt": "2025-03-12T00:02:16.233Z",
+      "startTime": "2025-03-12T00:03:24.783Z",
+      "error": "request to http://localhost:8082/scrape failed, reason: ",
+      "errorAt": "2025-03-12T00:03:24.790Z"
+    },
+    {
+      "workflowFile": "kandeng.json",
+      "userId": "user_1741737736",
+      "taskConfig": {
+        "user_id": "user_1741737736",
+        "adsPowerUserId": "kn8o287",
+        "tuiguang_phonenumber": "1234567890",
+        "task_name": "kandeng_004",
+        "cityname": "Dongnanfeng_1214230138511",
+        "row": {
+          "Unnamed: 0": null,
+          "task_name": "kandeng_004",
+          "cityname": "Dongnanfeng_1214230138511",
+          "刊登店铺": "Dongnanfeng",
+          "系统SKU": 1214230138511
+        }
+      },
+      "status": "error",
+      "progress": 0,
+      "createdAt": "2025-03-12T00:02:16.561Z",
+      "startTime": "2025-03-12T00:03:24.783Z",
+      "error": "request to http://localhost:8082/scrape failed, reason: ",
+      "errorAt": "2025-03-12T00:03:24.796Z"
+    },
+    {
+      "workflowFile": "kandeng.json",
+      "userId": "user_1741737736",
+      "taskConfig": {
+        "user_id": "user_1741737736",
+        "adsPowerUserId": "kn8o287",
+        "tuiguang_phonenumber": "1234567890",
+        "task_name": "kandeng_004",
+        "cityname": "Dongnanfeng_1214230139011",
+        "row": {
+          "Unnamed: 0": null,
+          "task_name": "kandeng_004",
+          "cityname": "Dongnanfeng_1214230139011",
+          "刊登店铺": "Dongnanfeng",
+          "系统SKU": 1214230139011
+        }
+      },
+      "status": "error",
+      "progress": 0,
+      "createdAt": "2025-03-12T00:02:16.653Z",
+      "startTime": "2025-03-12T00:03:24.783Z",
+      "error": "request to http://localhost:8082/scrape failed, reason: ",
+      "errorAt": "2025-03-12T00:03:24.797Z"
     }
   ],
-  "status": "completed",
+  "status": "running",
   "error": null,
   "results": {
     "kandeng.json": {
       "success": false,
       "error": "request to http://localhost:8082/scrape failed, reason: ",
-      "timestamp": "2025-03-05T15:22:50.931Z",
-      "userId": "user_1741187014"
+      "timestamp": "2025-03-12T00:03:24.797Z",
+      "userId": "user_1741737736"
     }
   },
-  "isProcessing": false,
-  "lastUpdated": "2025-03-05T15:26:49.553Z"
+  "isProcessing": true,
+  "lastUpdated": "2025-03-12T00:03:24.797Z"
 }

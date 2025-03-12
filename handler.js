@@ -781,6 +781,7 @@ export async function handler_run_base(req, res) {
 
 
 
+
 export async function handler_run(req, res) {
     // 添加未捕获异常的全局处理
     process.on('uncaughtException', (error) => {
@@ -792,9 +793,26 @@ export async function handler_run(req, res) {
     });
 
     let browser, page;
+    let timeoutId;
+    let isTimedOut = false;
+    
+    // 设置总体超时时间（30分钟）
+    const TIMEOUT_DURATION = 10 * 60 * 1000;
+    
+    // 超时检查函数
+    const checkTimeout = () => {
+        if (isTimedOut) throw new Error('任务执行超时，已自动终止');
+    };
     
     try {
         console.log('开始处理任务请求');
+        
+        // 设置超时定时器
+        timeoutId = setTimeout(() => {
+            isTimedOut = true;
+            console.error('任务执行超时，即将终止');
+        }, TIMEOUT_DURATION);
+        
         const environment = process.env.ENVIRONMENT;
         let config;
         if (environment === 'cloud') {
@@ -820,13 +838,13 @@ export async function handler_run(req, res) {
             'Transfer-Encoding': 'chunked'
         });
         
-
         // 发送初始状态
         res.write(JSON.stringify({
             status: 'initializing',
             message: '开始执行代码'
         }) + '\n');
 
+        checkTimeout();
         //获取执行代码
         await taskExecutor(task_name);
         await eventHandler(task_name);
@@ -841,6 +859,7 @@ export async function handler_run(req, res) {
             message: '正在加载Cookie'
         }) + '\n');
 
+        checkTimeout();
         let cookies = [];
         const cookieFilePath = path.join(process.cwd(), `cookie_${task_name}.json`);
         try {
@@ -917,7 +936,11 @@ export async function handler_run(req, res) {
             status: 'browser_initializing',
             message: '正在初始化浏览器'
         }) + '\n');
-        browser = await launchBrowser_adsPower_lianjie_local(adsPowerUserId,BASE_URL);
+        
+        checkTimeout();
+        browser = await launchBrowser_adsPower_lianjie_local_api(adsPowerUserId, BASE_URL);
+        
+        checkTimeout();
         page = await setupPage_adsPower(browser, cookies);
 
         // 发送浏览器就绪状态
@@ -938,7 +961,8 @@ export async function handler_run(req, res) {
         dataProcessor.addMonitor(page);
         console.log('rowscheck:', rows);
         
-        const sortedData_new = matchAndReplace(sortedData, rows[0])
+        checkTimeout();
+        const sortedData_new = matchAndReplace(sortedData, rows[0]);
         let cityname = rows[0].cityname;
         console.log('cityname:', cityname);
         console.log('task_name:', task_name);
@@ -946,6 +970,9 @@ export async function handler_run(req, res) {
 
         // 处理非循环事件
         for (const [index, event] of sortedData_new.entries()) {
+            // 每次循环开始时检查超时
+            checkTimeout();
+            
             if (event.type !== 'loop_new') {
                 try {
                     const { type, time } = event;
@@ -959,6 +986,9 @@ export async function handler_run(req, res) {
                     }) + '\n');
 
                     await new Promise(resolve => setTimeout(resolve, 2000));
+                    
+                    // 在可能耗时的操作前检查超时
+                    checkTimeout();
                     await page.bringToFront();
 
                     if (type === 'loop' && event.loopEvents) {
@@ -967,8 +997,12 @@ export async function handler_run(req, res) {
                         console.log('处理后的 loopEvents:', event.loopEvents);
                     }
 
+                    // 在调用handleEvent前检查超时
+                    checkTimeout();
                     page = await handleEvent(event, page, browser, index, sortedData_new, task_name, cityname);
 
+                    // 在等待前检查超时
+                    checkTimeout();
                     const currentTime = new Date(time).getTime();
                     const nextTime = sortedData_new[index + 1]
                         ? new Date(sortedData_new[index + 1].time).getTime()
@@ -977,6 +1011,9 @@ export async function handler_run(req, res) {
                     await new Promise(resolve => setTimeout(resolve, waitTime));
 
                 } catch (error) {
+                    // 检查是否是超时错误
+                    if (isTimedOut) throw new Error('任务执行超时，已自动终止');
+                    
                     console.error(`处理非循环事件 ${index} 时出错:`, error);
                     res.write(JSON.stringify({
                         status: 'event_error',
@@ -989,8 +1026,14 @@ export async function handler_run(req, res) {
 
         // 处理循环事件
         for (const [index, event] of sortedData.entries()) {
+            // 每次外层循环开始时检查超时
+            checkTimeout();
+            
             if (event.type === 'loop_new') {
                 for (const row of rows) {
+                    // 每次处理新行时检查超时
+                    checkTimeout();
+                    
                     try {
                         console.log('处理循环事件，数据行:', row);
                         let cityname = row.cityname;
@@ -1003,15 +1046,26 @@ export async function handler_run(req, res) {
                         }) + '\n');
 
                         await new Promise(resolve => setTimeout(resolve, 2000));
-                        const loopEvents_new = matchAndReplace(event.loopEvents, row)
+                        const loopEvents_new = matchAndReplace(event.loopEvents, row);
                         
                         for (const loopEvent of loopEvents_new) {
+                            // 每次处理循环子事件前检查超时
+                            checkTimeout();
+                            
                             try {
                                 console.log('执行循环子事件:', loopEvent);
                                 const { type, time } = loopEvent;
+                                
+                                // 在可能耗时的操作前检查超时
+                                checkTimeout();
                                 await page.bringToFront();
+                                
+                                // 在调用handleEvent前检查超时
+                                checkTimeout();
                                 page = await handleEvent(loopEvent, page, browser, index, sortedData, task_name, cityname);
                                 
+                                // 在等待前检查超时
+                                checkTimeout();
                                 const currentTime = new Date(time).getTime();
                                 const nextTime = loopEvent[index + 1]
                                     ? new Date(loopEvent[index + 1].time).getTime()
@@ -1019,6 +1073,9 @@ export async function handler_run(req, res) {
                                 const waitTime = Math.max(2000, Math.min(nextTime - currentTime, 120000));
                                 await new Promise(resolve => setTimeout(resolve, waitTime));
                             } catch (error) {
+                                // 检查是否是超时错误
+                                if (isTimedOut) throw new Error('任务执行超时，已自动终止');
+                                
                                 console.error(`处理循环子事件时出错:`, error);
                                 res.write(JSON.stringify({
                                     status: 'loop_event_error',
@@ -1027,12 +1084,14 @@ export async function handler_run(req, res) {
                             }
                         }
                     } catch (error) {
+                        // 检查是否是超时错误
+                        if (isTimedOut) throw new Error('任务执行超时，已自动终止');
+                        
                         console.error(`处理行 ${JSON.stringify(row)} 的循环事件时出错:`, error);
                     }
                 }
             }
         }
-
 
         // 正常完成时发送成功响应
         res.write(JSON.stringify({
@@ -1047,32 +1106,40 @@ export async function handler_run(req, res) {
             if (!res.headersSent) {
                 res.status(500).json({
                     status: 'error',
-                    message: '任务执行失败',
+                    message: error.message.includes('超时') ? '任务执行超时' : '任务执行失败',
                     error: error.message
                 });
             } else {
                 res.write(JSON.stringify({
                     status: 'error',
-                    message: '任务执行失败',
+                    message: error.message.includes('超时') ? '任务执行超时' : '任务执行失败',
                     error: error.message
                 }) + '\n');
                 res.end();
             }
         }
     } finally {
+        // 清除超时定时器
+        if (timeoutId) clearTimeout(timeoutId);
+        
         // 确保资源被清理
         try {
-        // 清理资源
-        if (page && !page.isClosed()) {
-            await page.close();
-            console.log('adsPower页面已关闭');
-        }
-        
+            // 清理资源
+            if (page && !page.isClosed()) {
+                await page.close();
+                console.log('adsPower页面已关闭');
+            }
+            
         } catch (cleanupError) {
             console.error('清理资源时出错:', cleanupError);
         }
     }
 }
+
+
+
+
+
 
 
 
