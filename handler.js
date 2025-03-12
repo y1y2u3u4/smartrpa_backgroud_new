@@ -3,15 +3,98 @@ import { loadConfig } from './modules/configManager.js';
 import { launchBrowser, setupPage, launchBrowser_adsPower, setupPage_adsPower, closeBrowser_adsPower, launchBrowser_adsPower_lianjie, launchBrowser_adsPower_lianjie_local,launchBrowser_adsPower_lianjie_linux,launchBrowser_adsPower_lianjie_local_api,launchBrowser_adsPower_lianjie_linux_api, closePage_adsPower, launchBrowser_adsPower_bendi } from './modules/puppeteerManager.js';
 import { matchAndReplace, DataProcessor } from './modules/dataProcessor.js';
 import { OutputFactory } from './modules/outputHandler.js';
-// import { handleEvent } from './modules/eventHandler_3.js';
-import { inserttask, findTaskList, findTaskcookies, findTaskCategoryNames, findTaskDetail, findTaskinfo } from "./modules/notes.js";
+import { inserttask, findTaskList, findTaskcookies, findTaskCategoryNames, findTaskDetail, findTaskinfo,updatetask_status } from "./modules/notes.js";
 import xlsx from 'xlsx';
 import puppeteer from 'puppeteer';
 import path from 'path';
 import { taskExecutor } from './modules/taskExecutor.js';
 import { eventHandler } from './modules/eventHandler.js';
 import fs from 'fs/promises';
+import AWS from 'aws-sdk';
+import * as glob from 'glob';
+import { existsSync } from 'fs';  // 只导入需要的函数
 import { processProductImages } from './modules/imageProcessor.js';
+// 上传文件到S3
+
+// 在文件最顶部添加
+import dotenv from 'dotenv';
+dotenv.config();
+
+async function uploadFileToS3(filePath, s3Key) {
+    try {
+        // 配置AWS
+        console.log('正在配置 AWS...');
+        console.log('环境变量检查:', {
+            AWS_ACCESS_KEY_ID: process.env.AWS_ACCESS_KEY_ID ? '已设置' : '未设置',
+            AWS_SECRET_ACCESS_KEY: process.env.AWS_SECRET_ACCESS_KEY ? '已设置' : '未设置',
+            AWS_REGION: process.env.AWS_REGION || '未设置',
+            S3_BUCKET_NAME: process.env.S3_BUCKET_NAME || '未设置'
+        });
+        
+        // 确保存储桶名称有值
+        const bucketName = process.env.S3_BUCKET_NAME || 'waimaixiangmu';
+        
+        AWS.config.update({
+            accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+            secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+            region: process.env.AWS_REGION || 'ap-southeast-2'
+        });
+        
+        const s3 = new AWS.S3({
+            apiVersion: '2006-03-01',
+            signatureVersion: 'v4'
+        });
+        
+        console.log(`正在读取文件: ${filePath}`);
+        const fileContent = await fs.readFile(filePath);
+        
+        console.log(`正在上传到 S3: ${s3Key}`);
+        const params = {
+            Bucket: bucketName,
+            Key: s3Key,
+            Body: fileContent
+        };
+        
+        console.log('上传参数:', {
+            Bucket: params.Bucket,
+            Key: params.Key,
+            ContentLength: fileContent.length
+        });
+        
+        return new Promise((resolve, reject) => {
+            s3.upload(params, (err, data) => {
+                if (err) {
+                    console.error('S3 上传错误:', err);
+                    reject(err);
+                } else {
+                    console.log('S3 上传成功:', data.Location);
+                    resolve(data.Location);
+                }
+            });
+        });
+    } catch (error) {
+        console.error('上传过程中发生错误:', error);
+        throw error;
+    }
+}
+// 更新数据库中的文件URL
+async function updateFileUrlInDatabase(userId, fileType, fileUrl) {
+    const db = getDb();
+    
+    // 如果fileUrl是数组，将其转换为JSON字符串
+    const urlValue = Array.isArray(fileUrl) ? JSON.stringify(fileUrl) : fileUrl;
+    
+    const query = `
+        UPDATE tasks_queue
+        SET ${fileType}_file_url = $2
+        WHERE user_id = $1
+    `;
+    
+    await db.query(query, [userId, urlValue]);
+    console.log(`已更新${fileType}文件URL到数据库`);
+}
+
+
 
 async function importHandleEvent(task_name) {
     console.log('importTasks called with:', task_name);
@@ -698,10 +781,7 @@ export async function handler_run_base(req, res) {
 
         }
         // 发送浏览器初始化状态
-       
-        // browser = await launchBrowser(config.puppeteerConfig);
-        browser = await launchBrowser_adsPower_lianjie_local(adsPowerUserId,BASE_URL);
-        // page = await setupPage(browser, cookies);
+        browser = await launchBrowser_adsPower_lianjie_local_api(adsPowerUserId,BASE_URL);
         page = await setupPage_adsPower(browser, cookies);
         
 
@@ -748,15 +828,89 @@ export async function handler_run_base(req, res) {
         //     console.log('adsPower页面已关闭');
         // }
 
+        
+        // 如果是京东外卖任务，记录关键节点进行数据存储
+        if (task_name === 'waimai_jingdong' && workflowFile === 'test_jingdong_2.json') {
+            
+            // 上传Excel文件到S3
+            const newExcelPath = path.join(process.cwd(), `BatchHandleCreateLightFoodSpu_${user_id}.xls`);
+            
+            const excelS3Key = `jingdong_files/${user_id}/BatchHandleCreateLightFoodSpu_${user_id}.xls`;
+            await uploadFileToS3(newExcelPath, excelS3Key);
+            console.log(`Excel文件已上传到S3: ${excelS3Key}`);
+            // 查找所有匹配的ZIP文件
+            const zipFilePattern1 = `product_images_spu_id_${user_id}_part*.zip`;
+            const zipFilePattern2 = `product_images_sku_id_${user_id}_part*.zip`;
+            // 使用异步方式查找文件
+            const findZipFiles = (pattern) => {
+                console.log(`正在查找文件模式: ${pattern}`);
+                try {
+                    const files = glob.sync(pattern, { cwd: process.cwd() });
+                    console.log(`查找模式 ${pattern} 找到文件:`, files);
+                    return files;
+                } catch (error) {
+                    console.error(`查找文件出错 (${pattern}):`, error);
+                    return [];
+                }
+            };
+            
+
+            try {
+                console.log('开始查找ZIP文件...');
+                const zipFiles1 = findZipFiles(zipFilePattern1);
+                const zipFiles2 = findZipFiles(zipFilePattern2);
+                const allZipFiles = [...zipFiles1, ...zipFiles2];
+                console.log('找到的所有ZIP文件:', allZipFiles);
+                
+                
+                if (allZipFiles.length > 0) {
+                    try {
+                        const zipUrls = [];
+                        
+                        for (const zipFile of allZipFiles) {
+                            const zipPath = path.join(process.cwd(), zipFile);
+                            const zipS3Key = `jingdong_files/${user_id}/${zipFile}`;
+                            
+                            // 检查文件是否存在
+                            if (existsSync(zipPath)) {
+                                const fileUrl = await uploadFileToS3(zipPath, zipS3Key);
+                                console.log(`ZIP文件已上传到S3: ${zipS3Key}`);
+                                zipUrls.push(fileUrl);
+                            } else {
+                                console.log(`文件不存在: ${zipPath}`);
+                            }
+                        }
+                        
+                        // 更新数据库中的ZIP文件URL
+                        // await updateFileUrlInDatabase(user_id, 'zip', zipUrls);
+                    } catch (error) {
+                        console.error('上传ZIP文件到S3时出错:', error);
+                    }
+                } else {
+                    console.log(`未找到匹配的ZIP文件，搜索模式: ${zipFilePattern1} 和 ${zipFilePattern2}`);
+                    
+                    // 列出当前目录下的所有文件，帮助调试
+                    const allFiles = await findZipFiles('*');
+                    console.log('当前目录下的文件:', allFiles);
+                }
+            } catch (error) {
+                console.error('查找ZIP文件时出错:', error);
+            }
+                        
+            console.log('完成上传图片及文件打包:');
+            await updatetask_status(user_id, '图片及文件完成');
+            } 
+        else if (task_name === 'waimai_meituan' ) {
+                await updatetask_status(user_id, '美团信息收集完成');
+                console.log('完成美团信息收集:');}
+        
+
         // 发送完成状态
         res.json({
             status: 'success',
             message: '任务执行完成'
           });
 
-
-
-        
 
     } catch (error) {
         console.error('任务执行过程中发生错误:', error);

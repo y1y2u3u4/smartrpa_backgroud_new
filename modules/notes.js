@@ -103,6 +103,30 @@ export const inserttask = async (tasks) => {
 }
 
 
+export const updatetask_status = async (user_id, task_status) => {
+  const db = getDb();
+  const res = await db.query(
+    `UPDATE tasks_queue
+     SET task_status = $2
+     WHERE user_id = $1
+    `,
+    [
+      user_id,
+      `${task_status || '0'}`,
+    ]
+  );
+
+  const isSuccess = res && res.rowCount && res.rowCount > 0;
+  if (isSuccess) {
+    console.log('更新成功');
+  } else {
+    console.log('更新失败，可能没有找到对应的记录');
+  }
+
+  return isSuccess;
+}
+
+
 
 
 

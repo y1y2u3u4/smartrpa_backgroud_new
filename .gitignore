@@ -7,3 +7,4 @@ cookie_*.json # 更好的做法是忽略所有cookie文件
 cookie_waimai_jingdong_联圣光头佬饺子.json
 cookie_*.json # 更好的做法是忽略所有cookie文件
 cookie_*.json
+*zip
