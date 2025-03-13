@@ -77,22 +77,6 @@ async function uploadFileToS3(filePath, s3Key) {
         throw error;
     }
 }
-// 更新数据库中的文件URL
-async function updateFileUrlInDatabase(userId, fileType, fileUrl) {
-    const db = getDb();
-    
-    // 如果fileUrl是数组，将其转换为JSON字符串
-    const urlValue = Array.isArray(fileUrl) ? JSON.stringify(fileUrl) : fileUrl;
-    
-    const query = `
-        UPDATE tasks_queue
-        SET ${fileType}_file_url = $2
-        WHERE user_id = $1
-    `;
-    
-    await db.query(query, [userId, urlValue]);
-    console.log(`已更新${fileType}文件URL到数据库`);
-}
 
 
 

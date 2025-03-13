@@ -44,7 +44,7 @@ const WORKFLOW_FILES = [
 const WORKFLOW_JSON_DIR = path.join(__dirname, 'workflow_json');
 
 // 最大并发任务数
-let MAX_CONCURRENT_TASKS = 1;
+let MAX_CONCURRENT_TASKS = 3;
 
 // 保存工作流的状态
 let workflowStatus = {
@@ -164,6 +164,156 @@ async function loadWorkflowData(filename) {
 }
 
 // 执行单个工作流
+// async function executeWorkflow(workflowItem) {
+//   // 定义进度更新定时器变量
+//   let progressInterval;
+//   const { workflowFile, userId, taskConfig } = workflowItem;
+  
+//   try {
+//     console.log(`开始执行工作流: ${workflowFile}, 用户ID: ${userId}`);
+
+//     // 更新工作流项的状态
+//     workflowItem.status = 'running';
+//     workflowItem.startTime = new Date();
+//     workflowItem.progress = 0;
+
+//     // 加载工作流数据
+//     const workflowData = await loadWorkflowData(workflowFile);
+    
+//     // 准备任务数据
+//     const requestData = {
+//       ...taskConfig,
+//       sortedData: workflowData,
+//       workflowFile
+//     };
+    
+//     console.log(`工作流 ${workflowFile} 已加载，包含 ${workflowData.length} 个事件`);
+
+//     // 模拟进度更新
+//     progressInterval = setInterval(() => {
+//       if (workflowItem.progress < 90) {
+//         workflowItem.progress += 5;
+//       }
+//     }, 1000);
+
+//     // 设置请求超时
+//     const controller = new AbortController();
+//     const timeoutId = setTimeout(() => controller.abort(), 300000); // 5分钟超时
+    
+//     try {
+//       // 发送请求到自动化服务
+//       const response = await fetch('http://localhost:8082/scrape', {
+//         method: 'POST',
+//         headers: {
+//           'Content-Type': 'application/json'
+//         },
+//         body: JSON.stringify(requestData),
+//         signal: controller.signal
+//       });
+      
+//       clearTimeout(timeoutId); // 清除超时
+      
+//       // 检查响应状态
+//       if (!response.ok) {
+//         throw new Error(`服务器响应错误: ${response.status} ${response.statusText}`);
+//       }
+      
+//       // 获取原始响应文本
+//       const responseText = await response.text();
+//       console.log(`收到服务器响应，长度: ${responseText.length} 字节`);
+      
+//       // 处理流式响应 - 可能包含多个JSON对象，每行一个
+//       let result = { status: 'success', messages: [] };
+      
+//       if (responseText.trim()) {
+//         try {
+//           // 尝试解析整个响应为单个JSON对象
+//           result = JSON.parse(responseText);
+//           console.log('成功解析响应为单个JSON对象');
+//         } catch (singleJsonError) {
+//           console.log('响应不是单个JSON对象，尝试解析为多个JSON行');
+          
+//           // 可能是流式响应，尝试按行分割并解析每一行
+//           const lines = responseText.split('\n').filter(line => line.trim());
+//           const parsedLines = [];
+          
+//           for (const line of lines) {
+//             try {
+//               const lineObj = JSON.parse(line);
+//               parsedLines.push(lineObj);
+              
+//               // 如果有错误状态，记录下来
+//               if (lineObj.status === 'error' || lineObj.status === 'event_error' || lineObj.status === 'loop_event_error') {
+//                 console.error('检测到错误状态:', lineObj);
+//                 result.hasErrors = true;
+//                 result.lastError = lineObj;
+//               }
+//             } catch (lineError) {
+//               console.warn(`无法解析JSON行: ${line.substring(0, 100)}...`);
+//             }
+//           }
+          
+//           if (parsedLines.length > 0) {
+//             console.log(`成功解析 ${parsedLines.length} 个JSON对象`);
+//             // 使用最后一个状态作为结果
+//             const lastObj = parsedLines[parsedLines.length - 1];
+//             result = {
+//               status: lastObj.status || 'success',
+//               messages: parsedLines,
+//               lastMessage: lastObj
+//             };
+//           } else {
+//             throw new Error(`无法解析任何响应行为JSON: ${responseText.substring(0, 200)}...`);
+//           }
+//         }
+//       }
+      
+//       // 更新完成状态
+//       workflowItem.progress = 100;
+//       workflowItem.status = 'completed';
+//       workflowItem.completedAt = new Date();
+//       workflowStatus.results[workflowFile] = {
+//         ...result,
+//         userId,
+//         completedAt: new Date().toISOString()
+//       };
+      
+//       console.log(`工作流 ${workflowFile} 执行完成`);
+      
+//       return result;
+//     } catch (fetchError) {
+//       // 处理fetch特定错误
+//       if (fetchError.name === 'AbortError') {
+//         throw new Error('请求超时，执行时间超过5分钟');
+//       } else {
+//         throw fetchError; // 重新抛出其他错误
+//       }
+//     }
+//   } catch (error) {
+//     // 更新错误状态
+//     workflowItem.status = 'error';
+//     workflowItem.error = error.message;
+//     workflowItem.errorAt = new Date();
+    
+//     workflowStatus.results[workflowFile] = { 
+//       success: false, 
+//       error: error.message,
+//       timestamp: new Date().toISOString(),
+//       userId
+//     };
+    
+//     console.error(`工作流 ${workflowFile} 执行失败:`, error);
+//     throw error; // 向上抛出错误，让调用者决定如何处理
+//   } finally {
+//     // 确保清除进度更新定时器
+//     if (progressInterval) {
+//       clearInterval(progressInterval);
+//     }
+//   }
+// }
+
+
+// 执行单个工作流
 async function executeWorkflow(workflowItem) {
   // 定义进度更新定时器变量
   let progressInterval;
@@ -177,142 +327,228 @@ async function executeWorkflow(workflowItem) {
     workflowItem.startTime = new Date();
     workflowItem.progress = 0;
 
-    // 加载工作流数据
-    const workflowData = await loadWorkflowData(workflowFile);
+    // 使用Promise包装加载工作流数据
+    const workflowDataPromise = loadWorkflowData(workflowFile);
     
-    // 准备任务数据
-    const requestData = {
-      ...taskConfig,
-      sortedData: workflowData,
-      workflowFile
-    };
-    
-    console.log(`工作流 ${workflowFile} 已加载，包含 ${workflowData.length} 个事件`);
+    // 立即返回一个Promise，不阻塞当前函数
+    return workflowDataPromise.then(workflowData => {
+      // 准备任务数据
+      const requestData = {
+        ...taskConfig,
+        sortedData: workflowData,
+        workflowFile
+      };
+      
+      console.log(`工作流 ${workflowFile} 已加载，包含 ${workflowData.length} 个事件`);
 
-    // 模拟进度更新
-    progressInterval = setInterval(() => {
-      if (workflowItem.progress < 90) {
-        workflowItem.progress += 5;
-      }
-    }, 1000);
+      // 模拟进度更新
+      progressInterval = setInterval(() => {
+        if (workflowItem.progress < 90) {
+          workflowItem.progress += 5;
+        }
+      }, 1000);
 
-    // 设置请求超时
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 300000); // 5分钟超时
-    
-    try {
-      // 发送请求到自动化服务
-      const response = await fetch('http://localhost:8082/scrape', {
+      // 设置请求超时
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 300000); // 5分钟超时
+      
+      // 返回fetch操作的Promise
+      return fetch('http://localhost:8082/scrape', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify(requestData),
         signal: controller.signal
-      });
-      
-      clearTimeout(timeoutId); // 清除超时
-      
-      // 检查响应状态
-      if (!response.ok) {
-        throw new Error(`服务器响应错误: ${response.status} ${response.statusText}`);
-      }
-      
-      // 获取原始响应文本
-      const responseText = await response.text();
-      console.log(`收到服务器响应，长度: ${responseText.length} 字节`);
-      
-      // 处理流式响应 - 可能包含多个JSON对象，每行一个
-      let result = { status: 'success', messages: [] };
-      
-      if (responseText.trim()) {
-        try {
-          // 尝试解析整个响应为单个JSON对象
-          result = JSON.parse(responseText);
-          console.log('成功解析响应为单个JSON对象');
-        } catch (singleJsonError) {
-          console.log('响应不是单个JSON对象，尝试解析为多个JSON行');
-          
-          // 可能是流式响应，尝试按行分割并解析每一行
-          const lines = responseText.split('\n').filter(line => line.trim());
-          const parsedLines = [];
-          
-          for (const line of lines) {
-            try {
-              const lineObj = JSON.parse(line);
-              parsedLines.push(lineObj);
-              
-              // 如果有错误状态，记录下来
-              if (lineObj.status === 'error' || lineObj.status === 'event_error' || lineObj.status === 'loop_event_error') {
-                console.error('检测到错误状态:', lineObj);
-                result.hasErrors = true;
-                result.lastError = lineObj;
+      }).then(async response => {
+        clearTimeout(timeoutId); // 清除超时
+        
+        // 检查响应状态
+        if (!response.ok) {
+          throw new Error(`服务器响应错误: ${response.status} ${response.statusText}`);
+        }
+        
+        // 获取原始响应文本
+        const responseText = await response.text();
+        console.log(`收到服务器响应，长度: ${responseText.length} 字节`);
+        
+        // 处理流式响应 - 可能包含多个JSON对象，每行一个
+        let result = { status: 'success', messages: [] };
+        
+        if (responseText.trim()) {
+          try {
+            // 尝试解析整个响应为单个JSON对象
+            result = JSON.parse(responseText);
+            console.log('成功解析响应为单个JSON对象');
+          } catch (singleJsonError) {
+            console.log('响应不是单个JSON对象，尝试解析为多个JSON行');
+            
+            // 可能是流式响应，尝试按行分割并解析每一行
+            const lines = responseText.split('\n').filter(line => line.trim());
+            const parsedLines = [];
+            
+            for (const line of lines) {
+              try {
+                const lineObj = JSON.parse(line);
+                parsedLines.push(lineObj);
+                
+                // 如果有错误状态，记录下来
+                if (lineObj.status === 'error' || lineObj.status === 'event_error' || lineObj.status === 'loop_event_error') {
+                  console.error('检测到错误状态:', lineObj);
+                  result.hasErrors = true;
+                  result.lastError = lineObj;
+                }
+              } catch (lineError) {
+                console.warn(`无法解析JSON行: ${line.substring(0, 100)}...`);
               }
-            } catch (lineError) {
-              console.warn(`无法解析JSON行: ${line.substring(0, 100)}...`);
+            }
+            
+            if (parsedLines.length > 0) {
+              console.log(`成功解析 ${parsedLines.length} 个JSON对象`);
+              // 使用最后一个状态作为结果
+              const lastObj = parsedLines[parsedLines.length - 1];
+              result = {
+                status: lastObj.status || 'success',
+                messages: parsedLines,
+                lastMessage: lastObj
+              };
+            } else {
+              throw new Error(`无法解析任何响应行为JSON: ${responseText.substring(0, 200)}...`);
             }
           }
-          
-          if (parsedLines.length > 0) {
-            console.log(`成功解析 ${parsedLines.length} 个JSON对象`);
-            // 使用最后一个状态作为结果
-            const lastObj = parsedLines[parsedLines.length - 1];
-            result = {
-              status: lastObj.status || 'success',
-              messages: parsedLines,
-              lastMessage: lastObj
-            };
-          } else {
-            throw new Error(`无法解析任何响应行为JSON: ${responseText.substring(0, 200)}...`);
-          }
         }
-      }
+        
+        // 更新完成状态
+        workflowItem.progress = 100;
+        workflowItem.status = 'completed';
+        workflowItem.completedAt = new Date();
+        workflowStatus.results[workflowFile] = {
+          ...result,
+          userId,
+          completedAt: new Date().toISOString()
+        };
+        
+        console.log(`工作流 ${workflowFile} 执行完成`);
+        
+        return result;
+      }).catch(fetchError => {
+        // 处理fetch特定错误
+        if (fetchError.name === 'AbortError') {
+          throw new Error('请求超时，执行时间超过5分钟');
+        } else {
+          throw fetchError; // 重新抛出其他错误
+        }
+      }).finally(() => {
+        // 确保清除进度更新定时器
+        if (progressInterval) {
+          clearInterval(progressInterval);
+        }
+      });
+    }).catch(error => {
+      // 更新错误状态
+      workflowItem.status = 'error';
+      workflowItem.error = error.message;
+      workflowItem.errorAt = new Date();
       
-      // 更新完成状态
-      workflowItem.progress = 100;
-      workflowItem.status = 'completed';
-      workflowItem.completedAt = new Date();
-      workflowStatus.results[workflowFile] = {
-        ...result,
-        userId,
-        completedAt: new Date().toISOString()
+      workflowStatus.results[workflowFile] = { 
+        success: false, 
+        error: error.message,
+        timestamp: new Date().toISOString(),
+        userId
       };
       
-      console.log(`工作流 ${workflowFile} 执行完成`);
-      
-      return result;
-    } catch (fetchError) {
-      // 处理fetch特定错误
-      if (fetchError.name === 'AbortError') {
-        throw new Error('请求超时，执行时间超过5分钟');
-      } else {
-        throw fetchError; // 重新抛出其他错误
-      }
-    }
-  } catch (error) {
-    // 更新错误状态
-    workflowItem.status = 'error';
-    workflowItem.error = error.message;
-    workflowItem.errorAt = new Date();
+      console.error(`工作流 ${workflowFile} 执行失败:`, error);
+      throw error; // 向上抛出错误，让调用者决定如何处理
+    });
+  } catch (initialError) {
+    // 处理初始化过程中的错误
+    console.error(`工作流 ${workflowFile} 初始化失败:`, initialError);
     
-    workflowStatus.results[workflowFile] = { 
-      success: false, 
-      error: error.message,
-      timestamp: new Date().toISOString(),
-      userId
-    };
-    
-    console.error(`工作流 ${workflowFile} 执行失败:`, error);
-    throw error; // 向上抛出错误，让调用者决定如何处理
-  } finally {
     // 确保清除进度更新定时器
     if (progressInterval) {
       clearInterval(progressInterval);
     }
+    
+    throw initialError;
   }
 }
 
+const TASK_START_INTERVAL = 10000; // 2秒
+
 // 处理工作流队列 - 支持并发执行
+// async function processWorkflowQueue() {
+//   // 如果已经在处理队列或队列为空，则直接返回
+//   if (workflowStatus.isProcessing || workflowStatus.queue.length === 0) {
+//     return;
+//   }
+  
+//   // 保存当前状态到文件
+//   await saveTaskStatusToFile();
+
+//   console.log(`开始处理工作流队列，队列长度: ${workflowStatus.queue.length}`);
+//   workflowStatus.isProcessing = true;
+//   workflowStatus.status = 'running';
+
+//   try {
+//     // 持续处理队列，直到队列为空
+//     while (workflowStatus.queue.length > 0 || workflowStatus.running.length > 0) {
+//       // 如果当前运行的任务数小于最大并发数，且队列中还有任务，则启动新任务
+//       while (workflowStatus.running.length < MAX_CONCURRENT_TASKS && workflowStatus.queue.length > 0) {
+//         const workflowItem = workflowStatus.queue.shift();
+//         workflowStatus.running.push(workflowItem);
+        
+//         // 异步执行工作流，不等待完成
+//         executeWorkflow(workflowItem)
+//           .then(() => {
+//             // 执行成功，将工作流从running移动到completed
+//             const index = workflowStatus.running.findIndex(item => 
+//               item.workflowFile === workflowItem.workflowFile && item.userId === workflowItem.userId);
+            
+//             if (index !== -1) {
+//               workflowStatus.running.splice(index, 1);
+//               workflowStatus.completed.push(workflowItem);
+//               // 保存状态到文件
+//               saveTaskStatusToFile();
+//             }
+            
+//             console.log(`工作流 ${workflowItem.workflowFile} 成功完成，当前运行中: ${workflowStatus.running.length}, 队列中: ${workflowStatus.queue.length}`);
+//           })
+//           .catch(error => {
+//             // 执行失败，将工作流从running移动到errors
+//             const index = workflowStatus.running.findIndex(item => 
+//               item.workflowFile === workflowItem.workflowFile && item.userId === workflowItem.userId);
+            
+//             if (index !== -1) {
+//               workflowStatus.running.splice(index, 1);
+//               workflowStatus.errors.push(workflowItem);
+//               // 保存状态到文件
+//               saveTaskStatusToFile();
+//             }
+            
+//             console.error(`工作流 ${workflowItem.workflowFile} 执行失败: ${error.message}`);
+//           });
+//       }
+      
+//       // 等待一小段时间后再检查状态
+//       await new Promise(resolve => setTimeout(resolve, 1000));
+//     }
+    
+//     // 所有工作流完成
+//     workflowStatus.status = 'completed';
+//     console.log('所有工作流执行完毕');
+//   } catch (error) {
+//     console.error('工作流队列处理致命错误:', error);
+//     workflowStatus.status = 'error';
+//     workflowStatus.error = `队列处理错误: ${error.message}`;
+//   } finally {
+//     workflowStatus.isProcessing = false;
+//     console.log('工作流队列处理完成，isProcessing设置为false');
+//   }
+// }
+
+console.log(`MAX_CONCURRENT_TASKS = ${MAX_CONCURRENT_TASKS}`);
+
+// 首先确保只有一个processWorkflowQueue函数定义
 async function processWorkflowQueue() {
   // 如果已经在处理队列或队列为空，则直接返回
   if (workflowStatus.isProcessing || workflowStatus.queue.length === 0) {
@@ -330,47 +566,49 @@ async function processWorkflowQueue() {
     // 持续处理队列，直到队列为空
     while (workflowStatus.queue.length > 0 || workflowStatus.running.length > 0) {
       // 如果当前运行的任务数小于最大并发数，且队列中还有任务，则启动新任务
-      while (workflowStatus.running.length < MAX_CONCURRENT_TASKS && workflowStatus.queue.length > 0) {
+      if (workflowStatus.running.length < MAX_CONCURRENT_TASKS && workflowStatus.queue.length > 0) {
         const workflowItem = workflowStatus.queue.shift();
+        workflowItem.status = 'running';
+        workflowItem.startedAt = new Date();
         workflowStatus.running.push(workflowItem);
         
-        // 异步执行工作流，不等待完成
-        executeWorkflow(workflowItem)
-          .then(() => {
-            // 执行成功，将工作流从running移动到completed
-            const index = workflowStatus.running.findIndex(item => 
-              item.workflowFile === workflowItem.workflowFile && item.userId === workflowItem.userId);
-            
-            if (index !== -1) {
-              workflowStatus.running.splice(index, 1);
-              workflowStatus.completed.push(workflowItem);
-              // 保存状态到文件
-              saveTaskStatusToFile();
-            }
-            
-            console.log(`工作流 ${workflowItem.workflowFile} 成功完成，当前运行中: ${workflowStatus.running.length}, 队列中: ${workflowStatus.queue.length}`);
-          })
-          .catch(error => {
-            // 执行失败，将工作流从running移动到errors
-            const index = workflowStatus.running.findIndex(item => 
-              item.workflowFile === workflowItem.workflowFile && item.userId === workflowItem.userId);
-            
-            if (index !== -1) {
-              workflowStatus.running.splice(index, 1);
-              workflowStatus.errors.push(workflowItem);
-              // 保存状态到文件
-              saveTaskStatusToFile();
-            }
-            
-            console.error(`工作流 ${workflowItem.workflowFile} 执行失败: ${error.message}`);
-          });
+        console.log(`启动任务: ${workflowItem.workflowFile} (用户ID: ${workflowItem.userId}), 当前运行中: ${workflowStatus.running.length}, 剩余队列: ${workflowStatus.queue.length}`);
+        
+        // 使用Promise.resolve确保异步执行，不等待其完成
+        Promise.resolve().then(() => {
+          return executeWorkflow(workflowItem);
+        }).then(() => {
+          const index = workflowStatus.running.findIndex(item => 
+            item.workflowFile === workflowItem.workflowFile && item.userId === workflowItem.userId);
+          
+          if (index !== -1) {
+            workflowStatus.running.splice(index, 1);
+            workflowStatus.completed.push({...workflowItem, completedAt: new Date()});
+            saveTaskStatusToFile();
+          }
+          
+          console.log(`工作流 ${workflowItem.workflowFile} 成功完成，当前运行中: ${workflowStatus.running.length}, 队列中: ${workflowStatus.queue.length}`);
+        }).catch(error => {
+          const index = workflowStatus.running.findIndex(item => 
+            item.workflowFile === workflowItem.workflowFile && item.userId === workflowItem.userId);
+          
+          if (index !== -1) {
+            workflowStatus.running.splice(index, 1);
+            workflowStatus.errors.push({...workflowItem, error: error.message, errorAt: new Date()});
+            saveTaskStatusToFile();
+          }
+          
+          console.error(`工作流 ${workflowItem.workflowFile} 执行失败: ${error.message}`);
+        });
+        
+        // 每启动一个任务后等待指定时间
+        await new Promise(resolve => setTimeout(resolve, TASK_START_INTERVAL));
+      } else {
+        // 如果没有可用槽位或队列为空，等待一段时间后再检查
+        await new Promise(resolve => setTimeout(resolve, 1000));
       }
-      
-      // 等待一小段时间后再检查状态
-      await new Promise(resolve => setTimeout(resolve, 1000));
     }
     
-    // 所有工作流完成
     workflowStatus.status = 'completed';
     console.log('所有工作流执行完毕');
   } catch (error) {
@@ -382,7 +620,6 @@ async function processWorkflowQueue() {
     console.log('工作流队列处理完成，isProcessing设置为false');
   }
 }
-
 // API端点: 启动工作流
 app.post('/api/workflow/start', async (req, res) => {
   try {
