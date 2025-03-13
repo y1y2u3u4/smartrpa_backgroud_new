@@ -128,7 +128,7 @@ export async function handler_login(req, res) {
 
     // 创建基于用户提供的选择器或默认选择器的Promise数组
     const selectorPromises = loginSuccessSelectors.map(selector => 
-        page.waitForSelector(selector, { timeout: 10 * 60 * 1000 })
+        page.waitForSelector(selector, { timeout: 30 * 60 * 1000 })
     );
     
     // 等待任一选择器出现
