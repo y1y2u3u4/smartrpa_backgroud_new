@@ -44,7 +44,7 @@ const WORKFLOW_FILES = [
 const WORKFLOW_JSON_DIR = path.join(__dirname, 'workflow_json');
 
 // 最大并发任务数
-let MAX_CONCURRENT_TASKS = 3;
+let MAX_CONCURRENT_TASKS = 5;
 
 // 保存工作流的状态
 let workflowStatus = {
@@ -473,78 +473,8 @@ async function executeWorkflow(workflowItem) {
   }
 }
 
-const TASK_START_INTERVAL = 10000; // 2秒
+const TASK_START_INTERVAL = 30000; // 2秒
 
-// 处理工作流队列 - 支持并发执行
-// async function processWorkflowQueue() {
-//   // 如果已经在处理队列或队列为空，则直接返回
-//   if (workflowStatus.isProcessing || workflowStatus.queue.length === 0) {
-//     return;
-//   }
-  
-//   // 保存当前状态到文件
-//   await saveTaskStatusToFile();
-
-//   console.log(`开始处理工作流队列，队列长度: ${workflowStatus.queue.length}`);
-//   workflowStatus.isProcessing = true;
-//   workflowStatus.status = 'running';
-
-//   try {
-//     // 持续处理队列，直到队列为空
-//     while (workflowStatus.queue.length > 0 || workflowStatus.running.length > 0) {
-//       // 如果当前运行的任务数小于最大并发数，且队列中还有任务，则启动新任务
-//       while (workflowStatus.running.length < MAX_CONCURRENT_TASKS && workflowStatus.queue.length > 0) {
-//         const workflowItem = workflowStatus.queue.shift();
-//         workflowStatus.running.push(workflowItem);
-        
-//         // 异步执行工作流，不等待完成
-//         executeWorkflow(workflowItem)
-//           .then(() => {
-//             // 执行成功，将工作流从running移动到completed
-//             const index = workflowStatus.running.findIndex(item => 
-//               item.workflowFile === workflowItem.workflowFile && item.userId === workflowItem.userId);
-            
-//             if (index !== -1) {
-//               workflowStatus.running.splice(index, 1);
-//               workflowStatus.completed.push(workflowItem);
-//               // 保存状态到文件
-//               saveTaskStatusToFile();
-//             }
-            
-//             console.log(`工作流 ${workflowItem.workflowFile} 成功完成，当前运行中: ${workflowStatus.running.length}, 队列中: ${workflowStatus.queue.length}`);
-//           })
-//           .catch(error => {
-//             // 执行失败，将工作流从running移动到errors
-//             const index = workflowStatus.running.findIndex(item => 
-//               item.workflowFile === workflowItem.workflowFile && item.userId === workflowItem.userId);
-            
-//             if (index !== -1) {
-//               workflowStatus.running.splice(index, 1);
-//               workflowStatus.errors.push(workflowItem);
-//               // 保存状态到文件
-//               saveTaskStatusToFile();
-//             }
-            
-//             console.error(`工作流 ${workflowItem.workflowFile} 执行失败: ${error.message}`);
-//           });
-//       }
-      
-//       // 等待一小段时间后再检查状态
-//       await new Promise(resolve => setTimeout(resolve, 1000));
-//     }
-    
-//     // 所有工作流完成
-//     workflowStatus.status = 'completed';
-//     console.log('所有工作流执行完毕');
-//   } catch (error) {
-//     console.error('工作流队列处理致命错误:', error);
-//     workflowStatus.status = 'error';
-//     workflowStatus.error = `队列处理错误: ${error.message}`;
-//   } finally {
-//     workflowStatus.isProcessing = false;
-//     console.log('工作流队列处理完成，isProcessing设置为false');
-//   }
-// }
 
 console.log(`MAX_CONCURRENT_TASKS = ${MAX_CONCURRENT_TASKS}`);
 
@@ -563,6 +493,9 @@ async function processWorkflowQueue() {
   workflowStatus.status = 'running';
 
   try {
+    // 记录是否是第一个任务
+    let isFirstTask = true;
+    
     // 持续处理队列，直到队列为空
     while (workflowStatus.queue.length > 0 || workflowStatus.running.length > 0) {
       // 如果当前运行的任务数小于最大并发数，且队列中还有任务，则启动新任务
@@ -572,19 +505,28 @@ async function processWorkflowQueue() {
         workflowItem.startedAt = new Date();
         workflowStatus.running.push(workflowItem);
         
-        console.log(`启动任务: ${workflowItem.workflowFile} (用户ID: ${workflowItem.userId}), 当前运行中: ${workflowStatus.running.length}, 剩余队列: ${workflowStatus.queue.length}`);
+        // 确定当前任务的等待间隔
+        const currentInterval = isFirstTask ? 120000 : TASK_START_INTERVAL; // 第一个任务等待2分钟，后续任务按正常间隔
+        
+        console.log(`启动任务: ${workflowItem.workflowFile} (任务名称: ${workflowItem.taskConfig.row.系统SKU}), 当前运行中: ${workflowStatus.running.length}, 剩余队列: ${workflowStatus.queue.length}, ${isFirstTask ? '首个任务，将等待2分钟后启动下一个' : '将等待' + (TASK_START_INTERVAL/1000) + '秒后启动下一个'}`);
         
         // 使用Promise.resolve确保异步执行，不等待其完成
         Promise.resolve().then(() => {
+          console.log(`开始执行工作流: ${workflowItem.taskConfig.row.系统SKU}`);
           return executeWorkflow(workflowItem);
         }).then(() => {
+          console.log(`工作流执行完成，准备更新状态: ${workflowItem.taskConfig.row.系统SKU}`);
           const index = workflowStatus.running.findIndex(item => 
             item.workflowFile === workflowItem.workflowFile && item.userId === workflowItem.userId);
           
           if (index !== -1) {
+            console.log(`找到运行中的任务，准备移除: ${workflowItem.taskConfig.row.系统SKU}`);
             workflowStatus.running.splice(index, 1);
             workflowStatus.completed.push({...workflowItem, completedAt: new Date()});
-            saveTaskStatusToFile();
+            console.log(`状态已更新，准备保存: ${workflowItem.taskConfig.row.系统SKU}`);
+            return saveTaskStatusToFile().then(() => {
+              console.log(`状态已保存到文件: ${workflowItem.taskConfig.row.系统SKU}`);
+            });
           }
           
           console.log(`工作流 ${workflowItem.workflowFile} 成功完成，当前运行中: ${workflowStatus.running.length}, 队列中: ${workflowStatus.queue.length}`);
@@ -595,14 +537,21 @@ async function processWorkflowQueue() {
           if (index !== -1) {
             workflowStatus.running.splice(index, 1);
             workflowStatus.errors.push({...workflowItem, error: error.message, errorAt: new Date()});
-            saveTaskStatusToFile();
+            return saveTaskStatusToFile().then(() => {
+              console.log(`状态已保存到文件: ${workflowItem.taskConfig.row.系统SKU}`);
+            });
           }
           
           console.error(`工作流 ${workflowItem.workflowFile} 执行失败: ${error.message}`);
         });
         
+        // 第一个任务后，将标志设置为false
+        if (isFirstTask) {
+          isFirstTask = false;
+        }
+        
         // 每启动一个任务后等待指定时间
-        await new Promise(resolve => setTimeout(resolve, TASK_START_INTERVAL));
+        await new Promise(resolve => setTimeout(resolve, currentInterval));
       } else {
         // 如果没有可用槽位或队列为空，等待一段时间后再检查
         await new Promise(resolve => setTimeout(resolve, 1000));
