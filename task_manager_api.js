@@ -57,7 +57,7 @@ const API_ENDPOINTS = [
   // }
   {
     url: 'https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape',
-    maxConcurrent: 5,  // 将这里改为实际需要的并发数
+    maxConcurrent: 3,  // 将这里改为实际需要的并发数
     running: 0,
     status: 'active',
     lastSubmitTime: 0,  // 新添加的字段
@@ -65,7 +65,7 @@ const API_ENDPOINTS = [
   },
   {
     url: 'https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape',
-    maxConcurrent: 5,  // 将这里改为实际需要的并发数
+    maxConcurrent: 3,  // 将这里改为实际需要的并发数
     running: 0,
     status: 'active',
     lastSubmitTime: 0,  // 新添加的字段
@@ -73,7 +73,7 @@ const API_ENDPOINTS = [
   },
   {
     url: 'https://w3ifl6j7mgee8h-8082.proxy.runpod.net/scrape',
-    maxConcurrent: 5,  // 将这里改为实际需要的并发数
+    maxConcurrent: 3,  // 将这里改为实际需要的并发数
     running: 0,
     status: 'active',
     lastSubmitTime: 0,  // 新添加的字段
@@ -81,7 +81,7 @@ const API_ENDPOINTS = [
   },
   {
     url: 'https://4htl8esnzj4k9e-8082.proxy.runpod.net/scrape',
-    maxConcurrent: 5,  // 将这里改为实际需要的并发数
+    maxConcurrent: 3,  // 将这里改为实际需要的并发数
     running: 0,
     status: 'active',
     lastSubmitTime: 0,  // 新添加的字段
@@ -90,7 +90,7 @@ const API_ENDPOINTS = [
   ,
   {
     url: 'https://2iju0izib8fv7f-8082.proxy.runpod.net/scrape',
-    maxConcurrent: 5,  // 将这里改为实际需要的并发数
+    maxConcurrent: 3,  // 将这里改为实际需要的并发数
     running: 0,
     status: 'active',
     lastSubmitTime: 0,  // 新添加的字段
@@ -98,7 +98,7 @@ const API_ENDPOINTS = [
   },
   {
     url: 'https://0yr836353bj57o-8082.proxy.runpod.net/scrape',
-    maxConcurrent: 5,  // 将这里改为实际需要的并发数
+    maxConcurrent: 3,  // 将这里改为实际需要的并发数
     running: 0,
     status: 'active',
     lastSubmitTime: 0,  // 新添加的字段
