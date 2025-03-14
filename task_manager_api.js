@@ -1342,14 +1342,43 @@ async function executeWorkflow(workflowItem) {
   }
 }
 
-// 增强端点状态刷新函数，确保准确计算运行任务数
+// 1. 改进任务完成信号捕获 - 在refreshEndpointStatuses函数中添加清理逻辑
 async function refreshEndpointStatuses() {
-  console.log("刷新所有端点状态...");
+  console.log("刷新所有端点状态 + 清理僵尸任务...");
   
   try {
     // 获取任务状态以准确计算每个端点的运行任务数
     const taskStatus = await getTaskStatus();
+    let cleanedTasks = 0;
     
+    // 先检查是否有僵尸任务 - 完成了但状态未更新的任务
+    for (let i = taskStatus.running.length - 1; i >= 0; i--) {
+      const task = taskStatus.running[i];
+      
+      // 检查任务是否长时间无活动 (超过30分钟)
+      const now = Date.now();
+      const taskStartTime = task.startedAt ? new Date(task.startedAt).getTime() : 0;
+      const runningTime = now - taskStartTime;
+      
+      if (runningTime > 30 * 60 * 1000) { // 30分钟
+        console.log(`检测到长时间运行任务: ${task.workflowFile}，运行时间: ${Math.floor(runningTime/60000)}分钟，执行清理`);
+        
+        // 移到错误列表
+        task.status = 'error';
+        task.error = '任务执行超时，系统自动终止';
+        task.completedAt = new Date().toISOString();
+        taskStatus.errors.push(task);
+        taskStatus.running.splice(i, 1);
+        cleanedTasks++;
+      }
+    }
+    
+    if (cleanedTasks > 0) {
+      console.log(`已清理 ${cleanedTasks} 个僵尸任务`);
+      await saveTaskStatus(taskStatus);
+    }
+    
+    // 继续正常的端点状态刷新...
     for (const endpoint of API_ENDPOINTS) {
       try {
         // 计算此端点上运行的任务数
@@ -1363,29 +1392,6 @@ async function refreshEndpointStatuses() {
         endpoint.running = runningTasksOnEndpoint;
         
         console.log(`端点 ${endpoint.url} 状态刷新: 运行任务数 ${runningTasksOnEndpoint}/${endpoint.maxConcurrent}`);
-        
-        // 可选：尝试通过API获取端点自己报告的状态
-        const healthCheckUrl = endpoint.url.replace('/scrape', '/health') || 
-                               endpoint.url.replace('/api', '/health');
-        
-        try {
-          const response = await fetch(healthCheckUrl, { 
-            method: 'GET',
-            timeout: 5000
-          });
-          
-          if (response.ok) {
-            const data = await response.json();
-            console.log(`端点 ${endpoint.url} API状态更新:`, data);
-            
-            // 如果API报告了状态，使用API报告的状态
-            endpoint.status = data.status || 'active';
-            // 但仍然使用我们自己计算的running数，因为这更可靠
-          }
-        } catch (healthError) {
-          // 如果健康检查失败，仅记录错误但不修改状态
-          console.warn(`端点 ${endpoint.url} 健康检查失败: ${healthError.message}`);
-        }
       } catch (endpointError) {
         console.error(`刷新端点 ${endpoint.url} 状态时出错:`, endpointError);
       }
@@ -1394,6 +1400,13 @@ async function refreshEndpointStatuses() {
     console.error("刷新端点状态时发生错误:", error);
   }
 }
+
+// 2. 添加定期端点状态刷新和任务清理
+// 每10分钟自动刷新所有端点状态并清理僵尸任务
+setInterval(async () => {
+  console.log("定期执行端点状态刷新和任务清理...");
+  await refreshEndpointStatuses();
+}, 10 * 60 * 1000);
 
 // 修改updateTaskStatus函数，在任务状态变更时刷新端点状态
 async function updateTaskStatus(taskId, status, message = null) {
