@@ -45,16 +45,38 @@ const WORKFLOW_JSON_DIR = path.join(__dirname, 'workflow_json');
 
 // 1. 首先在文件最顶部定义 API_ENDPOINTS
 const API_ENDPOINTS = [
+  // {
+  //   url: 'http://localhost:8082/scrape',
+  //   maxConcurrent: 2,  // 将这里改为实际需要的并发数
+  //   running: 0,
+  //   status: 'active'
+  // }
   {
-    url: 'http://localhost:8082/scrape',
-    maxConcurrent: 2,  // 将这里改为实际需要的并发数
+    url: 'https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape',
+    maxConcurrent: 3,  // 将这里改为实际需要的并发数
     running: 0,
-    status: 'active'
+    status: 'active',
+    lastSubmitTime: 0  // 新添加的字段
+  },
+  {
+    url: 'https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape',
+    maxConcurrent: 5,  // 将这里改为实际需要的并发数
+    running: 0,
+    status: 'active',
+    lastSubmitTime: 0  // 新添加的字段
+  },
+  {
+    url: 'https://w3ifl6j7mgee8h-8082.proxy.runpod.net/scrape',
+    maxConcurrent: 8,  // 将这里改为实际需要的并发数
+    running: 0,
+    status: 'active',
+    lastSubmitTime: 0  // 新添加的字段
   }
+
 ];
 
 // 最大并发任务数
-let MAX_CONCURRENT_TASKS = 5;
+let MAX_CONCURRENT_TASKS = 100; // 提高到100，实际上我们将依赖各个端点自己的并发限制
 
 // 1. 首先添加文件锁机制
 let isWritingStatus = false;
@@ -494,6 +516,9 @@ async function processWorkflowQueue() {
     return;
   }
   
+  // 先清理任务列表
+  await cleanupRunningTasks();
+  
   // 更新处理标志
   taskStatus.isProcessing = true;
   taskStatus.status = 'running';
@@ -504,7 +529,7 @@ async function processWorkflowQueue() {
 }
 
 // 修改时间间隔常量
-const FIRST_TASK_INTERVAL = 1200000; // 第一个任务间隔改为30秒
+const FIRST_TASK_INTERVAL = 120000; // 第一个任务间隔改为30秒
 const NORMAL_TASK_INTERVAL = 30000; // 其他任务间隔改为15秒
 
 // 添加任务提交时间控制变量
@@ -517,154 +542,87 @@ async function processNextBatch() {
     
     console.log('\n=============== 任务处理状态 ===============');
     console.log(`当前时间: ${new Date().toISOString()}`);
-    console.log(`上次提交时间: ${new Date(lastTaskSubmitTime).toISOString()}`);
     console.log(`运行中任务数: ${taskStatus.running.length}`);
     console.log(`队列中任务数: ${taskStatus.queue.length}`);
     console.log(`错误任务数: ${taskStatus.errors.length}`);
-    console.log(`全局最大并发数: ${MAX_CONCURRENT_TASKS}`);
     console.log('============================================\n');
     
-    // 检查是否可以启动新任务
-    if (taskStatus.running.length >= MAX_CONCURRENT_TASKS) {
-      console.log(`已达到全局最大并发任务数 ${MAX_CONCURRENT_TASKS}，等待中...`);
-      setTimeout(processNextBatch, 5000);
-      return;
-    }
-    
-    // 检查时间间隔
-    const now = Date.now();
-    const timeSinceLastTask = now - lastTaskSubmitTime;
-    const requiredInterval = taskStatus.running.length === 0 ? FIRST_TASK_INTERVAL : NORMAL_TASK_INTERVAL;
-    
-    console.log('\n=============== 时间间隔检查 ===============');
-    console.log(`当前时间戳: ${now}`);
-    console.log(`上次提交时间戳: ${lastTaskSubmitTime}`);
-    console.log(`距离上次提交时间: ${timeSinceLastTask}ms`);
-    console.log(`所需等待时间: ${requiredInterval}ms`);
-    console.log(`是否第一个任务: ${taskStatus.running.length === 0}`);
-    console.log('============================================\n');
-    
-    if (timeSinceLastTask < requiredInterval) {
-      const waitTime = requiredInterval - timeSinceLastTask;
-      console.log(`等待时间间隔: ${waitTime/1000}秒 (${taskStatus.running.length === 0 ? '第一个任务' : '普通任务'})`);
-      setTimeout(processNextBatch, waitTime);
+    // 检查是否有待处理任务
+    if (taskStatus.queue.length === 0) {
+      if (taskStatus.running.length > 0) {
+        console.log('没有排队任务，等待监控运行中的任务...');
+        setTimeout(processNextBatch, 5000);
+      } else {
+        // 所有任务都完成了
+        taskStatus.isProcessing = false;
+        taskStatus.status = 'idle';
+        await saveTaskStatus(taskStatus);
+        console.log('所有任务处理完成');
+      }
       return;
     }
     
     // 获取可用端点
-    let availableEndpoint;
+    let selectedEndpoint;
     try {
-      console.log('\n=============== 端点检查 ===============');
-      availableEndpoint = await getBestAvailableEndpoint();
-      console.log(`选择的端点: ${availableEndpoint.url}`);
-      console.log(`端点状态: ${availableEndpoint.status}`);
-      console.log(`端点当前运行数: ${availableEndpoint.running}/${availableEndpoint.maxConcurrent}`);
-      console.log('============================================\n');
+      selectedEndpoint = await getBestAvailableEndpoint();
+      console.log(`选择端点: ${selectedEndpoint.url} 提交下一个任务`);
     } catch (error) {
-      console.log(`无法获取可用端点: ${error.message}，等待5秒后重试`);
+      console.log(`${error.message}，等待5秒后重试`);
       setTimeout(processNextBatch, 5000);
       return;
     }
     
-    // 启动新任务
-    if (taskStatus.queue.length > 0) {
-      // 在启动前再次检查端点容量
-      const endpointTasks = taskStatus.running.filter(task => 
-        task.endpoint === availableEndpoint.url
-      );
-      
-      console.log('\n=============== 端点容量检查 ===============');
-      console.log(`端点 ${availableEndpoint.url} 当前运行任务数: ${endpointTasks.length}`);
-      console.log(`端点最大并发数: ${availableEndpoint.maxConcurrent}`);
-      console.log('运行中的任务列表:');
-      endpointTasks.forEach((task, idx) => {
-        console.log(`  ${idx+1}. ${task.workflowFile} (用户: ${task.userId})`);
-      });
-      console.log('============================================\n');
-      
-      if (endpointTasks.length >= availableEndpoint.maxConcurrent) {
-        console.log(`端点 ${availableEndpoint.url} 已达到最大并发数: ${endpointTasks.length}/${availableEndpoint.maxConcurrent}`);
-        console.log('运行中的任务:', endpointTasks.map(t => `${t.workflowFile}(${t.userId})`));
-        setTimeout(processNextBatch, 5000);
-        return;
-      }
-      
-      // 计算可以并发启动的任务数量
-      const availableSlots = availableEndpoint.maxConcurrent - endpointTasks.length;
-      const tasksToStart = Math.min(availableSlots, taskStatus.queue.length);
-      
-      console.log('\n=============== 任务启动计划 ===============');
-      console.log(`可用槽位: ${availableSlots}`);
-      console.log(`计划启动任务数: ${tasksToStart}`);
-      console.log('队列中的任务:');
-      taskStatus.queue.slice(0, tasksToStart).forEach((task, idx) => {
-        console.log(`  ${idx+1}. ${task.workflowFile} (用户: ${task.userId})`);
-      });
-      console.log('============================================\n');
-      
-      // 并发启动任务
-      for (let i = 0; i < tasksToStart; i++) {
-        const workflowItem = taskStatus.queue.shift();
-        workflowItem.status = 'running';
-        workflowItem.startedAt = new Date();
-        workflowItem.endpoint = availableEndpoint.url;
-        taskStatus.running.push(workflowItem);
-        
-        console.log(`启动任务: ${workflowItem.workflowFile}, 用户: ${workflowItem.userId}, API端点: ${availableEndpoint.url}`);
-        
-        // 直接执行任务，不等待完成
-        executeWorkflow(workflowItem)
-          .then(result => {
-            console.log(`任务 ${workflowItem.workflowFile} 执行完成`);
-            // 不再在这里调用 processNextBatch
-          })
-          .catch(async error => {
-            console.error(`任务执行出错: ${error.message}`);
-            
-            // 确保更新状态
-            const updatedStatus = await getTaskStatus();
-            const index = updatedStatus.running.findIndex(t => 
-              t.workflowFile === workflowItem.workflowFile && 
-              t.userId === workflowItem.userId
-            );
-            
-            if (index !== -1) {
-              console.log(`从运行列表中移除失败任务: ${workflowItem.workflowFile}`);
-              const failedTask = {
-                ...updatedStatus.running[index],
-                status: 'error',
-                error: error.message,
-                errorAt: new Date()
-              };
-              updatedStatus.running.splice(index, 1);
-              updatedStatus.errors.push(failedTask);
-              await saveTaskStatus(updatedStatus);
-            }
-            // 不再在这里调用 processNextBatch
-          });
-      }
-      
-      // 保存更新后的状态
-      await saveTaskStatus(taskStatus);
-      
-      // 更新最后提交时间
-      lastTaskSubmitTime = now;
-      console.log(`更新最后提交时间为: ${new Date(lastTaskSubmitTime).toISOString()}`);
-      
-      // 使用定时器继续检查新任务
-      setTimeout(processNextBatch, 5000);
-      
-    } else if (taskStatus.running.length > 0) {
-      // 如果没有排队任务但有运行中任务，等待监控
-      console.log('没有排队任务，等待监控运行中的任务...');
-      setTimeout(processNextBatch, 5000);
-    } else {
-      // 所有任务都完成了
-      taskStatus.isProcessing = false;
-      taskStatus.status = 'idle';
-      await saveTaskStatus(taskStatus);
-      console.log('所有任务处理完成');
+    // 只启动一个任务
+    const workflowItem = taskStatus.queue.shift();
+    workflowItem.status = 'running';
+    workflowItem.startedAt = new Date();
+    workflowItem.endpoint = selectedEndpoint.url;
+    taskStatus.running.push(workflowItem);
+    
+    console.log(`启动任务: ${workflowItem.workflowFile}, 用户: ${workflowItem.userId}, API端点: ${selectedEndpoint.url}`);
+    
+    // 更新端点的最后提交时间
+    const endpointIndex = API_ENDPOINTS.findIndex(e => e.url === selectedEndpoint.url);
+    if (endpointIndex !== -1) {
+      API_ENDPOINTS[endpointIndex].lastSubmitTime = Date.now();
+      console.log(`端点 ${selectedEndpoint.url} 最后提交时间更新为: ${new Date(API_ENDPOINTS[endpointIndex].lastSubmitTime).toISOString()}`);
     }
+    
+    // 保存更新后的状态
+    await saveTaskStatus(taskStatus);
+    
+    // 直接执行任务，不等待完成
+    executeWorkflow(workflowItem)
+      .then(result => {
+        console.log(`任务 ${workflowItem.workflowFile} 执行完成`);
+      })
+      .catch(async error => {
+        console.error(`任务执行出错: ${error.message}`);
+        const updatedStatus = await getTaskStatus();
+        const index = updatedStatus.running.findIndex(t => 
+          t.workflowFile === workflowItem.workflowFile && 
+          t.userId === workflowItem.userId
+        );
+        
+        if (index !== -1) {
+          console.log(`从运行列表中移除失败任务: ${workflowItem.workflowFile}`);
+          const failedTask = {
+            ...updatedStatus.running[index],
+            status: 'error',
+            error: error.message,
+            errorAt: new Date()
+          };
+          updatedStatus.running.splice(index, 1);
+          updatedStatus.errors.push(failedTask);
+          await saveTaskStatus(updatedStatus);
+        }
+      });
+    
+    // 立即检查是否有下一个任务可以启动
+    // 这将检查其他端点的可用性，因为我们刚刚更新了当前端点的lastSubmitTime
+    setTimeout(processNextBatch, 1000);
+    
   } catch (error) {
     console.error('处理任务批次时发生错误:', error);
     setTimeout(processNextBatch, 5000);
@@ -691,17 +649,18 @@ app.post('/api/workflow/start', async (req, res) => {
       });
     }
     
-    // 如果提供了 maxConcurrentTasks，更新所有端点的并发限制
+    // 如果提供了 maxConcurrentTasks，只更新全局变量，不再修改各端点的并发限制
     if (maxConcurrentTasks !== undefined && typeof maxConcurrentTasks === 'number' && maxConcurrentTasks > 0) {
-      console.log(`更新所有端点的最大并发数为: ${maxConcurrentTasks}`);
-      API_ENDPOINTS.forEach((endpoint, index) => {
-        if (endpoint.maxConcurrent !== maxConcurrentTasks) {
-          updateApiEndpointStatus(index, {
-            maxConcurrent: maxConcurrentTasks
-          });
-        }
-      });
-      MAX_CONCURRENT_TASKS = maxConcurrentTasks;  // 同时更新全局变量
+      console.log(`更新全局最大并发数为: ${maxConcurrentTasks}，但保留各端点的原始并发设置`);
+      // 不再循环更新各端点的maxConcurrent
+      // API_ENDPOINTS.forEach((endpoint, index) => {
+      //   if (endpoint.maxConcurrent !== maxConcurrentTasks) {
+      //     updateApiEndpointStatus(index, {
+      //       maxConcurrent: maxConcurrentTasks
+      //     });
+      //   }
+      // });
+      MAX_CONCURRENT_TASKS = maxConcurrentTasks;  // 只更新全局变量
     }
     
     // 确定要处理的工作流文件列表
@@ -1047,7 +1006,7 @@ async function updateApiEndpointStatus(index, updates) {
     task.endpoint === endpoint.url
   ).length;
   
-  // 只在设置 maxConcurrent 或 status 时使用传入的值
+  // 只在明确设置时更新 maxConcurrent
   const newStatus = updates.status ?? endpoint.status;
   const newMaxConcurrent = updates.maxConcurrent ?? endpoint.maxConcurrent;
   
@@ -1062,80 +1021,103 @@ async function updateApiEndpointStatus(index, updates) {
   console.log(`端点 ${endpoint.url} 状态更新:`, {
     running: `${actualRunningTasks}/${newMaxConcurrent}`,
     status: newStatus,
-    maxConcurrent: newMaxConcurrent,
-    actualRunningTasks
+    maxConcurrent: newMaxConcurrent
   });
 }
 
 // 修改获取最佳端点函数
 async function getBestAvailableEndpoint() {
-  // 获取最新的任务状态
   const taskStatus = await getTaskStatus();
+  const now = Date.now();
   
-  // 显示详细的日志，帮助调试
   console.log('=============== 详细并发状态 ===============');
   for (const endpoint of API_ENDPOINTS) {
-    // 只计算真正在运行的任务（已经开始执行的任务）
-    const tasks = taskStatus.running.filter(task => 
+    // 定义变量名为runningTasks
+    const runningTasks = taskStatus.running.filter(task => 
       task.endpoint === endpoint.url && 
       task.status === 'running' && 
-      task.startedAt && // 确保任务已经开始执行
-      task.progress > 0 // 确保任务已经开始执行（有进度）
+      !task.error
     );
-    console.log(`端点 ${endpoint.url} 运行任务:`);
-    tasks.forEach((task, idx) => {
+    
+    const actualRunning = runningTasks.length;
+    const maxAllowed = endpoint.maxConcurrent;
+    const hasCapacity = actualRunning < maxAllowed;
+    
+    console.log(`端点 ${endpoint.url}:`);
+    console.log(`  运行任务数: ${actualRunning}/${maxAllowed} (有容量: ${hasCapacity})`);
+    console.log(`  上次提交: ${new Date(endpoint.lastSubmitTime).toISOString()}`);
+    
+    const timeSinceLastSubmit = now - endpoint.lastSubmitTime;
+    const requiredInterval = endpoint.lastSubmitTime === 0 ? FIRST_TASK_INTERVAL : NORMAL_TASK_INTERVAL;
+    const timeReady = timeSinceLastSubmit >= requiredInterval;
+    
+    console.log(`  时间就绪: ${timeReady} (经过 ${timeSinceLastSubmit/1000}秒，需要 ${requiredInterval/1000}秒)`);
+    
+    // 使用正确的变量名runningTasks，而不是tasks
+    runningTasks.forEach((task, idx) => {
       console.log(`  ${idx+1}. ${task.workflowFile} (用户: ${task.userId})`);
     });
   }
   console.log('============================================');
   
-  // 计算每个端点的实际运行数
-  const endpointsWithActualLoad = API_ENDPOINTS.map(endpoint => {
-    // 只计算真正在运行的任务
-    const endpointTasks = taskStatus.running.filter(task => 
-      task.endpoint === endpoint.url && 
-      task.status === 'running' && 
-      task.startedAt && // 确保任务已经开始执行
-      task.progress > 0 // 确保任务已经开始执行（有进度）
-    );
-    return {
-      ...endpoint,
-      actualRunning: endpointTasks.length,
-      tasks: endpointTasks
-    };
-  });
-  
-  // 过滤可用端点
-  const availableEndpoints = endpointsWithActualLoad.filter(endpoint => {
-    const isActive = endpoint.status === 'active';
-    const hasCapacity = endpoint.actualRunning < endpoint.maxConcurrent;
-    
-    console.log(`检查端点 ${endpoint.url} 可用性:`, {
-      isActive,
-      hasCapacity,
-      actualRunning: endpoint.actualRunning,
-      maxConcurrent: endpoint.maxConcurrent,
-      tasks: endpoint.tasks.map(t => t.workflowFile)
+  try {
+    // 过滤可用端点
+    const availableEndpoints = API_ENDPOINTS.filter(endpoint => {
+      const isActive = endpoint.status === 'active';
+      
+      // 明确计算实际运行任务
+      const runningTasks = taskStatus.running.filter(task => 
+        task.endpoint === endpoint.url && 
+        task.status === 'running' && 
+        !task.error
+      );
+      const actualRunning = runningTasks.length;
+      const maxAllowed = endpoint.maxConcurrent;
+      
+      // 严格比较：确保实际运行任务数小于最大允许数
+      const hasCapacity = actualRunning < maxAllowed;
+      
+      // 时间间隔检查
+      const timeSinceLastSubmit = now - endpoint.lastSubmitTime;
+      const requiredInterval = endpoint.lastSubmitTime === 0 ? FIRST_TASK_INTERVAL : NORMAL_TASK_INTERVAL;
+      const timeReady = timeSinceLastSubmit >= requiredInterval;
+      
+      // 详细日志
+      console.log(`检查端点 ${endpoint.url} 可用性详情:`, {
+        isActive: isActive,
+        hasCapacity: hasCapacity,
+        timeReady: timeReady,
+        actualRunning: actualRunning,
+        maxConcurrent: maxAllowed,
+        timeSinceLastSubmit: `${timeSinceLastSubmit/1000}秒`,
+        比较结果: `${actualRunning} < ${maxAllowed} = ${actualRunning < maxAllowed}`
+      });
+      
+      return isActive && hasCapacity && timeReady;
     });
     
-    return isActive && hasCapacity;
-  });
-  
-  if (availableEndpoints.length === 0) {
-    console.error('没有可用端点，详细信息:', endpointsWithActualLoad.map(e => ({
-      url: e.url,
-      status: e.status,
-      actualRunning: e.actualRunning,
-      maxConcurrent: e.maxConcurrent,
-      tasks: e.tasks.map(t => `${t.workflowFile}(${t.userId})`)
-    })));
-    throw new Error('所有API端点都不可用或已达到最大并发数');
+    if (availableEndpoints.length === 0) {
+      throw new Error('没有可用端点（所有端点可能达到最大并发数或时间间隔未到）');
+    }
+    
+    // 按负载比例排序，选择负载最小的端点
+    return availableEndpoints.sort((a, b) => {
+      const aLoad = taskStatus.running.filter(task => 
+        task.endpoint === a.url && 
+        task.status === 'running' && 
+        !task.error
+      ).length / a.maxConcurrent;
+      const bLoad = taskStatus.running.filter(task => 
+        task.endpoint === b.url && 
+        task.status === 'running' && 
+        !task.error
+      ).length / b.maxConcurrent;
+      return aLoad - bLoad;
+    })[0];
+  } catch (error) {
+    console.error(error.message);
+    throw error;
   }
-  
-  // 按实际负载比例排序
-  return availableEndpoints.sort((a, b) => 
-    (a.actualRunning / a.maxConcurrent) - (b.actualRunning / b.maxConcurrent)
-  )[0];
 }
 
 // 修改健康检查函数
@@ -1341,3 +1323,43 @@ async function completeTask(workflowItem, isSuccess, result = {}, error = null) 
     console.warn(`无法在运行列表中找到任务: ${workflowItem.workflowFile}`);
   }
 }
+
+// 添加定期清理功能
+async function cleanupRunningTasks() {
+  try {
+    const taskStatus = await getTaskStatus();
+    let needsUpdate = false;
+    
+    // 检查运行列表，移除那些已经标记为错误的任务
+    for (let i = taskStatus.running.length - 1; i >= 0; i--) {
+      const task = taskStatus.running[i];
+      if (task.error || task.status === 'error' || task.status === 'completed') {
+        console.log(`在运行列表中发现任务状态不一致: ${task.workflowFile} (${task.userId}), 状态: ${task.status}`);
+        
+        // 根据状态移至对应列表
+        if (task.status === 'error' || task.error) {
+          if (!taskStatus.errors.some(t => t.workflowFile === task.workflowFile && t.userId === task.userId)) {
+            taskStatus.errors.push(task);
+          }
+        } else if (task.status === 'completed') {
+          if (!taskStatus.completed.some(t => t.workflowFile === task.workflowFile && t.userId === task.userId)) {
+            taskStatus.completed.push(task);
+          }
+        }
+        
+        // 从运行列表中移除
+        taskStatus.running.splice(i, 1);
+        needsUpdate = true;
+      }
+    }
+    
+    if (needsUpdate) {
+      console.log(`清理任务列表: 移除了 ${needsUpdate} 个状态不一致的任务`);
+      await saveTaskStatus(taskStatus);
+    }
+  } catch (error) {
+    console.error('清理运行任务时发生错误:', error);
+  }
+}
+
+// nohup  node task_manager_api.js > task_manager_api.log 2>&1 &

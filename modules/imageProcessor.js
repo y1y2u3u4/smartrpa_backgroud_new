@@ -9,7 +9,7 @@ import { PassThrough } from 'stream';
 import archiver from 'archiver';
 
 // 统一API URL
-const API_URL = "https://5j228yiaf1nvlh-8000.proxy.runpod.net";
+const API_URL = "https://wpgcqdnchg0vk0-8000.proxy.runpod.net";
 
 /**
  * 检测单张图片是否含有水印
