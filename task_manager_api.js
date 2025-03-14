@@ -43,6 +43,10 @@ const WORKFLOW_FILES = [
 // 工作流JSON文件目录
 const WORKFLOW_JSON_DIR = path.join(__dirname, 'workflow_json');
 
+// 在文件开头添加这些配置
+const API_SERVER_PORT = 8083;
+const BASE_CALLBACK_URL = `http://localhost:${API_SERVER_PORT}/callback`;
+
 // 1. 首先在文件最顶部定义 API_ENDPOINTS
 const API_ENDPOINTS = [
   // {
@@ -56,21 +60,49 @@ const API_ENDPOINTS = [
     maxConcurrent: 3,  // 将这里改为实际需要的并发数
     running: 0,
     status: 'active',
-    lastSubmitTime: 0  // 新添加的字段
+    lastSubmitTime: 0,  // 新添加的字段
+    disableInternalForwarding: true
   },
   {
     url: 'https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape',
-    maxConcurrent: 5,  // 将这里改为实际需要的并发数
+    maxConcurrent: 3,  // 将这里改为实际需要的并发数
     running: 0,
     status: 'active',
-    lastSubmitTime: 0  // 新添加的字段
+    lastSubmitTime: 0,  // 新添加的字段
+    disableInternalForwarding: true
   },
   {
     url: 'https://w3ifl6j7mgee8h-8082.proxy.runpod.net/scrape',
-    maxConcurrent: 8,  // 将这里改为实际需要的并发数
+    maxConcurrent: 3,  // 将这里改为实际需要的并发数
     running: 0,
     status: 'active',
-    lastSubmitTime: 0  // 新添加的字段
+    lastSubmitTime: 0,  // 新添加的字段
+    disableInternalForwarding: true
+  },
+  {
+    url: 'https://4htl8esnzj4k9e-8082.proxy.runpod.net/scrape',
+    maxConcurrent: 3,  // 将这里改为实际需要的并发数
+    running: 0,
+    status: 'active',
+    lastSubmitTime: 0,  // 新添加的字段
+    disableInternalForwarding: true
+  }
+  ,
+  {
+    url: 'https://2iju0izib8fv7f-8082.proxy.runpod.net/scrape',
+    maxConcurrent: 3,  // 将这里改为实际需要的并发数
+    running: 0,
+    status: 'active',
+    lastSubmitTime: 0,  // 新添加的字段
+    disableInternalForwarding: true
+  },
+  {
+    url: 'https://0yr836353bj57o-8082.proxy.runpod.net/scrape',
+    maxConcurrent: 3,  // 将这里改为实际需要的并发数
+    running: 0,
+    status: 'active',
+    lastSubmitTime: 0,  // 新添加的字段
+    disableInternalForwarding: true
   }
 
 ];
@@ -231,269 +263,6 @@ async function loadWorkflowData(filename) {
 }
 
 
-async function executeWorkflow(workflowItem) {
-  let selectedEndpoint = null;
-  let endpointIndex = -1;
-  
-  try {
-    console.log(`开始执行工作流: ${workflowItem.workflowFile}, 用户ID: ${workflowItem.userId}`);
-
-    // 更新工作流项的状态
-    workflowItem.status = 'running';
-    workflowItem.startTime = new Date();
-    workflowItem.progress = 0;
-
-    // 使用Promise包装加载工作流数据
-    const workflowDataPromise = loadWorkflowData(workflowItem.workflowFile);
-    
-    // 立即返回一个Promise，不阻塞当前函数
-    return workflowDataPromise.then(async workflowData => {
-      const taskStatus = await getTaskStatus();
-      // 准备任务数据
-      const requestData = {
-        ...workflowItem.taskConfig,
-        sortedData: workflowData,
-        workflowFile: workflowItem.workflowFile
-      };
-      
-      console.log(`工作流 ${workflowItem.workflowFile} 已加载，包含 ${workflowData.length} 个事件`);
-
-      // 模拟进度更新
-      let progressInterval;
-      progressInterval = setInterval(() => {
-        if (workflowItem.progress < 90) {
-          workflowItem.progress += 5;
-        }
-      }, 1000);
-
-      // 获取最佳可用端点
-      try {
-        selectedEndpoint = await getBestAvailableEndpoint();
-        endpointIndex = API_ENDPOINTS.findIndex(e => e.url === selectedEndpoint.url);
-        
-        console.log(`使用API端点 ${selectedEndpoint.url}`);
-        
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 300000);
-        
-        return fetch(selectedEndpoint.url, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(requestData),
-          signal: controller.signal
-        }).then(async response => {
-          clearTimeout(timeoutId);
-          
-          // 检查响应状态
-          if (!response.ok) {
-            throw new Error(`服务器响应错误: ${response.status} ${response.statusText}`);
-          }
-          
-          // 获取原始响应文本
-          const responseText = await response.text();
-          console.log(`收到服务器响应，长度: ${responseText.length} 字节`);
-          
-          // 处理流式响应 - 可能包含多个JSON对象，每行一个
-          let result = { status: 'success', messages: [] };
-          
-          if (responseText.trim()) {
-            try {
-              // 尝试解析整个响应为单个JSON对象
-              result = JSON.parse(responseText);
-              console.log('成功解析响应为单个JSON对象');
-            } catch (singleJsonError) {
-              try {
-                console.log('响应不是单个JSON对象，尝试解析为多个JSON行');
-                
-                // 可能是流式响应，尝试按行分割并解析每一行
-                const lines = responseText.split('\n').filter(line => line.trim());
-                const parsedLines = [];
-                
-                for (const line of lines) {
-                  try {
-                    const lineObj = JSON.parse(line);
-                    parsedLines.push(lineObj);
-                    
-                    // 修改错误状态处理逻辑
-                    if (lineObj.status === 'error' || lineObj.status === 'event_error' || lineObj.status === 'loop_event_error') {
-                      console.error('检测到错误状态:', lineObj);
-                      result.hasErrors = true;
-                      result.lastError = lineObj;
-                      // 不要在这里直接修改任务状态
-                    }
-                  } catch (lineError) {
-                    console.warn(`无法解析JSON行: ${line.substring(0, 100)}...`);
-                  }
-                }
-                
-                if (parsedLines.length > 0) {
-                  console.log(`成功解析 ${parsedLines.length} 个JSON对象`);
-                  const lastObj = parsedLines[parsedLines.length - 1];
-                  result = {
-                    status: lastObj.status || 'success',
-                    messages: parsedLines,
-                    lastMessage: lastObj
-                  };
-                  
-                  try {
-                    // 获取最新的任务状态
-                    const taskStatus = await getTaskStatus();
-                    const index = taskStatus.running.findIndex(item => 
-                      item.workflowFile === workflowItem.workflowFile && 
-                      item.userId === workflowItem.userId
-                    );
-                    
-                    if (index !== -1) {
-                      if (result.hasErrors) {
-                        // 如果有错误，将任务移到errors数组
-                        const failedTask = {
-                          ...taskStatus.running[index],
-                          status: 'error',
-                          error: result.lastError?.message || '执行过程中出现错误',
-                          errorAt: new Date()
-                        };
-                        taskStatus.running.splice(index, 1);
-                        taskStatus.errors.push(failedTask);
-                        console.log(`任务执行出错，更新状态 - 运行中: ${taskStatus.running.length}, 队列中: ${taskStatus.queue.length}, 错误: ${taskStatus.errors.length}`);
-                      } else {
-                        // 如果成功完成，将任务移到completed数组
-                        const completedTask = {
-                          ...taskStatus.running[index],
-                          status: 'completed',
-                          completedAt: new Date()
-                        };
-                        taskStatus.running.splice(index, 1);
-                        taskStatus.completed.push(completedTask);
-                        console.log(`任务成功完成，更新状态 - 运行中: ${taskStatus.running.length}, 队列中: ${taskStatus.queue.length}, 已完成: ${taskStatus.completed.length}`);
-                      }
-                      
-                      // 保存更新后的状态
-                      await saveTaskStatus(taskStatus);
-                      
-                      // 更新结果记录
-                      taskStatus.results[workflowItem.workflowFile] = {
-                        ...result,
-                        userId: workflowItem.userId,
-                        completedAt: new Date().toISOString()
-                      };
-                      await saveTaskStatus(taskStatus);
-                      
-                      console.log(`工作流 ${workflowItem.workflowFile} 执行完成`);
-                      return result;
-                    }
-                  } catch (error) {
-                    console.error('更新任务状态时发生错误:', error);
-                    throw error;
-                  }
-                }
-              } catch (error) {
-                console.error(`任务执行失败: ${error.message}`);
-                try {
-                  const updatedStatus = await getTaskStatus();
-                  const taskId = workflowItem.taskConfig?.row?.系统SKU || workflowItem.workflowFile;
-                  
-                  // 找到失败的任务
-                  const index = updatedStatus.running.findIndex(item => {
-                    const itemId = item.taskConfig?.row?.系统SKU || item.workflowFile;
-                    return itemId === taskId && 
-                           item.workflowFile === workflowItem.workflowFile && 
-                           item.userId === workflowItem.userId;
-                  });
-                  
-                  if (index !== -1) {
-                    // 将失败的任务从running移到errors
-                    const failedTask = {
-                      ...updatedStatus.running[index],
-                      status: 'error',
-                      error: error.message,
-                      errorAt: new Date()
-                    };
-                    updatedStatus.running.splice(index, 1);
-                    updatedStatus.errors.push(failedTask);
-                    
-                    console.log(`任务失败，更新状态 - 运行中: ${updatedStatus.running.length}, 队列中: ${updatedStatus.queue.length}, 错误: ${updatedStatus.errors.length}`);
-                    
-                    await saveTaskStatus(updatedStatus);
-                    
-                    // 不直接调用 processNextBatch，而是通过主队列处理函数继续处理
-                    if (updatedStatus.queue.length > 0) {
-                      processWorkflowQueue();
-                    }
-                  }
-                } catch (statusError) {
-                  console.error('更新错误状态时发生错误:', statusError);
-                  // 出错时也尝试继续处理队列
-                  processWorkflowQueue();
-                }
-              }
-            }
-          }
-          
-          // 更新完成状态
-          workflowItem.progress = 100;
-          workflowItem.status = 'completed';
-          workflowItem.completedAt = new Date();
-          taskStatus.results[workflowItem.workflowFile] = {
-            ...result,
-            userId: workflowItem.userId,
-            completedAt: new Date().toISOString()
-          };
-          await saveTaskStatus(taskStatus);
-          console.log(`工作流 ${workflowItem.workflowFile} 执行完成`);
-          
-          return result;
-        }).catch(async error => {
-          console.error(`API端点 ${selectedEndpoint.url} 请求失败:`, error);
-          throw error;
-        }).finally(async () => {
-          // 更新端点状态，但不手动修改 running 数
-          if (selectedEndpoint && endpointIndex !== -1) {
-            await updateApiEndpointStatus(endpointIndex, {
-              status: 'active'  // 只更新状态
-            });
-          }
-        });
-      } catch (error) {
-        console.error('无法获取可用的API端点:', error);
-        throw error;
-      }
-    }).catch(async error => {
-      // 获取当前任务状态 - 这里添加
-      const taskStatus = await getTaskStatus();
-      
-      // 更新错误状态
-      workflowItem.status = 'error';
-      workflowItem.error = error.message;
-      workflowItem.errorAt = new Date();
-      
-      taskStatus.results[workflowItem.workflowFile] = { 
-        success: false, 
-        error: error.message,
-        timestamp: new Date().toISOString(),
-        userId: workflowItem.userId
-      };
-      
-      // 保存更新的状态 - 这里添加
-      await saveTaskStatus(taskStatus);
-      
-      console.error(`工作流 ${workflowItem.workflowFile} 初始化失败:`, error);
-      throw error;
-    });
-  } catch (initialError) {
-    // 处理初始化过程中的错误
-    console.error(`工作流 ${workflowItem.workflowFile} 初始化失败:`, initialError);
-    
-    // 确保清除进度更新定时器
-    if (progressInterval) {
-      clearInterval(progressInterval);
-    }
-    
-    throw initialError;
-  }
-}
-
 const TASK_START_INTERVAL = 30000; // 2秒
 
 
@@ -566,7 +335,9 @@ async function processNextBatch() {
     let selectedEndpoint;
     try {
       selectedEndpoint = await getBestAvailableEndpoint();
-      console.log(`选择端点: ${selectedEndpoint.url} 提交下一个任务`);
+      // 确保selectedEndpoint是端点对象，不是URL字符串
+      const endpointUrl = selectedEndpoint.url || selectedEndpoint;
+      console.log(`选择端点: ${endpointUrl} 提交下一个任务`);
     } catch (error) {
       console.log(`${error.message}，等待5秒后重试`);
       setTimeout(processNextBatch, 5000);
@@ -577,16 +348,20 @@ async function processNextBatch() {
     const workflowItem = taskStatus.queue.shift();
     workflowItem.status = 'running';
     workflowItem.startedAt = new Date();
+    
+    // 确保保存完整的端点对象的URL
     workflowItem.endpoint = selectedEndpoint.url;
     taskStatus.running.push(workflowItem);
     
-    console.log(`启动任务: ${workflowItem.workflowFile}, 用户: ${workflowItem.userId}, API端点: ${selectedEndpoint.url}`);
+    // 使用正确的端点URL从workflowItem中获取，确保一致性
+    const taskId = workflowItem.taskConfig?.row?.系统SKU || workflowItem.workflowFile;
+    console.log(`启动任务: ${taskId}, 用户: ${workflowItem.userId}, API端点: ${workflowItem.endpoint}`);
     
     // 更新端点的最后提交时间
-    const endpointIndex = API_ENDPOINTS.findIndex(e => e.url === selectedEndpoint.url);
+    const endpointIndex = API_ENDPOINTS.findIndex(e => e.url === workflowItem.endpoint);
     if (endpointIndex !== -1) {
       API_ENDPOINTS[endpointIndex].lastSubmitTime = Date.now();
-      console.log(`端点 ${selectedEndpoint.url} 最后提交时间更新为: ${new Date(API_ENDPOINTS[endpointIndex].lastSubmitTime).toISOString()}`);
+      console.log(`端点 ${workflowItem.endpoint} 最后提交时间更新为: ${new Date(API_ENDPOINTS[endpointIndex].lastSubmitTime).toISOString()}`);
     }
     
     // 保存更新后的状态
@@ -595,18 +370,18 @@ async function processNextBatch() {
     // 直接执行任务，不等待完成
     executeWorkflow(workflowItem)
       .then(result => {
-        console.log(`任务 ${workflowItem.workflowFile} 执行完成`);
+        console.log(`任务 ${taskId} 执行完成`);
       })
       .catch(async error => {
         console.error(`任务执行出错: ${error.message}`);
         const updatedStatus = await getTaskStatus();
         const index = updatedStatus.running.findIndex(t => 
-          t.workflowFile === workflowItem.workflowFile && 
+          (t.taskConfig?.row?.系统SKU === taskId || t.workflowFile === taskId) && 
           t.userId === workflowItem.userId
         );
         
         if (index !== -1) {
-          console.log(`从运行列表中移除失败任务: ${workflowItem.workflowFile}`);
+          console.log(`从运行列表中移除失败任务: ${taskId}`);
           const failedTask = {
             ...updatedStatus.running[index],
             status: 'error',
@@ -1279,87 +1054,559 @@ app.post('/api/endpoints/add', (req, res) => {
   });
 });
 
-// 在任务完成时确保从运行列表中移除
-async function completeTask(workflowItem, isSuccess, result = {}, error = null) {
-  console.log(`任务 ${workflowItem.workflowFile} ${isSuccess ? '成功完成' : '执行失败'}`);
-  
-  const taskStatus = await getTaskStatus();
-  const index = taskStatus.running.findIndex(task => 
-    task.workflowFile === workflowItem.workflowFile && 
-    task.userId === workflowItem.userId
-  );
-  
-  if (index !== -1) {
-    const completedTask = {
-      ...taskStatus.running[index],
-      status: isSuccess ? 'completed' : 'error',
-      completedAt: new Date(),
-      error: error
-    };
-    
-    // 从运行列表中移除
-    taskStatus.running.splice(index, 1);
-    
-    // 添加到相应列表
-    if (isSuccess) {
-      taskStatus.completed.push(completedTask);
-    } else {
-      taskStatus.errors.push(completedTask);
+// 修改工作流执行函数，在任务完成后调用刷新端点状态
+async function executeWorkflow(workflowItem) {
+  try {
+    console.log(`开始执行工作流: ${workflowItem.workflowFile}, 用户ID: ${workflowItem.userId}`);
+
+    // 确保有正确的端点信息
+    if (!workflowItem.endpoint) {
+      throw new Error('工作流项中缺少端点信息，无法执行');
     }
     
-    // 保存结果
-    taskStatus.results[workflowItem.workflowFile] = {
-      ...result,
-      success: isSuccess,
-      error: error,
-      userId: workflowItem.userId,
-      completedAt: new Date().toISOString()
-    };
+    // 使用workflowItem中的端点信息
+    const selectedEndpointUrl = workflowItem.endpoint;
+    const endpointIndex = API_ENDPOINTS.findIndex(e => e.url === selectedEndpointUrl);
     
-    await saveTaskStatus(taskStatus);
-    
-    console.log(`任务状态已更新 - 运行中: ${taskStatus.running.length}, 完成: ${taskStatus.completed.length}, 错误: ${taskStatus.errors.length}`);
-  } else {
-    console.warn(`无法在运行列表中找到任务: ${workflowItem.workflowFile}`);
-  }
-}
+    if (endpointIndex === -1) {
+      throw new Error(`找不到端点: ${selectedEndpointUrl}`);
+    }
 
-// 添加定期清理功能
-async function cleanupRunningTasks() {
-  try {
-    const taskStatus = await getTaskStatus();
-    let needsUpdate = false;
+    // 更新工作流项的状态
+    workflowItem.status = 'running';
+    workflowItem.startTime = new Date();
+    workflowItem.progress = 0;
+
+    // 使用Promise包装加载工作流数据
+    const workflowDataPromise = loadWorkflowData(workflowItem.workflowFile);
     
-    // 检查运行列表，移除那些已经标记为错误的任务
-    for (let i = taskStatus.running.length - 1; i >= 0; i--) {
-      const task = taskStatus.running[i];
-      if (task.error || task.status === 'error' || task.status === 'completed') {
-        console.log(`在运行列表中发现任务状态不一致: ${task.workflowFile} (${task.userId}), 状态: ${task.status}`);
+    // 立即返回一个Promise，不阻塞当前函数
+    return workflowDataPromise.then(async workflowData => {
+      const taskStatus = await getTaskStatus();
+      // 准备任务数据
+      const requestData = {
+        ...workflowItem.taskConfig,
+        sortedData: workflowData,
+        workflowFile: workflowItem.workflowFile,
+        meta: {
+          originalEndpoint: selectedEndpointUrl,
+          requestTime: Date.now()
+        }
+      };
+      
+      console.log(`工作流 ${workflowItem.workflowFile} 已加载，包含 ${workflowData.length} 个事件`);
+
+      // 模拟进度更新
+      let progressInterval;
+      progressInterval = setInterval(() => {
+        if (workflowItem.progress < 90) {
+          workflowItem.progress += 5;
+        }
+      }, 1000);
+      
+      // 不再获取新的端点，使用传入的端点
+      console.log(`使用API端点 ${selectedEndpointUrl}`);
+      
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 300000);
+      
+      const headers = {
+        'Content-Type': 'application/json'
+      };
+      
+      // 要求响应回调时包含原始信息
+      headers["X-Callback-Include-Original-Endpoint"] = "true";
+      
+      // 对每个任务使用独立的回调URL，包含端点信息
+      const callbackUrl = `${BASE_CALLBACK_URL}?endpoint=${encodeURIComponent(selectedEndpointUrl)}&taskId=${workflowItem.taskConfig?.row?.系统SKU || workflowItem.workflowFile}`;
+      requestData.callbackUrl = callbackUrl;
+      
+      return fetch(selectedEndpointUrl, {
+        method: 'POST',
+        headers: headers,
+        body: JSON.stringify(requestData),
+        signal: controller.signal
+      }).then(async response => {
+        clearTimeout(timeoutId);
         
-        // 根据状态移至对应列表
-        if (task.status === 'error' || task.error) {
-          if (!taskStatus.errors.some(t => t.workflowFile === task.workflowFile && t.userId === task.userId)) {
-            taskStatus.errors.push(task);
-          }
-        } else if (task.status === 'completed') {
-          if (!taskStatus.completed.some(t => t.workflowFile === task.workflowFile && t.userId === task.userId)) {
-            taskStatus.completed.push(task);
+        // 检查响应状态
+        if (!response.ok) {
+          throw new Error(`服务器响应错误: ${response.status} ${response.statusText}`);
+        }
+        
+        // 获取原始响应文本
+        const responseText = await response.text();
+        console.log(`收到服务器响应，长度: ${responseText.length} 字节`);
+        
+        // 处理流式响应 - 可能包含多个JSON对象，每行一个
+        let result = { status: 'success', messages: [] };
+        
+        if (responseText.trim()) {
+          try {
+            // 尝试解析整个响应为单个JSON对象
+            result = JSON.parse(responseText);
+            console.log('成功解析响应为单个JSON对象');
+          } catch (singleJsonError) {
+            try {
+              console.log('响应不是单个JSON对象，尝试解析为多个JSON行');
+              
+              // 可能是流式响应，尝试按行分割并解析每一行
+              const lines = responseText.split('\n').filter(line => line.trim());
+              const parsedLines = [];
+              
+              for (const line of lines) {
+                try {
+                  const lineObj = JSON.parse(line);
+                  parsedLines.push(lineObj);
+                  
+                  // 修改错误状态处理逻辑
+                  if (lineObj.status === 'error' || lineObj.status === 'event_error' || lineObj.status === 'loop_event_error') {
+                    console.error('检测到错误状态:', lineObj);
+                    result.hasErrors = true;
+                    result.lastError = lineObj;
+                    // 不要在这里直接修改任务状态
+                  }
+                } catch (lineError) {
+                  console.warn(`无法解析JSON行: ${line.substring(0, 100)}...`);
+                }
+              }
+              
+              if (parsedLines.length > 0) {
+                console.log(`成功解析 ${parsedLines.length} 个JSON对象`);
+                const lastObj = parsedLines[parsedLines.length - 1];
+                result = {
+                  status: lastObj.status || 'success',
+                  messages: parsedLines,
+                  lastMessage: lastObj
+                };
+                
+                try {
+                  // 获取最新的任务状态
+                  const taskStatus = await getTaskStatus();
+                  const index = taskStatus.running.findIndex(item => 
+                    item.workflowFile === workflowItem.workflowFile && 
+                    item.userId === workflowItem.userId
+                  );
+                  
+                  if (index !== -1) {
+                    if (result.hasErrors) {
+                      // 如果有错误，将任务移到errors数组
+                      const failedTask = {
+                        ...taskStatus.running[index],
+                        status: 'error',
+                        error: result.lastError?.message || '执行过程中出现错误',
+                        errorAt: new Date()
+                      };
+                      taskStatus.running.splice(index, 1);
+                      taskStatus.errors.push(failedTask);
+                      console.log(`任务执行出错，更新状态 - 运行中: ${taskStatus.running.length}, 队列中: ${taskStatus.queue.length}, 错误: ${taskStatus.errors.length}`);
+                    } else {
+                      // 如果成功完成，将任务移到completed数组
+                      const completedTask = {
+                        ...taskStatus.running[index],
+                        status: 'completed',
+                        completedAt: new Date()
+                      };
+                      taskStatus.running.splice(index, 1);
+                      taskStatus.completed.push(completedTask);
+                      console.log(`任务成功完成，更新状态 - 运行中: ${taskStatus.running.length}, 队列中: ${taskStatus.queue.length}, 已完成: ${taskStatus.completed.length}`);
+                    }
+                    
+                    // 保存更新后的状态
+                    await saveTaskStatus(taskStatus);
+                    
+                    // 添加：刷新所有端点状态，确保容量正确
+                    await refreshEndpointStatuses();
+                    
+                    // 更新结果记录
+                    taskStatus.results[workflowItem.workflowFile] = {
+                      ...result,
+                      userId: workflowItem.userId,
+                      completedAt: new Date().toISOString()
+                    };
+                    await saveTaskStatus(taskStatus);
+                    
+                    console.log(`工作流 ${workflowItem.workflowFile} 执行完成`);
+                    return result;
+                  }
+                } catch (error) {
+                  console.error('更新任务状态时发生错误:', error);
+                  throw error;
+                }
+              }
+            } catch (error) {
+              console.error(`任务执行失败: ${error.message}`);
+              try {
+                const updatedStatus = await getTaskStatus();
+                const taskId = workflowItem.taskConfig?.row?.系统SKU || workflowItem.workflowFile;
+                
+                // 找到失败的任务
+                const index = updatedStatus.running.findIndex(item => {
+                  const itemId = item.taskConfig?.row?.系统SKU || item.workflowFile;
+                  return itemId === taskId && 
+                         item.workflowFile === workflowItem.workflowFile && 
+                         item.userId === workflowItem.userId;
+                });
+                
+                if (index !== -1) {
+                  // 将失败的任务从running移到errors
+                  const failedTask = {
+                    ...updatedStatus.running[index],
+                    status: 'error',
+                    error: error.message,
+                    errorAt: new Date()
+                  };
+                  updatedStatus.running.splice(index, 1);
+                  updatedStatus.errors.push(failedTask);
+                  
+                  console.log(`任务失败，更新状态 - 运行中: ${updatedStatus.running.length}, 队列中: ${updatedStatus.queue.length}, 错误: ${updatedStatus.errors.length}`);
+                  
+                  await saveTaskStatus(updatedStatus);
+                  
+                  // 添加：刷新所有端点状态，确保容量正确
+                  await refreshEndpointStatuses();
+                  
+                  // 不直接调用 processNextBatch，而是通过主队列处理函数继续处理
+                  if (updatedStatus.queue.length > 0) {
+                    processWorkflowQueue();
+                  }
+                }
+              } catch (statusError) {
+                console.error('更新错误状态时发生错误:', statusError);
+                // 出错时也尝试继续处理队列
+                processWorkflowQueue();
+              }
+            }
           }
         }
         
-        // 从运行列表中移除
+        // 更新完成状态
+        workflowItem.progress = 100;
+        workflowItem.status = 'completed';
+        workflowItem.completedAt = new Date();
+        taskStatus.results[workflowItem.workflowFile] = {
+          ...result,
+          userId: workflowItem.userId,
+          completedAt: new Date().toISOString()
+        };
+        await saveTaskStatus(taskStatus);
+        
+        // 添加：刷新所有端点状态，确保容量正确
+        await refreshEndpointStatuses();
+        
+        console.log(`工作流 ${workflowItem.workflowFile} 执行完成`);
+        
+        return result;
+      }).catch(async error => {
+        console.error(`API端点 ${selectedEndpointUrl} 请求失败:`, error);
+        throw error;
+      }).finally(async () => {
+        // 更新端点状态，包括运行中任务数
+        if (selectedEndpointUrl && endpointIndex !== -1) {
+          // 重新获取所有端点状态，而不是仅修改状态标志
+          await refreshEndpointStatuses();
+        }
+      });
+    }).catch(async error => {
+      // 获取当前任务状态 - 这里添加
+      const taskStatus = await getTaskStatus();
+      
+      // 更新错误状态
+      workflowItem.status = 'error';
+      workflowItem.error = error.message;
+      workflowItem.errorAt = new Date();
+      
+      taskStatus.results[workflowItem.workflowFile] = { 
+        success: false, 
+        error: error.message,
+        timestamp: new Date().toISOString(),
+        userId: workflowItem.userId
+      };
+      
+      // 保存更新的状态 - 这里添加
+      await saveTaskStatus(taskStatus);
+      
+      console.error(`工作流 ${workflowItem.workflowFile} 初始化失败:`, error);
+      throw error;
+    });
+  } catch (initialError) {
+    // 处理初始化过程中的错误
+    console.error(`工作流 ${workflowItem.workflowFile} 初始化失败:`, initialError);
+    
+    // 确保清除进度更新定时器
+    if (progressInterval) {
+      clearInterval(progressInterval);
+    }
+    
+    throw initialError;
+  }
+}
+
+// 增强端点状态刷新函数，确保准确计算运行任务数
+async function refreshEndpointStatuses() {
+  console.log("刷新所有端点状态...");
+  
+  try {
+    // 获取任务状态以准确计算每个端点的运行任务数
+    const taskStatus = await getTaskStatus();
+    
+    for (const endpoint of API_ENDPOINTS) {
+      try {
+        // 计算此端点上运行的任务数
+        const runningTasksOnEndpoint = taskStatus.running.filter(task => 
+          task.endpoint === endpoint.url && 
+          task.status === 'running' && 
+          !task.error
+        ).length;
+        
+        // 更新端点状态
+        endpoint.running = runningTasksOnEndpoint;
+        
+        console.log(`端点 ${endpoint.url} 状态刷新: 运行任务数 ${runningTasksOnEndpoint}/${endpoint.maxConcurrent}`);
+        
+        // 可选：尝试通过API获取端点自己报告的状态
+        const healthCheckUrl = endpoint.url.replace('/scrape', '/health') || 
+                               endpoint.url.replace('/api', '/health');
+        
+        try {
+          const response = await fetch(healthCheckUrl, { 
+            method: 'GET',
+            timeout: 5000
+          });
+          
+          if (response.ok) {
+            const data = await response.json();
+            console.log(`端点 ${endpoint.url} API状态更新:`, data);
+            
+            // 如果API报告了状态，使用API报告的状态
+            endpoint.status = data.status || 'active';
+            // 但仍然使用我们自己计算的running数，因为这更可靠
+          }
+        } catch (healthError) {
+          // 如果健康检查失败，仅记录错误但不修改状态
+          console.warn(`端点 ${endpoint.url} 健康检查失败: ${healthError.message}`);
+        }
+      } catch (endpointError) {
+        console.error(`刷新端点 ${endpoint.url} 状态时出错:`, endpointError);
+      }
+    }
+  } catch (error) {
+    console.error("刷新端点状态时发生错误:", error);
+  }
+}
+
+// 修改updateTaskStatus函数，在任务状态变更时刷新端点状态
+async function updateTaskStatus(taskId, status, message = null) {
+  const taskStatus = await getTaskStatus();
+  const taskIndex = taskStatus.running.findIndex(task => 
+    task.workflowFile === taskId || 
+    (task.taskConfig && task.taskConfig.task_name === taskId)
+  );
+  
+  if (taskIndex !== -1) {
+    // 更新任务状态
+    const task = taskStatus.running[taskIndex];
+    const previousEndpoint = task.endpoint; // 保存端点信息以便更新
+    task.status = status;
+    
+    if (status === 'completed' || status === 'error') {
+      task.completedAt = new Date().toISOString();
+      // 记录原因（如果提供）
+      if (message) task.message = message;
+      
+      // 从运行列表移除
+      taskStatus.running.splice(taskIndex, 1);
+      
+      // 添加到相应列表
+      if (status === 'completed') {
+        taskStatus.completed.push(task);
+      } else {
+        taskStatus.errors.push(task);
+      }
+      
+      console.log(`任务 ${taskId} 已${status === 'completed' ? '完成' : '出错'}: ${message || ''}`);
+    }
+    
+    // 保存任务状态到文件
+    await saveTaskStatus(taskStatus);
+    
+    // 刷新端点状态
+    await refreshEndpointStatuses();
+    
+    return true;
+  }
+  
+  return false;
+}
+
+// 修改任务超时处理
+function handleTaskTimeout(taskId) {
+  console.log(`任务 ${taskId} 执行超时，强制终止`);
+  
+  // 检查任务是否已经完成大部分操作（例如关闭了AdsPower页面）
+  // 可以添加一些启发式逻辑，判断任务是否实际完成
+  const taskLogs = getTaskLogs(taskId); // 假设有获取任务日志的功能
+  
+  // 如果日志中包含"adsPower页面已关闭"等完成标志，将其标记为已完成而非错误
+  if (taskLogs && taskLogs.includes("adsPower页面已关闭")) {
+    updateTaskStatus(taskId, 'completed', '任务实际已完成，但由于超时被系统终止');
+  } else {
+    updateTaskStatus(taskId, 'error', '任务执行超时，强制终止');
+  }
+}
+
+// 1. 添加页面关闭检测机制
+async function monitorBrowserSession(taskId, interval = 5000) {
+  // 创建一个定时检查机制
+  const checkInterval = setInterval(async () => {
+    try {
+      // 从日志或状态中检查是否有"adsPower页面已关闭"的记录
+      const taskLogs = await getRecentLogEntries(taskId); // 实现这个函数获取最近的日志
+      
+      if (taskLogs.some(log => 
+          log.includes("adsPower页面已关闭") || 
+          log.includes("关闭了啊"))) {
+        // 页面已关闭，更新任务状态
+        clearInterval(checkInterval);
+        await updateTaskStatus(taskId, 'completed', '浏览器会话已结束，任务完成');
+        console.log(`检测到任务 ${taskId} 的浏览器已关闭，自动更新为已完成状态`);
+      }
+    } catch (error) {
+      console.error(`监控任务 ${taskId} 状态时出错:`, error);
+    }
+  }, interval);
+  
+  // 存储定时器ID以便后续清理
+  browserMonitors[taskId] = checkInterval;
+  
+  // 设置一个整体超时时间（例如2小时），防止无限监控
+  setTimeout(() => {
+    if (browserMonitors[taskId]) {
+      clearInterval(browserMonitors[taskId]);
+      delete browserMonitors[taskId];
+    }
+  }, 7200000); // 2小时
+}
+
+// 2. 获取最近日志的辅助函数(简化版)
+async function getRecentLogEntries(taskId, lines = 20) {
+  // 实现方式取决于你的日志存储方式
+  // 可以是从文件读取、内存缓存或数据库查询
+  try {
+    // 假设任务日志存储在内存或文件中
+    const logBuffer = taskLogBuffers[taskId] || [];
+    return logBuffer.slice(-lines);
+  } catch (error) {
+    console.error(`获取任务 ${taskId} 日志失败:`, error);
+    return [];
+  }
+}
+
+// 3. 启动任务时开始监控
+async function startTask(taskIdentifier, userId, taskConfig, endpoint) {
+  try {
+    // 确保使用一致的标识符 - 检查taskIdentifier是否是正确的工作流文件名
+    let workflowFile = taskIdentifier;
+    
+    // 如果taskIdentifier不是以.json结尾，则可能是SKU或产品ID，需要查找正确的工作流文件
+    if (!taskIdentifier.endsWith('.json')) {
+      // 记录原始标识符
+      console.log(`任务标识符 ${taskIdentifier} 不是工作流文件，尝试查找对应工作流...`);
+      
+      // 如果taskConfig中包含工作流文件信息，使用它
+      if (taskConfig && taskConfig.workflowFile) {
+        workflowFile = taskConfig.workflowFile;
+      } else {
+        // 否则使用默认的kandeng.json（根据你的日志，这似乎是默认的）
+        workflowFile = 'kandeng.json';
+      }
+      
+      console.log(`将任务 ${taskIdentifier} 映射到工作流文件: ${workflowFile}`);
+    }
+    
+    // 在日志中明确记录映射关系
+    console.log(`启动任务: [ID: ${taskIdentifier}] => [工作流: ${workflowFile}], 用户: ${userId}`);
+    
+    // 更新任务状态
+    const taskStatus = await getTaskStatus();
+    
+    // 将任务添加到运行中列表，确保保存正确的标识符和工作流文件
+    const task = {
+      id: taskIdentifier,           // 保存原始任务ID
+      workflowFile: workflowFile,   // 保存工作流文件名
+      userId: userId,
+      taskConfig: taskConfig,
+      status: 'running',
+      progress: 0,
+      createdAt: new Date().toISOString(),
+      startedAt: new Date().toISOString(),
+      endpoint: endpoint
+    };
+    
+    taskStatus.running.push(task);
+    await saveTaskStatus(taskStatus);
+    
+    // 继续执行工作流
+    console.log(`开始执行工作流: ${workflowFile}, 任务ID: ${taskIdentifier}, 用户ID: ${userId}`);
+    
+    // 其余执行代码...
+    
+    return true;
+  } catch (error) {
+    console.error(`启动任务失败 [${taskIdentifier}]:`, error);
+    return false;
+  }
+}
+
+// nohup  node task_manager_api.js > task_manager_api.log 2>&1 &
+
+/**
+ * 清理运行中但实际已结束的任务
+ * 检查所有标记为running的任务，更新那些已经实际完成的任务状态
+ */
+async function cleanupRunningTasks() {
+  console.log("开始清理运行中但可能已经完成的任务...");
+  
+  try {
+    const taskStatus = await getTaskStatus();
+    const now = Date.now();
+    let updatedCount = 0;
+    
+    // 检查每个运行中的任务
+    for (let i = taskStatus.running.length - 1; i >= 0; i--) {
+      const task = taskStatus.running[i];
+      
+      // 检查哪些任务可能已经完成但状态未更新
+      // 1. 检查任务是否已经运行了很长时间(超过2小时)
+      const taskRunTime = task.startedAt ? (now - new Date(task.startedAt).getTime()) : 0;
+      const isTooLong = taskRunTime > 20 * 60 * 1000; 
+      
+      // 2. 检查任务日志或其他标记(如果存在)
+      // 这里需要根据你的系统来实现检查逻辑
+      
+      if (isTooLong) {
+        console.log(`任务 ${task.workflowFile} (${task.taskConfig?.task_name || '未命名'}) 运行时间过长(${Math.round(taskRunTime/60000)}分钟)，标记为错误`);
+        
+        // 移动到错误列表
+        task.status = 'error';
+        task.error = '任务运行时间过长，系统自动终止';
+        task.completedAt = new Date().toISOString();
+        taskStatus.error.push(task);
         taskStatus.running.splice(i, 1);
-        needsUpdate = true;
+        updatedCount++;
       }
     }
     
-    if (needsUpdate) {
-      console.log(`清理任务列表: 移除了 ${needsUpdate} 个状态不一致的任务`);
+    if (updatedCount > 0) {
+      console.log(`已清理 ${updatedCount} 个卡住的任务`);
       await saveTaskStatus(taskStatus);
+    } else {
+      console.log("没有发现需要清理的任务");
     }
   } catch (error) {
-    console.error('清理运行任务时发生错误:', error);
+    console.error("清理任务时发生错误:", error);
   }
 }
+
 
 // nohup  node task_manager_api.js > task_manager_api.log 2>&1 &
