@@ -1,0 +1,229 @@
+{
+  "queue": [
+    {
+      "workflowFile": "kandeng.json",
+      "userId": "user_1741933065",
+      "taskConfig": {
+        "user_id": "user_1741933065",
+        "adsPowerUserId": "kn8o287",
+        "tuiguang_phonenumber": "1234567890",
+        "task_name": "kandeng_004",
+        "cityname": "Ningkui_JYA02926-01",
+        "row": {
+          "Unnamed: 0": null,
+          "task_name": "kandeng_004",
+          "cityname": "Ningkui_JYA02926-01",
+          "刊登店铺": "Ningkui",
+          "系统SKU": "JYA02926-01"
+        }
+      },
+      "status": "queued",
+      "progress": 0,
+      "createdAt": "2025-03-14T06:17:45.850Z"
+    },
+    {
+      "workflowFile": "kandeng.json",
+      "userId": "user_1741933066",
+      "taskConfig": {
+        "user_id": "user_1741933066",
+        "adsPowerUserId": "kn8o287",
+        "tuiguang_phonenumber": "1234567890",
+        "task_name": "kandeng_004",
+        "cityname": "Ningkui_JYA02928",
+        "row": {
+          "Unnamed: 0": null,
+          "task_name": "kandeng_004",
+          "cityname": "Ningkui_JYA02928",
+          "刊登店铺": "Ningkui",
+          "系统SKU": "JYA02928"
+        }
+      },
+      "status": "queued",
+      "progress": 0,
+      "createdAt": "2025-03-14T06:17:46.318Z"
+    },
+    {
+      "workflowFile": "kandeng.json",
+      "userId": "user_1741933066",
+      "taskConfig": {
+        "user_id": "user_1741933066",
+        "adsPowerUserId": "kn8o287",
+        "tuiguang_phonenumber": "1234567890",
+        "task_name": "kandeng_004",
+        "cityname": "Ningkui_JYA02930",
+        "row": {
+          "Unnamed: 0": null,
+          "task_name": "kandeng_004",
+          "cityname": "Ningkui_JYA02930",
+          "刊登店铺": "Ningkui",
+          "系统SKU": "JYA02930"
+        }
+      },
+      "status": "queued",
+      "progress": 0,
+      "createdAt": "2025-03-14T06:17:46.468Z"
+    },
+    {
+      "workflowFile": "kandeng.json",
+      "userId": "user_1741933066",
+      "taskConfig": {
+        "user_id": "user_1741933066",
+        "adsPowerUserId": "kn8o287",
+        "tuiguang_phonenumber": "1234567890",
+        "task_name": "kandeng_004",
+        "cityname": "Ningkui_JYA02967",
+        "row": {
+          "Unnamed: 0": null,
+          "task_name": "kandeng_004",
+          "cityname": "Ningkui_JYA02967",
+          "刊登店铺": "Ningkui",
+          "系统SKU": "JYA02967"
+        }
+      },
+      "status": "queued",
+      "progress": 0,
+      "createdAt": "2025-03-14T06:17:46.761Z"
+    },
+    {
+      "workflowFile": "kandeng.json",
+      "userId": "user_1741933066",
+      "taskConfig": {
+        "user_id": "user_1741933066",
+        "adsPowerUserId": "kn8o287",
+        "tuiguang_phonenumber": "1234567890",
+        "task_name": "kandeng_004",
+        "cityname": "Ningkui_JYA03007",
+        "row": {
+          "Unnamed: 0": null,
+          "task_name": "kandeng_004",
+          "cityname": "Ningkui_JYA03007",
+          "刊登店铺": "Ningkui",
+          "系统SKU": "JYA03007"
+        }
+      },
+      "status": "queued",
+      "progress": 0,
+      "createdAt": "2025-03-14T06:17:46.992Z"
+    },
+    {
+      "workflowFile": "kandeng.json",
+      "userId": "user_1741933067",
+      "taskConfig": {
+        "user_id": "user_1741933067",
+        "adsPowerUserId": "kn8o287",
+        "tuiguang_phonenumber": "1234567890",
+        "task_name": "kandeng_004",
+        "cityname": "Ningkui_JYA03008-01",
+        "row": {
+          "Unnamed: 0": null,
+          "task_name": "kandeng_004",
+          "cityname": "Ningkui_JYA03008-01",
+          "刊登店铺": "Ningkui",
+          "系统SKU": "JYA03008-01"
+        }
+      },
+      "status": "queued",
+      "progress": 0,
+      "createdAt": "2025-03-14T06:17:47.130Z"
+    },
+    {
+      "workflowFile": "kandeng.json",
+      "userId": "user_1741933067",
+      "taskConfig": {
+        "user_id": "user_1741933067",
+        "adsPowerUserId": "kn8o287",
+        "tuiguang_phonenumber": "1234567890",
+        "task_name": "kandeng_004",
+        "cityname": "Ningkui_JYA03048-01",
+        "row": {
+          "Unnamed: 0": null,
+          "task_name": "kandeng_004",
+          "cityname": "Ningkui_JYA03048-01",
+          "刊登店铺": "Ningkui",
+          "系统SKU": "JYA03048-01"
+        }
+      },
+      "status": "queued",
+      "progress": 0,
+      "createdAt": "2025-03-14T06:17:47.255Z"
+    },
+    {
+      "workflowFile": "kandeng.json",
+      "userId": "user_1741933067",
+      "taskConfig": {
+        "user_id": "user_1741933067",
+        "adsPowerUserId": "kn8o287",
+        "tuiguang_phonenumber": "1234567890",
+        "task_name": "kandeng_004",
+        "cityname": "Ningkui_JYA03064-01",
+        "row": {
+          "Unnamed: 0": null,
+          "task_name": "kandeng_004",
+          "cityname": "Ningkui_JYA03064-01",
+          "刊登店铺": "Ningkui",
+          "系统SKU": "JYA03064-01"
+        }
+      },
+      "status": "queued",
+      "progress": 0,
+      "createdAt": "2025-03-14T06:17:47.511Z"
+    }
+  ],
+  "running": [
+    {
+      "workflowFile": "kandeng.json",
+      "userId": "user_1741933064",
+      "taskConfig": {
+        "user_id": "user_1741933064",
+        "adsPowerUserId": "kn8o287",
+        "tuiguang_phonenumber": "1234567890",
+        "task_name": "kandeng_004",
+        "cityname": "Ningkui_JYA02910",
+        "row": {
+          "Unnamed: 0": null,
+          "task_name": "kandeng_004",
+          "cityname": "Ningkui_JYA02910",
+          "刊登店铺": "Ningkui",
+          "系统SKU": "JYA02910"
+        }
+      },
+      "status": "running",
+      "progress": 0,
+      "createdAt": "2025-03-14T06:17:45.003Z",
+      "startedAt": "2025-03-14T06:17:45.011Z",
+      "endpoint": "http://localhost:8082/scrape",
+      "startTime": "2025-03-14T06:17:45.011Z"
+    },
+    {
+      "workflowFile": "kandeng.json",
+      "userId": "user_1741933065",
+      "taskConfig": {
+        "user_id": "user_1741933065",
+        "adsPowerUserId": "kn8o287",
+        "tuiguang_phonenumber": "1234567890",
+        "task_name": "kandeng_004",
+        "cityname": "Ningkui_JYA02918",
+        "row": {
+          "Unnamed: 0": null,
+          "task_name": "kandeng_004",
+          "cityname": "Ningkui_JYA02918",
+          "刊登店铺": "Ningkui",
+          "系统SKU": "JYA02918"
+        }
+      },
+      "status": "running",
+      "progress": 0,
+      "createdAt": "2025-03-14T06:17:45.449Z",
+      "startedAt": "2025-03-14T06:18:00.016Z",
+      "endpoint": "http://localhost:8082/scrape",
+      "startTime": "2025-03-14T06:18:00.016Z"
+    }
+  ],
+  "completed": [],
+  "errors": [],
+  "status": "running",
+  "error": null,
+  "results": {},
+  "isProcessing": true,
+  "lastUpdated": "2025-03-14T06:18:00.016Z"
+}

@@ -91,6 +91,8 @@ async function importHandleEvent(task_name) {
 
     return handleEvent;
 }
+
+
 export async function handler_login(req, res) {
     const environment = process.env.ENVIRONMENT;
     let config;
@@ -532,17 +534,17 @@ export async function handler_run_base(req, res) {
                         // 尝试从地址中提取城市名称（通常是地址的第二部分）
                         const addressParts = storeAddress.split('市');
                         if (addressParts.length > 1) {
-                            // 提取第一个“市”前面的内容
+                            // 提取第一个"市"前面的内容
                             const cityWithPrefix = addressParts[0];
                             // 如果有省份则去除
                             const provinceSuffix = cityWithPrefix.lastIndexOf('省');
                             cityName = provinceSuffix !== -1 ? 
                                 cityWithPrefix.substring(provinceSuffix + 1) : 
                                 cityWithPrefix.split(/[省自治区特别行政区]/).pop();
-                            // 添加“市”后缀
+                            // 添加"市"后缀
                             cityName = cityName + '市';
                         } else {
-                            // 如果没有“市”字，尝试其他方式提取
+                            // 如果没有"市"字，尝试其他方式提取
                             const cityMatches = storeAddress.match(/(?:[一-龥]+(?:省|自治区|特别行政区))?([^省区县]+?(?:市|地区|盟))/);
                             if (cityMatches && cityMatches.length > 1) {
                                 cityName = cityMatches[1];
@@ -934,8 +936,8 @@ export async function handler_run(req, res) {
     let timeoutId;
     let isTimedOut = false;
     
-    // 设置总体超时时间（30分钟）
-    const TIMEOUT_DURATION = 10 * 60 * 1000;
+    // 设置总体超时时间（3分钟）
+    const TIMEOUT_DURATION = 20 * 60 * 1000;
     
     // 超时检查函数
     const checkTimeout = () => {
@@ -946,9 +948,34 @@ export async function handler_run(req, res) {
         console.log('开始处理任务请求');
         
         // 设置超时定时器
-        timeoutId = setTimeout(() => {
+        timeoutId = setTimeout(async () => {
             isTimedOut = true;
-            console.error('任务执行超时，即将终止');
+            console.error('任务执行超时，强制终止');
+            
+            try {
+                // 强制关闭页面和浏览器
+                if (page && !page.isClosed()) {
+                    await page.close().catch(() => {});
+                }
+                
+                // 发送超时响应
+                if (!res.writableEnded) {
+                    const timeoutResponse = {
+                        status: 'error',
+                        message: '任务执行超时，已强制终止',
+                        error: 'TIMEOUT'
+                    };
+                    
+                    if (!res.headersSent) {
+                        res.status(500).json(timeoutResponse);
+                    } else {
+                        res.write(JSON.stringify(timeoutResponse) + '\n');
+                        res.end();
+                    }
+                }
+            } catch (error) {
+                console.error('超时清理过程中出错:', error);
+            }
         }, TIMEOUT_DURATION);
         
         const environment = process.env.ENVIRONMENT;
@@ -1260,16 +1287,29 @@ export async function handler_run(req, res) {
         // 清除超时定时器
         if (timeoutId) clearTimeout(timeoutId);
         
-        // 确保资源被清理
         try {
             // 清理资源
-            if (page && !page.isClosed()) {
-                await page.close();
-                console.log('adsPower页面已关闭');
+            if (page) {
+                try {
+                    const isClosed = page.isClosed ? page.isClosed() : false;
+                    if (!isClosed) {
+                        await page.close().catch(e => console.error('关闭页面时出错:', e));
+                        console.log('adsPower页面已关闭');
+                    } else {
+                        console.log('页面已经关闭，无需再次关闭');
+                    }
+                } catch (closeError) {
+                    console.error('检查或关闭页面时出错:', closeError);
+                    // 尝试强制关闭
+                    try {
+                        await page.close().catch(() => {});
+                    } catch {}
+                }
+            } else {
+                console.log('页面不存在，无需关闭');
             }
-            
-        } catch (cleanupError) {
-            console.error('清理资源时出错:', cleanupError);
+        } catch (error) {
+            console.error('清理资源时出错:', error);
         }
     }
 }

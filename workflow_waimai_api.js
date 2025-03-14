@@ -27,6 +27,34 @@ app.use((req, res, next) => {
 
 app.use(express.json());
 
+// 添加在文件顶部
+process.on('uncaughtException', (error) => {
+  console.error('未捕获的异常:', error);
+  // 记录错误但不退出进程
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('未处理的Promise拒绝:', reason);
+  // 记录错误但不退出进程
+});
+
+// 监听进程退出事件
+process.on('exit', (code) => {
+  console.log(`进程即将退出，退出码: ${code}`);
+});
+
+// 监听SIGINT信号（如Ctrl+C）
+process.on('SIGINT', () => {
+  console.log('收到SIGINT信号，进程将退出');
+  process.exit(0);
+});
+
+// 监听SIGTERM信号
+process.on('SIGTERM', () => {
+  console.log('收到SIGTERM信号，进程将退出');
+  process.exit(0);
+});
+
 // 工作流文件列表
 const WORKFLOW_FILES = [
   'test_meituan.json',
@@ -143,7 +171,7 @@ async function executeWorkflow(workflowFile) {
         ...taskConfig,
         workflowFile: workflowFile
       };
-      
+      console.log(`[${new Date().toISOString()}] 发送请求到自动化服务`);
       const response = await fetch('http://localhost:8082/scrape_base', {
         method: 'POST',
         headers: {
@@ -154,6 +182,8 @@ async function executeWorkflow(workflowFile) {
       });
       
       clearTimeout(timeoutId); // 清除超时
+      console.log(`[${new Date().toISOString()}] 收到自动化服务响应: ${response.status}`);
+  
       
       // 检查响应状态
       if (!response.ok) {

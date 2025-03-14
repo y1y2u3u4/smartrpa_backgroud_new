@@ -1,0 +1,20 @@
+{
+  "pools": [
+    {
+      "name": "默认池",
+      "domains": [
+        {
+          "url": "http://localhost:8082",
+          "endpoint": "/scrape",
+          "maxConcurrent": 5,
+          "running": 0,
+          "weight": 10,
+          "status": "active"
+        }
+      ],
+      "defaultDomain": "http://localhost:8082",
+      "defaultEndpoint": "/scrape"
+    }
+  ],
+  "defaultPool": "默认池"
+}
