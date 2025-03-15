@@ -577,23 +577,19 @@ app.get('/api/workflow/status', (req, res) => {
 
 // API端点: 重置状态
 app.post('/api/workflow/reset', async (req, res) => {
-  // 重置状态
-  workflowStatus.queue = [];
-  workflowStatus.running = [];
-  workflowStatus.completed = [];
-  workflowStatus.errors = [];
-  workflowStatus.status = 'idle';
-  workflowStatus.error = null;
-  workflowStatus.results = {};
-  workflowStatus.isProcessing = false;
-  
-  // 保存重置后的状态到文件
-  await saveTaskStatusToFile();
-  
-  res.json({
-    success: true,
-    message: '工作流状态已重置'
-  });
+  try {
+    await resetTaskQueue();
+    res.json({
+      success: true,
+      message: '工作流状态已重置'
+    });
+  } catch (error) {
+    console.error('重置工作流状态失败:', error);
+    res.status(500).json({
+      success: false,
+      message: `重置工作流状态失败: ${error.message}`
+    });
+  }
 });
 
 // API端点: 获取特定工作流的结果
@@ -688,22 +684,50 @@ async function resetTaskQueue() {
   console.log('任务队列已重置');
 }
 
-// 添加一个API端点用于重置队列
-app.post('/api/workflow/reset', async (req, res) => {
+// 添加任务恢复函数 - 从文件中恢复未完成的任务
+async function restoreTaskQueue() {
   try {
-    await resetTaskQueue();
-    res.json({
-      success: true,
-      message: '任务队列已重置'
-    });
+    if (existsSync(TASK_STATUS_FILE)) {
+      // 读取现有任务状态
+      const data = await fs.readFile(TASK_STATUS_FILE, 'utf-8');
+      const taskStatus = JSON.parse(data);
+      
+      // 检查并恢复运行中的任务到队列
+      if (taskStatus.running && taskStatus.running.length > 0) {
+        console.log(`发现 ${taskStatus.running.length} 个未完成的运行中任务，恢复到队列...`);
+        
+        // 将运行中的任务移回队列前面
+        for (const task of [...taskStatus.running]) {
+          task.status = 'queued'; // 重置状态为队列中
+          task.error = null;      // 清除可能的错误
+          taskStatus.queue.unshift(task); // 添加到队列最前面优先处理
+        }
+        
+        // 清空运行中列表
+        taskStatus.running = [];
+      }
+      
+      // 重置处理状态
+      taskStatus.isProcessing = false;
+      taskStatus.status = taskStatus.queue.length > 0 ? 'ready' : 'idle';
+      
+      console.log(`恢复完成: 队列任务数: ${taskStatus.queue.length}, 已完成: ${taskStatus.completed.length}, 错误: ${taskStatus.errors.length}`);
+      
+      // 保存更新后的状态
+      await saveTaskStatus(taskStatus);
+      
+      return taskStatus;
+    } else {
+      console.log('未找到任务状态文件，创建新的队列');
+      return await resetTaskQueue();
+    }
   } catch (error) {
-    console.error('重置任务队列失败:', error);
-    res.status(500).json({
-      success: false,
-      message: `重置任务队列失败: ${error.message}`
-    });
+    console.error('恢复任务队列失败:', error);
+    // 如果恢复失败，创建新的队列状态
+    console.log('由于恢复失败，创建新的任务队列');
+    return await resetTaskQueue();
   }
-});
+}
 
 // 添加定期状态检查函数
 async function monitorTaskStatus() {
@@ -736,7 +760,8 @@ setInterval(monitorTaskStatus, 30000); // 每30秒检查一次
 // 修改后的服务器启动代码
 (async () => {
   try {
-    await resetTaskQueue();
+    // 不再直接重置队列，而是恢复未完成的任务
+    await restoreTaskQueue();
     
     // 确保API端点初始化
     console.log('初始化API端点配置:');
@@ -748,6 +773,13 @@ setInterval(monitorTaskStatus, 30000); // 每30秒检查一次
     
     // 启动健康检查
     await performHealthChecks();
+    
+    // 启动任务处理 - 如果有队列任务
+    const taskStatus = await getTaskStatus();
+    if (taskStatus.queue.length > 0) {
+      console.log(`恢复处理队列中的 ${taskStatus.queue.length} 个任务...`);
+      processWorkflowQueue();
+    }
     
     // 启动服务器
     const PORT = process.env.PORT || 8083;
