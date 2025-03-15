@@ -938,7 +938,7 @@ export async function handler_run(req, res) {
     let timeoutId;
     let isTimedOut = false;
     
-    // 设置总体超时时间（3分钟）
+    // 设置总体超时时间（20分钟）
     const TIMEOUT_DURATION = 20 * 60 * 1000;
     
     // 超时检查函数
