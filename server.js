@@ -95,31 +95,65 @@ async function processTask(taskData, taskId) {
 
 // 修改/scrape路由，使用改进的markTaskStart和markTaskEnd函数
 app.post('/scrape', async (req, res) => {
-    const taskId = req.body.taskId || `task_${Date.now()}`;
-    
-    // 标记任务开始
-    markTaskStart(taskId);
-    
-    // 返回接受状态
-    res.status(202).json({
-        status: 'accepted',
-        taskId: taskId,
-        message: '任务已接受，开始处理'
-    });
-    
-    // 在后台处理任务
-    processTask(req.body, taskId)
-        .then(result => {
-            // 任务完成，标记结束
-            markTaskEnd(taskId, result);
-        })
-        .catch(error => {
-            // 任务出错，标记结束并记录错误
-            markTaskEnd(taskId, {
+    try {
+        // 确保 taskId 为字符串格式
+        let taskId = req.body.taskId || req.body.taskConfig?.row?.系统SKU;
+        if (!taskId) {
+            return res.status(400).json({
                 status: 'error',
-                error: error.message
+                message: '缺少任务ID'
             });
+        }
+        
+        // 统一转换为字符串格式
+        taskId = String(taskId);
+        
+        console.log('收到任务提交请求:', {
+            taskId,
+            taskIdType: typeof taskId,
+            originalTaskId: req.body.taskId,
+            configSKU: req.body.taskConfig?.row?.系统SKU
         });
+
+        // 保存任务信息到 runningTasks
+        runningTasks.set(taskId, {
+            startTime: new Date().toISOString(),
+            progress: 0,
+            status: 'running'
+        });
+
+        console.log(`任务 ${taskId} 已添加到运行队列，当前运行任务数: ${runningTasks.size}`);
+
+        // 标记任务开始
+        markTaskStart(taskId);
+        
+        // 返回接受状态
+        res.status(202).json({
+            status: 'accepted',
+            taskId: taskId,
+            message: '任务已接受，开始处理'
+        });
+        
+        // 在后台处理任务
+        processTask(req.body, taskId)
+            .then(result => {
+                // 任务完成，标记结束
+                markTaskEnd(taskId, result);
+            })
+            .catch(error => {
+                // 任务出错，标记结束并记录错误
+                markTaskEnd(taskId, {
+                    status: 'error',
+                    error: error.message
+                });
+            });
+    } catch (error) {
+        console.error('处理请求时出错:', error);
+        res.status(500).json({
+            status: 'error',
+            message: error.message
+        });
+    }
 });
 
 app.post('/scrape_base', handler_run_base);
@@ -167,18 +201,30 @@ app.get('/task-status', (req, res) => {
 
 // 改进心跳检测API
 app.get('/heartbeat', (req, res) => {
-    const { id } = req.query;
+    let { id } = req.query;
     
     if (!id) {
+        console.log('心跳检测请求缺少ID参数');
         return res.status(400).json({
             status: 'error',
             message: '缺少任务ID参数'
         });
     }
+
+    // 统一转换为字符串格式
+    id = String(id);
+    
+    console.log(`收到任务 ${id} 的心跳检测请求，ID类型: ${typeof id}`);
+    console.log(`当前运行中任务数: ${runningTasks.size}`);
+    console.log(`当前完成任务数: ${completedTasks.size}`);
+    
+    // 打印当前运行中的所有任务ID，方便调试
+    console.log('运行中的任务列表:', Array.from(runningTasks.keys()));
     
     // 检查任务是否在运行
     if (runningTasks.has(id)) {
         const taskInfo = runningTasks.get(id);
+        console.log(`任务 ${id} 正在运行，进度: ${taskInfo.progress}`);
         return res.json({
             status: 'running',
             taskId: id,
@@ -191,6 +237,7 @@ app.get('/heartbeat', (req, res) => {
     // 如果任务已完成
     if (completedTasks.has(id)) {
         const taskInfo = completedTasks.get(id);
+        console.log(`任务 ${id} 已完成，状态: ${taskInfo.error ? 'error' : 'completed'}`);
         return res.json({
             status: taskInfo.error ? 'error' : 'completed',
             taskId: id,
@@ -200,7 +247,7 @@ app.get('/heartbeat', (req, res) => {
         });
     }
     
-    // 如果找不到任务，返回not_found
+    console.log(`找不到任务 ${id} 的信息`);
     return res.json({
         status: 'not_found',
         taskId: id,
@@ -338,3 +385,80 @@ app.listen(PORT, () => {
 // nohup  node workflow_waimai_api.js > workflow_waimai_api.log 2>&1 &
 
 // https://test1-container-001-506455378112.us-central1.run.app/novnc/vnc_session.html?port=6082&password=4c0e65e97298d181
+
+// 2. 改进心跳检测API，添加更多日志
+app.get('/heartbeat', (req, res) => {
+    const { id } = req.query;
+    
+    if (!id) {
+        console.log('心跳检测请求缺少ID参数');
+        return res.status(400).json({
+            status: 'error',
+            message: '缺少任务ID参数'
+        });
+    }
+    
+    console.log(`收到任务 ${id} 的心跳检测请求`);
+    console.log(`当前运行中任务数: ${runningTasks.size}`);
+    console.log(`当前完成任务数: ${completedTasks.size}`);
+    
+    // 检查任务是否在运行
+    if (runningTasks.has(id)) {
+        const taskInfo = runningTasks.get(id);
+        console.log(`任务 ${id} 正在运行，进度: ${taskInfo.progress}`);
+        return res.json({
+            status: 'running',
+            taskId: id,
+            progress: taskInfo.progress,
+            startedAt: taskInfo.startTime,
+            timestamp: new Date().toISOString()
+        });
+    }
+    
+    // 如果任务已完成
+    if (completedTasks.has(id)) {
+        const taskInfo = completedTasks.get(id);
+        console.log(`任务 ${id} 已完成，状态: ${taskInfo.error ? 'error' : 'completed'}`);
+        return res.json({
+            status: taskInfo.error ? 'error' : 'completed',
+            taskId: id,
+            completedAt: taskInfo.completedAt,
+            error: taskInfo.error,
+            timestamp: new Date().toISOString()
+        });
+    }
+    
+    console.log(`找不到任务 ${id} 的信息`);
+    return res.json({
+        status: 'not_found',
+        taskId: id,
+        timestamp: new Date().toISOString()
+    });
+});
+
+// 3. 在任务完成时确保正确更新状态
+async function updateTaskStatus(taskId, status, error = null) {
+    console.log(`更新任务 ${taskId} 状态为 ${status}`);
+    
+    if (status === 'completed' || status === 'error') {
+        const taskInfo = runningTasks.get(taskId);
+        if (taskInfo) {
+            completedTasks.set(taskId, {
+                ...taskInfo,
+                completedAt: new Date().toISOString(),
+                error: error
+            });
+            runningTasks.delete(taskId);
+            console.log(`任务 ${taskId} 已移至完成队列`);
+        }
+    } else if (status === 'running') {
+        if (!runningTasks.has(taskId)) {
+            runningTasks.set(taskId, {
+                startTime: new Date().toISOString(),
+                progress: 0,
+                status: 'running'
+            });
+            console.log(`任务 ${taskId} 已添加到运行队列`);
+        }
+    }
+}
