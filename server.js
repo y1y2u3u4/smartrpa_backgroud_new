@@ -4,11 +4,9 @@ import cors from 'cors';
 import { handler_login, handler_run_base } from './handler.js';
 import axios from 'axios'; // 用于 HTTP 请求
 
-// 存储运行中的任务
-const runningTasks = new Map();
-
-// 存储任务结果
-const taskResults = new Map();
+// 添加全局任务跟踪映射
+const runningTasks = new Map(); // 存储正在运行的任务
+const completedTasks = new Map(); // 存储已完成的任务
 
 // 检查任务是否在运行
 const isTaskRunning = (taskId) => {
@@ -31,14 +29,14 @@ const markTaskEnd = (taskId, result = null) => {
     
     // 如果提供了结果，保存到结果Map
     if (result) {
-        taskResults.set(taskId, {
-            ...result,
-            completedAt: new Date().toISOString()
+        completedTasks.set(taskId, {
+            completedAt: new Date().toISOString(),
+            result: result
         });
         
         // 设置结果过期时间（例如24小时后自动清理）
         setTimeout(() => {
-            taskResults.delete(taskId);
+            completedTasks.delete(taskId);
         }, 24 * 60 * 60 * 1000);
     }
 };
@@ -62,56 +60,46 @@ app.use(express.json());
 app.post('/login', handler_login);
 
 // 修改/scrape路由，添加任务状态管理
-app.post('/scrape', (req, res) => {
-    // 获取任务ID
-    const taskId = req.body.taskId || 
-                  req.body.workflowFile || 
-                  (req.body.taskConfig?.row?.系统SKU) || 
-                  `task_${Date.now()}`;
+app.post('/scrape', async (req, res) => {
+    const taskId = req.body.taskId || `task_${Date.now()}`;
     
-    console.log(`接收到任务: ${taskId}`);
-    
-    // 标记任务开始
-    markTaskStart(taskId);
-    
-    // 立即返回确认信息
-    res.status(200).json({
-        status: 'accepted',
-        taskId: taskId,
-        message: '任务已接受，开始处理',
-        timestamp: new Date().toISOString()
+    // 将任务添加到运行中任务映射
+    runningTasks.set(taskId, {
+        startTime: new Date(),
+        status: 'running',
+        progress: 0
     });
     
-    // 定义一个内部处理函数
-    const processTask = async () => {
-        try {
-            // 导入handler_run函数（避免循环引用）
-            const { handler_run_internal } = await import('./handler.js');
-            
-            // 在后台处理任务
-            const result = await handler_run_internal(req.body, taskId);
-            
-            console.log(`任务 ${taskId} 完成`);
-            // 保存结果并标记任务结束
-            markTaskEnd(taskId, result);
-        } catch (error) {
-            console.error(`任务 ${taskId} 执行出错:`, error);
-            // 标记任务结束，但不保存结果
-            markTaskEnd(taskId, {
-                status: 'error',
-                message: error.message,
-                errorAt: new Date().toISOString()
-            });
-        }
-    };
+    // 返回接受状态
+    res.status(202).json({
+        status: 'accepted',
+        taskId: taskId,
+        message: '任务已接受，开始处理'
+    });
     
-    // 启动异步处理
-    processTask();
+    // 在后台处理任务
+    processTask(req.body, taskId)
+        .then(result => {
+            // 任务完成，更新状态
+            runningTasks.delete(taskId);
+            completedTasks.set(taskId, {
+                completedAt: new Date(),
+                result: result
+            });
+        })
+        .catch(error => {
+            // 任务出错，更新状态
+            runningTasks.delete(taskId);
+            completedTasks.set(taskId, {
+                completedAt: new Date(),
+                error: error.message
+            });
+        });
 });
 
 app.post('/scrape_base', handler_run_base);
 
-// 添加任务状态查询API
+// 添加任务状态检查API
 app.get('/task-status', (req, res) => {
     const { id } = req.query;
     
@@ -122,39 +110,37 @@ app.get('/task-status', (req, res) => {
         });
     }
     
-    // 使用isTaskRunning函数检查任务状态
-    const isRunning = isTaskRunning(id);
-    
-    // 检查是否有任务结果
-    const result = taskResults.get(id);
-    
-    if (isRunning) {
-        // 任务正在运行
+    // 与心跳检测相同的逻辑
+    if (runningTasks.has(id)) {
+        const taskInfo = runningTasks.get(id);
         return res.json({
             status: 'running',
             taskId: id,
-            startTime: runningTasks.get(id),
-            runningTime: Date.now() - runningTasks.get(id) // 运行时间（毫秒）
-        });
-    } else if (result) {
-        // 任务已完成，有结果
-        return res.json({
-            status: 'completed',
-            taskId: id,
-            result: result,
-            completedAt: result.completedAt
-        });
-    } else {
-        // 任务不存在或已结束但没有结果
-        return res.json({
-            status: 'not_found',
-            taskId: id,
-            message: '任务不存在或已结束'
+            progress: taskInfo.progress,
+            startedAt: taskInfo.startTime,
+            timestamp: new Date().toISOString()
         });
     }
+    
+    if (completedTasks.has(id)) {
+        const taskInfo = completedTasks.get(id);
+        return res.json({
+            status: taskInfo.error ? 'error' : 'completed',
+            taskId: id,
+            completedAt: taskInfo.completedAt,
+            error: taskInfo.error,
+            timestamp: new Date().toISOString()
+        });
+    }
+    
+    return res.json({
+        status: 'not_found',
+        taskId: id,
+        timestamp: new Date().toISOString()
+    });
 });
 
-// 添加任务心跳检测API
+// 改进心跳检测API
 app.get('/heartbeat', (req, res) => {
     const { id } = req.query;
     
@@ -166,20 +152,25 @@ app.get('/heartbeat', (req, res) => {
     }
     
     // 检查任务是否在运行
-    if (isTaskRunning(id)) {
-        // 可以在这里添加更多任务状态信息
+    if (runningTasks.has(id)) {
+        const taskInfo = runningTasks.get(id);
         return res.json({
             status: 'running',
             taskId: id,
+            progress: taskInfo.progress,
+            startedAt: taskInfo.startTime,
             timestamp: new Date().toISOString()
         });
     }
     
-    // 如果任务不在运行中但有结果，返回completed
-    if (taskResults && taskResults.has(id)) {
+    // 如果任务已完成
+    if (completedTasks.has(id)) {
+        const taskInfo = completedTasks.get(id);
         return res.json({
-            status: 'completed',
+            status: taskInfo.error ? 'error' : 'completed',
             taskId: id,
+            completedAt: taskInfo.completedAt,
+            error: taskInfo.error,
             timestamp: new Date().toISOString()
         });
     }
@@ -201,7 +192,7 @@ app.get('/tasks', (req, res) => {
         runningTime: Date.now() - startTime
     }));
     
-    const completedTasksList = Array.from(taskResults.entries()).map(([id, result]) => ({
+    const completedTasksList = Array.from(completedTasks.entries()).map(([id, result]) => ({
         taskId: id,
         status: 'completed',
         completedAt: result.completedAt

@@ -370,7 +370,9 @@ async function processNextBatch() {
     // 直接执行任务，不等待完成
     executeWorkflow(workflowItem)
       .then(result => {
-        console.log(`任务 ${taskId} 执行完成`);
+        console.log(`任务 ${taskId} 提交完成`);
+        API_ENDPOINTS[endpointIndex].running += 1;
+        console.log(`更新端点 ${selectedEndpoint} 运行任务数: ${API_ENDPOINTS[endpointIndex].running}/${API_ENDPOINTS[endpointIndex].maxConcurrent}`);
       })
       .catch(async error => {
         console.error(`任务执行出错: ${error.message}`);
@@ -447,7 +449,7 @@ async function processNextBatch() {
               ...updatedStatus.running[index],
               status: 'error',
               error: error.message,
-              errorAt: new Date()
+              errorAt: new Date().toISOString()
             };
             updatedStatus.running.splice(index, 1);
             updatedStatus.errors.push(failedTask);
@@ -906,6 +908,7 @@ async function updateApiEndpointStatus(index, updates) {
 
 // 修改获取最佳端点函数
 async function getBestAvailableEndpoint() {
+  await syncEndpointTaskCounts();
   const taskStatus = await getTaskStatus();
   const now = Date.now();
   
