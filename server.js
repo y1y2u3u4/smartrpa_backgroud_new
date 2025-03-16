@@ -19,9 +19,22 @@ const markTaskStart = (taskId) => {
 };
 
 // 标记任务结束
-const markTaskEnd = (taskId) => {
+const markTaskEnd = (taskId, result = null) => {
     if (!taskId) return;
     runningTasks.delete(taskId);
+    
+    // 如果提供了结果，保存到结果Map
+    if (result) {
+        taskResults.set(taskId, {
+            ...result,
+            completedAt: new Date().toISOString()
+        });
+        
+        // 设置结果过期时间（例如24小时后自动清理）
+        setTimeout(() => {
+            taskResults.delete(taskId);
+        }, 24 * 60 * 60 * 1000);
+    }
 };
 
 const app = express();
@@ -44,10 +57,100 @@ app.post('/login', handler_login);
 app.post('/scrape', handler_run);
 app.post('/scrape_base', handler_run_base);
 
+// 添加任务状态查询API
+app.get('/task-status', (req, res) => {
+  const { id } = req.query;
+  
+  if (!id) {
+    return res.status(400).json({
+      status: 'error',
+      message: '缺少任务ID参数'
+    });
+  }
+  
+  // 检查任务是否在运行
+  if (isTaskRunning(id)) {
+    // 获取任务运行时间
+    const startTime = runningTasks.get(id);
+    const runningTime = Date.now() - startTime;
+    
+    return res.json({
+      status: 'running',
+      taskId: id,
+      startTime,
+      runningTimeMs: runningTime,
+      runningTimeMin: Math.floor(runningTime / 60000)
+    });
+  }
+  
+  // 如果任务不在运行中，可能已完成或未启动
+  // 这里可以添加检查任务结果的逻辑
+  
+  // 添加一个简单的结果存储
+  if (taskResults && taskResults.has(id)) {
+    const result = taskResults.get(id);
+    return res.json({
+      status: 'completed',
+      taskId: id,
+      result,
+      completedAt: result.completedAt || new Date().toISOString()
+    });
+  }
+  
+  // 如果找不到任务，返回not_found状态
+  return res.json({
+    status: 'not_found',
+    taskId: id,
+    message: '找不到该任务，可能已完成但结果已清理，或者任务ID无效'
+  });
+});
+
+// 添加任务心跳检测API
+app.get('/heartbeat', (req, res) => {
+  const { id } = req.query;
+  
+  if (!id) {
+    return res.status(400).json({
+      status: 'error',
+      message: '缺少任务ID参数'
+    });
+  }
+  
+  // 检查任务是否在运行
+  if (isTaskRunning(id)) {
+    // 可以在这里添加更多任务状态信息
+    return res.json({
+      status: 'running',
+      taskId: id,
+      timestamp: new Date().toISOString()
+    });
+  }
+  
+  // 如果任务不在运行中但有结果，返回completed
+  if (taskResults && taskResults.has(id)) {
+    return res.json({
+      status: 'completed',
+      taskId: id,
+      timestamp: new Date().toISOString()
+    });
+  }
+  
+  // 如果找不到任务，返回not_found
+  return res.json({
+    status: 'not_found',
+    taskId: id,
+    timestamp: new Date().toISOString()
+  });
+});
+
+// 添加任务结果存储
+const taskResults = new Map();
+
 const PORT = 8082;
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
+
 
 //https://ngrok.com/download
 // ngrok http 8082
