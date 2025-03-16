@@ -114,6 +114,57 @@ let MAX_CONCURRENT_TASKS = 100; // 提高到100，实际上我们将依赖各个
 let isWritingStatus = false;
 const statusWriteQueue = [];
 
+// 在文件的适当位置添加这个函数定义（确保在任何调用它的代码之前）
+// 建议放在其他辅助函数附近，例如在getTaskStatus函数之后
+
+/**
+ * 同步端点任务计数 - 确保API_ENDPOINTS中的running计数与实际运行中的任务数一致
+ */
+async function syncEndpointTaskCounts() {
+  try {
+    console.log("开始同步端点任务计数...");
+    
+    // 获取当前任务状态
+    const taskStatus = await getTaskStatus();
+    const endpointCounts = {};
+    
+    // 统计每个端点的实际运行任务数
+    taskStatus.running.forEach(task => {
+      if (task.endpoint) {
+        endpointCounts[task.endpoint] = (endpointCounts[task.endpoint] || 0) + 1;
+      }
+    });
+    
+    // 更新API_ENDPOINTS中的running计数
+    let updatedCount = 0;
+    API_ENDPOINTS.forEach((endpoint, index) => {
+      // 添加空值检查
+      if (!endpoint) {
+        console.warn(`警告: API_ENDPOINTS[${index}] 是 null 或 undefined`);
+        return; // 跳过这个元素
+      }
+      
+      const actualCount = endpointCounts[endpoint.url] || 0;
+      if (API_ENDPOINTS[index].running !== actualCount) {
+        console.log(`修正端点 ${endpoint.url} 运行任务数: ${API_ENDPOINTS[index].running} -> ${actualCount}`);
+        API_ENDPOINTS[index].running = actualCount;
+        updatedCount++;
+      }
+    });
+    
+    if (updatedCount > 0) {
+      console.log(`已更新 ${updatedCount} 个端点的任务计数`);
+    } else {
+      console.log("所有端点任务计数正确，无需更新");
+    }
+    
+    return updatedCount > 0; // 返回是否有更新
+  } catch (error) {
+    console.error("同步端点任务计数时出错:", error);
+    return false;
+  }
+}
+
 // 2. 修改保存状态函数
 async function saveTaskStatus(taskStatus) {
   // 如果正在写入，将新的写入请求加入队列
@@ -358,8 +409,8 @@ async function processNextBatch() {
     console.log(`启动任务: ${taskId}, 用户: ${workflowItem.userId}, API端点: ${workflowItem.endpoint}`);
     
     // 更新端点的最后提交时间
-    const endpointIndex = API_ENDPOINTS.findIndex(e => e.url === workflowItem.endpoint);
-    if (endpointIndex !== -1) {
+    const endpointIndex = API_ENDPOINTS.findIndex(e => e && e.url === workflowItem.endpoint);
+    if (endpointIndex !== -1 && API_ENDPOINTS[endpointIndex]) {
       API_ENDPOINTS[endpointIndex].lastSubmitTime = Date.now();
       console.log(`端点 ${workflowItem.endpoint} 最后提交时间更新为: ${new Date(API_ENDPOINTS[endpointIndex].lastSubmitTime).toISOString()}`);
     }
@@ -371,8 +422,10 @@ async function processNextBatch() {
     executeWorkflow(workflowItem)
       .then(result => {
         console.log(`任务 ${taskId} 提交完成`);
-        API_ENDPOINTS[endpointIndex].running += 1;
-        console.log(`更新端点 ${selectedEndpoint} 运行任务数: ${API_ENDPOINTS[endpointIndex].running}/${API_ENDPOINTS[endpointIndex].maxConcurrent}`);
+        if (endpointIndex !== -1 && API_ENDPOINTS[endpointIndex]) {
+          API_ENDPOINTS[endpointIndex].running += 1;
+          console.log(`更新端点 ${selectedEndpoint} 运行任务数: ${API_ENDPOINTS[endpointIndex].running}/${API_ENDPOINTS[endpointIndex].maxConcurrent}`);
+        }
       })
       .catch(async error => {
         console.error(`任务执行出错: ${error.message}`);
@@ -455,7 +508,7 @@ async function processNextBatch() {
             updatedStatus.errors.push(failedTask);
             
             // 更新端点计数
-            if (endpointIndex !== -1) {
+            if (endpointIndex !== -1 && API_ENDPOINTS[endpointIndex]) {
               API_ENDPOINTS[endpointIndex].running = Math.max(0, API_ENDPOINTS[endpointIndex].running - 1);
               console.log(`更新端点 ${workflowItem.endpoint} 运行任务数: ${API_ENDPOINTS[endpointIndex].running}`);
             }
@@ -908,98 +961,78 @@ async function updateApiEndpointStatus(index, updates) {
 
 // 修改获取最佳端点函数
 async function getBestAvailableEndpoint() {
-  await syncEndpointTaskCounts();
-  const taskStatus = await getTaskStatus();
-  const now = Date.now();
-  
-  console.log('=============== 详细并发状态 ===============');
-  for (const endpoint of API_ENDPOINTS) {
-    // 定义变量名为runningTasks
-    const runningTasks = taskStatus.running.filter(task => 
-      task.endpoint === endpoint.url && 
-      task.status === 'running' && 
-      !task.error
-    );
-    
-    const actualRunning = runningTasks.length;
-    const maxAllowed = endpoint.maxConcurrent;
-    const hasCapacity = actualRunning < maxAllowed;
-    
-    console.log(`端点 ${endpoint.url}:`);
-    console.log(`  运行任务数: ${actualRunning}/${maxAllowed} (有容量: ${hasCapacity})`);
-    console.log(`  上次提交: ${new Date(endpoint.lastSubmitTime).toISOString()}`);
-    
-    const timeSinceLastSubmit = now - endpoint.lastSubmitTime;
-    const requiredInterval = endpoint.lastSubmitTime === 0 ? FIRST_TASK_INTERVAL : NORMAL_TASK_INTERVAL;
-    const timeReady = timeSinceLastSubmit >= requiredInterval;
-    
-    console.log(`  时间就绪: ${timeReady} (经过 ${timeSinceLastSubmit/1000}秒，需要 ${requiredInterval/1000}秒)`);
-    
-    // 使用正确的变量名runningTasks，而不是tasks
-    runningTasks.forEach((task, idx) => {
-      console.log(`  ${idx+1}. ${task.workflowFile} (用户: ${task.userId})`);
-    });
-  }
-  console.log('============================================');
-  
+  // 首先同步端点任务计数，确保数据准确
   try {
-    // 过滤可用端点
-    const availableEndpoints = API_ENDPOINTS.filter(endpoint => {
-      const isActive = endpoint.status === 'active';
-      
-      // 明确计算实际运行任务
-      const runningTasks = taskStatus.running.filter(task => 
-        task.endpoint === endpoint.url && 
-        task.status === 'running' && 
-        !task.error
-      );
-      const actualRunning = runningTasks.length;
-      const maxAllowed = endpoint.maxConcurrent;
-      
-      // 严格比较：确保实际运行任务数小于最大允许数
-      const hasCapacity = actualRunning < maxAllowed;
-      
-      // 时间间隔检查
-      const timeSinceLastSubmit = now - endpoint.lastSubmitTime;
-      const requiredInterval = endpoint.lastSubmitTime === 0 ? FIRST_TASK_INTERVAL : NORMAL_TASK_INTERVAL;
-      const timeReady = timeSinceLastSubmit >= requiredInterval;
-      
-      // 详细日志
-      console.log(`检查端点 ${endpoint.url} 可用性详情:`, {
-        isActive: isActive,
-        hasCapacity: hasCapacity,
-        timeReady: timeReady,
-        actualRunning: actualRunning,
-        maxConcurrent: maxAllowed,
-        timeSinceLastSubmit: `${timeSinceLastSubmit/1000}秒`,
-        比较结果: `${actualRunning} < ${maxAllowed} = ${actualRunning < maxAllowed}`
-      });
-      
-      return isActive && hasCapacity && timeReady;
-    });
-    
-    if (availableEndpoints.length === 0) {
-      throw new Error('没有可用端点（所有端点可能达到最大并发数或时间间隔未到）');
+    await syncEndpointTaskCounts();
+  } catch (error) {
+    console.error("同步端点任务计数失败:", error);
+    // 继续执行，不要因为同步失败而中断整个流程
+  }
+  
+  // 筛选出活跃且有容量的端点
+  const availableEndpoints = API_ENDPOINTS.filter(endpoint => {
+    // 添加空值检查
+    if (!endpoint) {
+      console.warn("警告: 发现 API_ENDPOINTS 中有 null 或 undefined 元素");
+      return false;
     }
     
-    // 按负载比例排序，选择负载最小的端点
-    return availableEndpoints.sort((a, b) => {
-      const aLoad = taskStatus.running.filter(task => 
-        task.endpoint === a.url && 
-        task.status === 'running' && 
-        !task.error
-      ).length / a.maxConcurrent;
-      const bLoad = taskStatus.running.filter(task => 
-        task.endpoint === b.url && 
-        task.status === 'running' && 
-        !task.error
-      ).length / b.maxConcurrent;
-      return aLoad - bLoad;
-    })[0];
-  } catch (error) {
-    console.error(error.message);
-    throw error;
+    const isActive = endpoint.status === 'active';
+    const hasCapacity = endpoint.running < endpoint.maxConcurrent;
+    
+    // 检查上次提交时间
+    const now = Date.now();
+    const lastSubmitTime = endpoint.lastSubmitTime ? new Date(endpoint.lastSubmitTime).getTime() : 0;
+    const timeSinceLastSubmit = (now - lastSubmitTime) / 1000; // 转换为秒
+    
+    // 如果是高优先级端点，使用较短的间隔时间
+    const requiredInterval = endpoint.highPriority ? 10 : 30; // 秒
+    const timeReady = timeSinceLastSubmit >= requiredInterval;
+    
+    // 记录详细的可用性信息，用于调试
+    const availabilityDetails = {
+      isActive,
+      hasCapacity,
+      timeReady,
+      actualRunning: endpoint.running,
+      maxConcurrent: endpoint.maxConcurrent,
+      timeSinceLastSubmit: `${timeSinceLastSubmit.toFixed(3)}秒`,
+      '比较结果': `${endpoint.running} < ${endpoint.maxConcurrent} = ${hasCapacity}`
+    };
+    
+    console.log(`检查端点 ${endpoint.url} 可用性详情:`, availabilityDetails);
+    
+    return isActive && hasCapacity && timeReady;
+  });
+  
+  if (availableEndpoints.length === 0) {
+    console.log("没有可用端点（所有端点可能达到最大并发数或时间间隔未到）");
+    return null;
   }
+  
+  // 优先选择高优先级端点
+  const highPriorityEndpoints = availableEndpoints.filter(e => e.highPriority);
+  if (highPriorityEndpoints.length > 0) {
+    // 在高优先级端点中选择负载最低的
+    highPriorityEndpoints.sort((a, b) => {
+      const aLoad = a.running / a.maxConcurrent;
+      const bLoad = b.running / b.maxConcurrent;
+      return aLoad - bLoad;
+    });
+    
+    console.log(`选择高优先级端点: ${highPriorityEndpoints[0].url} 提交下一个任务`);
+    return highPriorityEndpoints[0];
+  }
+  
+  // 如果没有高优先级端点，选择负载最低的普通端点
+  availableEndpoints.sort((a, b) => {
+    const aLoad = a.running / a.maxConcurrent;
+    const bLoad = b.running / b.maxConcurrent;
+    return aLoad - bLoad;
+  });
+  
+  console.log(`选择端点: ${availableEndpoints[0].url} 提交下一个任务`);
+  return availableEndpoints[0];
 }
 
 
@@ -1067,10 +1100,15 @@ async function executeWorkflow(workflowItem) {
     
     // 使用workflowItem中的端点信息
     const selectedEndpointUrl = workflowItem.endpoint;
-    const endpointIndex = API_ENDPOINTS.findIndex(e => e.url === selectedEndpointUrl);
+    const endpointIndex = API_ENDPOINTS.findIndex(e => e && e.url === selectedEndpointUrl);
     
     if (endpointIndex === -1) {
       throw new Error(`找不到端点: ${selectedEndpointUrl}`);
+    }
+
+    // 确保端点对象存在
+    if (!API_ENDPOINTS[endpointIndex]) {
+      throw new Error(`端点对象为空: ${selectedEndpointUrl}, 索引: ${endpointIndex}`);
     }
 
     // 更新工作流项的状态
@@ -1152,6 +1190,12 @@ async function executeWorkflow(workflowItem) {
       // 任务已被接受，立即设置心跳检测
       console.log(`任务 ${taskId} 已提交到服务器，开始远程执行，将持续监控状态`);
       setupTaskHeartbeat(taskId, selectedEndpointUrl, workflowItem.userId);
+      
+      // 更新端点的运行任务计数
+      if (endpointIndex !== -1 && API_ENDPOINTS[endpointIndex]) {
+        API_ENDPOINTS[endpointIndex].running += 1;
+        console.log(`更新端点 ${selectedEndpointUrl} 运行任务数: ${API_ENDPOINTS[endpointIndex].running}/${API_ENDPOINTS[endpointIndex].maxConcurrent}`);
+      }
       
       // 立即触发一次状态检查，确认任务已开始
       setTimeout(async () => {
@@ -1375,10 +1419,16 @@ async function refreshEndpointStatuses() {
     // 继续正常的端点状态刷新...
     for (const endpoint of API_ENDPOINTS) {
       try {
+        // 添加空值检查
+        if (!endpoint || !endpoint.url) {
+          console.warn("警告: 发现无效的端点对象:", endpoint);
+          continue; // 跳过这个端点
+        }
+        
         // 计算此端点上运行的任务数
         const runningTasksOnEndpoint = taskStatus.running.filter(task => 
           task.endpoint === endpoint.url && 
-          task.status === 'running' && 
+          (task.status === 'running' || task.status === 'remote_running') && 
           !task.error
         ).length;
         
@@ -1387,7 +1437,7 @@ async function refreshEndpointStatuses() {
         
         console.log(`端点 ${endpoint.url} 状态刷新: 运行任务数 ${runningTasksOnEndpoint}/${endpoint.maxConcurrent}`);
       } catch (endpointError) {
-        console.error(`刷新端点 ${endpoint.url} 状态时出错:`, endpointError);
+        console.error(`刷新端点状态时出错:`, endpointError);
       }
     }
   } catch (error) {
@@ -1718,8 +1768,8 @@ async function checkRunningTasksStatus() {
           // 更新端点计数
           const endpoint = completedTask.endpoint;
           if (endpoint) {
-            const endpointIndex = API_ENDPOINTS.findIndex(e => e.url === endpoint);
-            if (endpointIndex !== -1) {
+            const endpointIndex = API_ENDPOINTS.findIndex(e => e && e.url === endpoint);
+            if (endpointIndex !== -1 && API_ENDPOINTS[endpointIndex]) {
               API_ENDPOINTS[endpointIndex].running = Math.max(0, API_ENDPOINTS[endpointIndex].running - 1);
               console.log(`更新端点 ${endpoint} 运行任务数: ${API_ENDPOINTS[endpointIndex].running}`);
             }
@@ -1749,8 +1799,8 @@ async function checkRunningTasksStatus() {
           // 更新端点计数
           const endpoint = failedTask.endpoint;
           if (endpoint) {
-            const endpointIndex = API_ENDPOINTS.findIndex(e => e.url === endpoint);
-            if (endpointIndex !== -1) {
+            const endpointIndex = API_ENDPOINTS.findIndex(e => e && e.url === endpoint);
+            if (endpointIndex !== -1 && API_ENDPOINTS[endpointIndex]) {
               API_ENDPOINTS[endpointIndex].running = Math.max(0, API_ENDPOINTS[endpointIndex].running - 1);
               console.log(`更新端点 ${endpoint} 运行任务数: ${API_ENDPOINTS[endpointIndex].running}`);
             }
@@ -1781,8 +1831,8 @@ async function checkRunningTasksStatus() {
             // 更新端点计数
             const endpoint = failedTask.endpoint;
             if (endpoint) {
-              const endpointIndex = API_ENDPOINTS.findIndex(e => e.url === endpoint);
-              if (endpointIndex !== -1) {
+              const endpointIndex = API_ENDPOINTS.findIndex(e => e && e.url === endpoint);
+              if (endpointIndex !== -1 && API_ENDPOINTS[endpointIndex]) {
                 API_ENDPOINTS[endpointIndex].running = Math.max(0, API_ENDPOINTS[endpointIndex].running - 1);
                 console.log(`更新端点 ${endpoint} 运行任务数: ${API_ENDPOINTS[endpointIndex].running}`);
               }
@@ -1911,8 +1961,8 @@ function setupTaskHeartbeat(taskId, endpoint, userId) {
         await saveTaskStatus(taskStatus);
         
         // 更新端点计数
-        const endpointIndex = API_ENDPOINTS.findIndex(e => e.url === endpoint);
-        if (endpointIndex !== -1) {
+        const endpointIndex = API_ENDPOINTS.findIndex(e => e && e.url === endpoint);
+        if (endpointIndex !== -1 && API_ENDPOINTS[endpointIndex]) {
           API_ENDPOINTS[endpointIndex].running = Math.max(0, API_ENDPOINTS[endpointIndex].running - 1);
           console.log(`更新端点 ${endpoint} 运行任务数: ${API_ENDPOINTS[endpointIndex].running}`);
         }
@@ -1936,8 +1986,8 @@ function setupTaskHeartbeat(taskId, endpoint, userId) {
         await saveTaskStatus(taskStatus);
         
         // 更新端点计数
-        const endpointIndex = API_ENDPOINTS.findIndex(e => e.url === endpoint);
-        if (endpointIndex !== -1) {
+        const endpointIndex = API_ENDPOINTS.findIndex(e => e && e.url === endpoint);
+        if (endpointIndex !== -1 && API_ENDPOINTS[endpointIndex]) {
           API_ENDPOINTS[endpointIndex].running = Math.max(0, API_ENDPOINTS[endpointIndex].running - 1);
           console.log(`更新端点 ${endpoint} 运行任务数: ${API_ENDPOINTS[endpointIndex].running}`);
         }
@@ -2079,6 +2129,11 @@ app.get('/api/tasks/:taskId/remote-status', async (req, res) => {
 
 // 修改checkEndpointHealth函数，添加清理任务的逻辑
 async function checkEndpointHealth(endpoint) {
+  if (!endpoint || !endpoint.url) {
+    console.error("无效的端点对象:", endpoint);
+    return false;
+  }
+  
   try {
     // 使用基础URL
     const baseUrl = endpoint.url.replace('/scrape', '');
@@ -2095,8 +2150,8 @@ async function checkEndpointHealth(endpoint) {
       
       // 即使基础URL返回404，只要端口响应了，就认为服务正常
       if (portResponse.status >= 200) {
-        const index = API_ENDPOINTS.findIndex(e => e.url === endpoint.url);
-        if (index !== -1) {
+        const index = API_ENDPOINTS.findIndex(e => e && e.url === endpoint.url);
+        if (index !== -1 && API_ENDPOINTS[index]) {
           await updateApiEndpointStatus(index, { 
             status: 'active'
           });
@@ -2121,9 +2176,9 @@ async function checkEndpointHealth(endpoint) {
       
       console.log(`完整端点检查状态码: ${response.status}`);
       const isHealthy = response.status >= 200;
-      const index = API_ENDPOINTS.findIndex(e => e.url === endpoint.url);
+      const index = API_ENDPOINTS.findIndex(e => e && e.url === endpoint.url);
       
-      if (index !== -1) {
+      if (index !== -1 && API_ENDPOINTS[index]) {
         await updateApiEndpointStatus(index, { 
           status: isHealthy ? 'active' : 'error'
         });
@@ -2149,8 +2204,8 @@ async function checkEndpointHealth(endpoint) {
       // 由于我们无法直接执行命令，所以这里简单地假设端口可能是开放的
       // 因为前面检查失败可能只是服务对请求方式有限制
       
-      const index = API_ENDPOINTS.findIndex(e => e.url === endpoint.url);
-      if (index !== -1) {
+      const index = API_ENDPOINTS.findIndex(e => e && e.url === endpoint.url);
+      if (index !== -1 && API_ENDPOINTS[index]) {
         console.log(`将端点 ${endpoint.url} 状态设置为 active (假设端口开放)`);
         await updateApiEndpointStatus(index, { 
           status: 'active'
@@ -2164,8 +2219,8 @@ async function checkEndpointHealth(endpoint) {
     }
     
     // 所有检查都失败了，将端点标记为错误
-    const index = API_ENDPOINTS.findIndex(e => e.url === endpoint.url);
-    if (index !== -1) {
+    const index = API_ENDPOINTS.findIndex(e => e && e.url === endpoint.url);
+    if (index !== -1 && API_ENDPOINTS[index]) {
       await updateApiEndpointStatus(index, { 
         status: 'error'
       });
@@ -2174,8 +2229,8 @@ async function checkEndpointHealth(endpoint) {
     return false;
   } catch (error) {
     console.error(`端点 ${endpoint.url} 健康检查过程出错:`, error);
-    const index = API_ENDPOINTS.findIndex(e => e.url === endpoint.url);
-    if (index !== -1) {
+    const index = API_ENDPOINTS.findIndex(e => e && e.url === endpoint.url);
+    if (index !== -1 && API_ENDPOINTS[index]) {
       await updateApiEndpointStatus(index, { 
         status: 'error'
       });
@@ -2222,8 +2277,8 @@ async function cleanupTasksForEndpoint(endpointUrl) {
       await saveTaskStatus(taskStatus);
       
       // 更新端点状态
-      const endpointIndex = API_ENDPOINTS.findIndex(e => e.url === endpointUrl);
-      if (endpointIndex !== -1) {
+      const endpointIndex = API_ENDPOINTS.findIndex(e => e && e.url === endpointUrl);
+      if (endpointIndex !== -1 && API_ENDPOINTS[endpointIndex]) {
         API_ENDPOINTS[endpointIndex].running = 0;
       }
     } else {
@@ -2268,8 +2323,8 @@ async function updateTaskToFailed(taskId, errorMessage) {
       // 更新端点计数
       const endpoint = failedTask.endpoint;
       if (endpoint) {
-        const endpointIndex = API_ENDPOINTS.findIndex(e => e.url === endpoint);
-        if (endpointIndex !== -1) {
+        const endpointIndex = API_ENDPOINTS.findIndex(e => e && e.url === endpoint);
+        if (endpointIndex !== -1 && API_ENDPOINTS[endpointIndex]) {
           API_ENDPOINTS[endpointIndex].running = Math.max(0, API_ENDPOINTS[endpointIndex].running - 1);
           console.log(`更新端点 ${endpoint} 运行任务数: ${API_ENDPOINTS[endpointIndex].running}`);
         }
@@ -2304,3 +2359,31 @@ async function updateTaskToFailed(taskId, errorMessage) {
 // kill -9 <进程ID>
 
 // ps aux | grep "task_manager_api.js"
+
+// 添加一个函数来清理API_ENDPOINTS中的无效元素
+function cleanupApiEndpoints() {
+  console.log("清理API_ENDPOINTS中的无效元素...");
+  
+  // 记录清理前的状态
+  console.log(`清理前: API_ENDPOINTS 长度 = ${API_ENDPOINTS.length}`);
+  
+  // 过滤掉null和undefined
+  const validEndpoints = API_ENDPOINTS.filter(endpoint => endpoint && endpoint.url);
+  
+  // 如果有无效元素，替换整个数组
+  if (validEndpoints.length < API_ENDPOINTS.length) {
+    console.log(`发现 ${API_ENDPOINTS.length - validEndpoints.length} 个无效端点，进行清理`);
+    API_ENDPOINTS.length = 0; // 清空数组
+    validEndpoints.forEach(endpoint => API_ENDPOINTS.push(endpoint)); // 添加有效元素
+    console.log(`清理后: API_ENDPOINTS 长度 = ${API_ENDPOINTS.length}`);
+  } else {
+    console.log("没有发现无效端点，无需清理");
+  }
+}
+
+// 在初始化时调用一次清理函数
+cleanupApiEndpoints();
+
+// 定期清理API_ENDPOINTS
+setInterval(cleanupApiEndpoints, 60 * 60 * 1000); // 每小时清理一次
+
