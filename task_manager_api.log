@@ -1,7 +1,7 @@
 MAX_CONCURRENT_TASKS = 100
-(node:51401) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(node:51726) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
 (Use `node --trace-deprecation ...` to show where the warning was created)
-发现 2 个未完成的运行中任务，恢复到队列...
+发现 6 个未完成的运行中任务，恢复到队列...
 恢复完成: 队列任务数: 8574, 已完成: 268, 错误: 4018
 任务状态已保存到文件
 初始化API端点配置:
@@ -35,7 +35,7 @@ https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape: active, 运行中: 0/3
 任务状态已保存到文件
 
 =============== 任务处理状态 ===============
-当前时间: 2025-03-16T10:22:43.136Z
+当前时间: 2025-03-16T10:31:46.745Z
 运行中任务数: 0
 队列中任务数: 8574
 错误任务数: 4018
@@ -45,11 +45,11 @@ https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape: active, 运行中: 0/3
 端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape:
   运行任务数: 0/3 (有容量: true)
   上次提交: 1970-01-01T00:00:00.000Z
-  时间就绪: true (经过 1742120563.175秒，需要 120秒)
+  时间就绪: true (经过 1742121106.779秒，需要 120秒)
 端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape:
   运行任务数: 0/3 (有容量: true)
   上次提交: 1970-01-01T00:00:00.000Z
-  时间就绪: true (经过 1742120563.175秒，需要 120秒)
+  时间就绪: true (经过 1742121106.779秒，需要 120秒)
 ============================================
 检查端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape 可用性详情: {
   isActive: true,
@@ -57,7 +57,7 @@ https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape: active, 运行中: 0/3
   timeReady: true,
   actualRunning: 0,
   maxConcurrent: 3,
-  timeSinceLastSubmit: '1742120563.175秒',
+  timeSinceLastSubmit: '1742121106.779秒',
   '比较结果': '0 < 3 = true'
 }
 检查端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape 可用性详情: {
@@ -66,24 +66,25 @@ https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape: active, 运行中: 0/3
   timeReady: true,
   actualRunning: 0,
   maxConcurrent: 3,
-  timeSinceLastSubmit: '1742120563.175秒',
+  timeSinceLastSubmit: '1742121106.779秒',
   '比较结果': '0 < 3 = true'
 }
 选择端点: https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape 提交下一个任务
-启动任务: 2011220018011, 用户: user_1742013441, API端点: https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape
-端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape 最后提交时间更新为: 2025-03-16T10:22:43.176Z
+启动任务: 2011220027711, 用户: user_1742013449, API端点: https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape
+端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape 最后提交时间更新为: 2025-03-16T10:31:46.780Z
 任务状态已保存到文件
-开始执行工作流: kandeng.json, 用户ID: user_1742013441
+开始执行工作流: kandeng.json, 用户ID: user_1742013449
 从workflow_json目录加载工作流文件: kandeng.json
 工作流 kandeng.json 已加载，包含 15 个事件
-向API端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape 提交任务 2011220018011
-任务 2011220018011 已提交到服务器，开始监控状态
-为任务 2011220018011 设置心跳检测
+向API端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape 提交任务 2011220027711
+任务 2011220027711 已提交到服务器，开始监控状态
+为任务 2011220027711 设置心跳检测
 任务状态已保存到文件
-任务 2011220018011 执行完成
+任务状态已保存到文件
+任务 2011220027711 执行完成
 
 =============== 任务处理状态 ===============
-当前时间: 2025-03-16T10:22:44.283Z
+当前时间: 2025-03-16T10:31:47.869Z
 运行中任务数: 1
 队列中任务数: 8573
 错误任务数: 4018
@@ -92,12 +93,12 @@ https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape: active, 运行中: 0/3
 =============== 详细并发状态 ===============
 端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape:
   运行任务数: 0/3 (有容量: true)
-  上次提交: 2025-03-16T10:22:43.176Z
-  时间就绪: false (经过 1.156秒，需要 30秒)
+  上次提交: 2025-03-16T10:31:46.780Z
+  时间就绪: false (经过 1.15秒，需要 30秒)
 端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape:
   运行任务数: 0/3 (有容量: true)
   上次提交: 1970-01-01T00:00:00.000Z
-  时间就绪: true (经过 1742120564.332秒，需要 120秒)
+  时间就绪: true (经过 1742121107.93秒，需要 120秒)
 ============================================
 检查端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape 可用性详情: {
   isActive: true,
@@ -105,7 +106,7 @@ https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape: active, 运行中: 0/3
   timeReady: false,
   actualRunning: 0,
   maxConcurrent: 3,
-  timeSinceLastSubmit: '1.156秒',
+  timeSinceLastSubmit: '1.15秒',
   '比较结果': '0 < 3 = true'
 }
 检查端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape 可用性详情: {
@@ -114,24 +115,25 @@ https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape: active, 运行中: 0/3
   timeReady: true,
   actualRunning: 0,
   maxConcurrent: 3,
-  timeSinceLastSubmit: '1742120564.332秒',
+  timeSinceLastSubmit: '1742121107.93秒',
   '比较结果': '0 < 3 = true'
 }
 选择端点: https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape 提交下一个任务
-启动任务: 2011220011911, 用户: user_1742013437, API端点: https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape
-端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape 最后提交时间更新为: 2025-03-16T10:22:44.333Z
+启动任务: 2011220026211, 用户: user_1742013447, API端点: https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape
+端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape 最后提交时间更新为: 2025-03-16T10:31:47.931Z
 任务状态已保存到文件
-开始执行工作流: kandeng.json, 用户ID: user_1742013437
+开始执行工作流: kandeng.json, 用户ID: user_1742013447
 从workflow_json目录加载工作流文件: kandeng.json
 工作流 kandeng.json 已加载，包含 15 个事件
-向API端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape 提交任务 2011220011911
-任务 2011220011911 已提交到服务器，开始监控状态
-为任务 2011220011911 设置心跳检测
+向API端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape 提交任务 2011220026211
+任务 2011220026211 已提交到服务器，开始监控状态
+为任务 2011220026211 设置心跳检测
 任务状态已保存到文件
-任务 2011220011911 执行完成
+任务状态已保存到文件
+任务 2011220026211 执行完成
 
 =============== 任务处理状态 ===============
-当前时间: 2025-03-16T10:22:45.440Z
+当前时间: 2025-03-16T10:31:49.054Z
 运行中任务数: 2
 队列中任务数: 8572
 错误任务数: 4018
@@ -140,12 +142,12 @@ https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape: active, 运行中: 0/3
 =============== 详细并发状态 ===============
 端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape:
   运行任务数: 0/3 (有容量: true)
-  上次提交: 2025-03-16T10:22:43.176Z
-  时间就绪: false (经过 2.316秒，需要 30秒)
+  上次提交: 2025-03-16T10:31:46.780Z
+  时间就绪: false (经过 2.326秒，需要 30秒)
 端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape:
   运行任务数: 0/3 (有容量: true)
-  上次提交: 2025-03-16T10:22:44.333Z
-  时间就绪: false (经过 1.159秒，需要 30秒)
+  上次提交: 2025-03-16T10:31:47.931Z
+  时间就绪: false (经过 1.175秒，需要 30秒)
 ============================================
 检查端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape 可用性详情: {
   isActive: true,
@@ -153,7 +155,7 @@ https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape: active, 运行中: 0/3
   timeReady: false,
   actualRunning: 0,
   maxConcurrent: 3,
-  timeSinceLastSubmit: '2.316秒',
+  timeSinceLastSubmit: '2.326秒',
   '比较结果': '0 < 3 = true'
 }
 检查端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape 可用性详情: {
@@ -162,16 +164,16 @@ https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape: active, 运行中: 0/3
   timeReady: false,
   actualRunning: 0,
   maxConcurrent: 3,
-  timeSinceLastSubmit: '1.159秒',
+  timeSinceLastSubmit: '1.175秒',
   '比较结果': '0 < 3 = true'
 }
 没有可用端点（所有端点可能达到最大并发数或时间间隔未到）
 没有可用端点（所有端点可能达到最大并发数或时间间隔未到），等待5秒后重试
-初始状态检查: https://kdw16tm655k3s1-8082.proxy.runpod.net/task-status?id=2011220018011
-初始状态检查: https://os8tm9eu20m77i-8082.proxy.runpod.net/task-status?id=2011220011911
+初始状态检查: https://kdw16tm655k3s1-8082.proxy.runpod.net/task-status?id=2011220027711
+初始状态检查: https://os8tm9eu20m77i-8082.proxy.runpod.net/task-status?id=2011220026211
 
 =============== 任务处理状态 ===============
-当前时间: 2025-03-16T10:22:50.546Z
+当前时间: 2025-03-16T10:31:54.196Z
 运行中任务数: 2
 队列中任务数: 8572
 错误任务数: 4018
@@ -180,12 +182,12 @@ https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape: active, 运行中: 0/3
 =============== 详细并发状态 ===============
 端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape:
   运行任务数: 0/3 (有容量: true)
-  上次提交: 2025-03-16T10:22:43.176Z
-  时间就绪: false (经过 7.415秒，需要 30秒)
+  上次提交: 2025-03-16T10:31:46.780Z
+  时间就绪: false (经过 7.463秒，需要 30秒)
 端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape:
   运行任务数: 0/3 (有容量: true)
-  上次提交: 2025-03-16T10:22:44.333Z
-  时间就绪: false (经过 6.258秒，需要 30秒)
+  上次提交: 2025-03-16T10:31:47.931Z
+  时间就绪: false (经过 6.312秒，需要 30秒)
 ============================================
 检查端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape 可用性详情: {
   isActive: true,
@@ -193,7 +195,7 @@ https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape: active, 运行中: 0/3
   timeReady: false,
   actualRunning: 0,
   maxConcurrent: 3,
-  timeSinceLastSubmit: '7.415秒',
+  timeSinceLastSubmit: '7.463秒',
   '比较结果': '0 < 3 = true'
 }
 检查端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape 可用性详情: {
@@ -202,18 +204,18 @@ https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape: active, 运行中: 0/3
   timeReady: false,
   actualRunning: 0,
   maxConcurrent: 3,
-  timeSinceLastSubmit: '6.258秒',
+  timeSinceLastSubmit: '6.312秒',
   '比较结果': '0 < 3 = true'
 }
 没有可用端点（所有端点可能达到最大并发数或时间间隔未到）
 没有可用端点（所有端点可能达到最大并发数或时间间隔未到），等待5秒后重试
-任务 2011220018011 初始状态: not_found
-警告: 任务 2011220018011 提交后未在服务器上找到，将继续监控
-任务 2011220011911 初始状态: not_found
-警告: 任务 2011220011911 提交后未在服务器上找到，将继续监控
+任务 2011220027711 初始状态: not_found
+警告: 任务 2011220027711 提交后未在服务器上找到，将继续监控
+任务 2011220026211 初始状态: not_found
+警告: 任务 2011220026211 提交后未在服务器上找到，将继续监控
 
 =============== 任务处理状态 ===============
-当前时间: 2025-03-16T10:22:55.671Z
+当前时间: 2025-03-16T10:31:59.317Z
 运行中任务数: 2
 队列中任务数: 8572
 错误任务数: 4018
@@ -222,12 +224,12 @@ https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape: active, 运行中: 0/3
 =============== 详细并发状态 ===============
 端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape:
   运行任务数: 0/3 (有容量: true)
-  上次提交: 2025-03-16T10:22:43.176Z
-  时间就绪: false (经过 12.536秒，需要 30秒)
+  上次提交: 2025-03-16T10:31:46.780Z
+  时间就绪: false (经过 12.578秒，需要 30秒)
 端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape:
   运行任务数: 0/3 (有容量: true)
-  上次提交: 2025-03-16T10:22:44.333Z
-  时间就绪: false (经过 11.379秒，需要 30秒)
+  上次提交: 2025-03-16T10:31:47.931Z
+  时间就绪: false (经过 11.427秒，需要 30秒)
 ============================================
 检查端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape 可用性详情: {
   isActive: true,
@@ -235,7 +237,7 @@ https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape: active, 运行中: 0/3
   timeReady: false,
   actualRunning: 0,
   maxConcurrent: 3,
-  timeSinceLastSubmit: '12.536秒',
+  timeSinceLastSubmit: '12.578秒',
   '比较结果': '0 < 3 = true'
 }
 检查端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape 可用性详情: {
@@ -244,52 +246,14 @@ https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape: active, 运行中: 0/3
   timeReady: false,
   actualRunning: 0,
   maxConcurrent: 3,
-  timeSinceLastSubmit: '11.379秒',
-  '比较结果': '0 < 3 = true'
-}
-没有可用端点（所有端点可能达到最大并发数或时间间隔未到）
-没有可用端点（所有端点可能达到最大并发数或时间间隔未到），等待5秒后重试
-
-=============== 任务处理状态 ===============
-当前时间: 2025-03-16T10:23:00.777Z
-运行中任务数: 2
-队列中任务数: 8572
-错误任务数: 4018
-============================================
-
-=============== 详细并发状态 ===============
-端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape:
-  运行任务数: 0/3 (有容量: true)
-  上次提交: 2025-03-16T10:22:43.176Z
-  时间就绪: false (经过 17.643秒，需要 30秒)
-端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape:
-  运行任务数: 0/3 (有容量: true)
-  上次提交: 2025-03-16T10:22:44.333Z
-  时间就绪: false (经过 16.486秒，需要 30秒)
-============================================
-检查端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape 可用性详情: {
-  isActive: true,
-  hasCapacity: true,
-  timeReady: false,
-  actualRunning: 0,
-  maxConcurrent: 3,
-  timeSinceLastSubmit: '17.643秒',
-  '比较结果': '0 < 3 = true'
-}
-检查端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape 可用性详情: {
-  isActive: true,
-  hasCapacity: true,
-  timeReady: false,
-  actualRunning: 0,
-  maxConcurrent: 3,
-  timeSinceLastSubmit: '16.486秒',
+  timeSinceLastSubmit: '11.427秒',
   '比较结果': '0 < 3 = true'
 }
 没有可用端点（所有端点可能达到最大并发数或时间间隔未到）
 没有可用端点（所有端点可能达到最大并发数或时间间隔未到），等待5秒后重试
 
 =============== 任务处理状态 ===============
-当前时间: 2025-03-16T10:23:05.880Z
+当前时间: 2025-03-16T10:32:04.421Z
 运行中任务数: 2
 队列中任务数: 8572
 错误任务数: 4018
@@ -298,12 +262,12 @@ https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape: active, 运行中: 0/3
 =============== 详细并发状态 ===============
 端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape:
   运行任务数: 0/3 (有容量: true)
-  上次提交: 2025-03-16T10:22:43.176Z
-  时间就绪: false (经过 22.744秒，需要 30秒)
+  上次提交: 2025-03-16T10:31:46.780Z
+  时间就绪: false (经过 17.686秒，需要 30秒)
 端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape:
   运行任务数: 0/3 (有容量: true)
-  上次提交: 2025-03-16T10:22:44.333Z
-  时间就绪: false (经过 21.587秒，需要 30秒)
+  上次提交: 2025-03-16T10:31:47.931Z
+  时间就绪: false (经过 16.535秒，需要 30秒)
 ============================================
 检查端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape 可用性详情: {
   isActive: true,
@@ -311,7 +275,7 @@ https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape: active, 运行中: 0/3
   timeReady: false,
   actualRunning: 0,
   maxConcurrent: 3,
-  timeSinceLastSubmit: '22.744秒',
+  timeSinceLastSubmit: '17.686秒',
   '比较结果': '0 < 3 = true'
 }
 检查端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape 可用性详情: {
@@ -320,7 +284,45 @@ https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape: active, 运行中: 0/3
   timeReady: false,
   actualRunning: 0,
   maxConcurrent: 3,
-  timeSinceLastSubmit: '21.587秒',
+  timeSinceLastSubmit: '16.535秒',
+  '比较结果': '0 < 3 = true'
+}
+没有可用端点（所有端点可能达到最大并发数或时间间隔未到）
+没有可用端点（所有端点可能达到最大并发数或时间间隔未到），等待5秒后重试
+
+=============== 任务处理状态 ===============
+当前时间: 2025-03-16T10:32:09.535Z
+运行中任务数: 2
+队列中任务数: 8572
+错误任务数: 4018
+============================================
+
+=============== 详细并发状态 ===============
+端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape:
+  运行任务数: 0/3 (有容量: true)
+  上次提交: 2025-03-16T10:31:46.780Z
+  时间就绪: false (经过 22.796秒，需要 30秒)
+端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape:
+  运行任务数: 0/3 (有容量: true)
+  上次提交: 2025-03-16T10:31:47.931Z
+  时间就绪: false (经过 21.645秒，需要 30秒)
+============================================
+检查端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape 可用性详情: {
+  isActive: true,
+  hasCapacity: true,
+  timeReady: false,
+  actualRunning: 0,
+  maxConcurrent: 3,
+  timeSinceLastSubmit: '22.796秒',
+  '比较结果': '0 < 3 = true'
+}
+检查端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape 可用性详情: {
+  isActive: true,
+  hasCapacity: true,
+  timeReady: false,
+  actualRunning: 0,
+  maxConcurrent: 3,
+  timeSinceLastSubmit: '21.645秒',
   '比较结果': '0 < 3 = true'
 }
 没有可用端点（所有端点可能达到最大并发数或时间间隔未到）
@@ -332,7 +334,7 @@ https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape: active, 运行中: 0/3
 - 失败: 4018
 
 =============== 任务处理状态 ===============
-当前时间: 2025-03-16T10:23:10.977Z
+当前时间: 2025-03-16T10:32:14.644Z
 运行中任务数: 2
 队列中任务数: 8572
 错误任务数: 4018
@@ -341,12 +343,12 @@ https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape: active, 运行中: 0/3
 =============== 详细并发状态 ===============
 端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape:
   运行任务数: 0/3 (有容量: true)
-  上次提交: 2025-03-16T10:22:43.176Z
-  时间就绪: false (经过 27.84秒，需要 30秒)
+  上次提交: 2025-03-16T10:31:46.780Z
+  时间就绪: false (经过 27.902秒，需要 30秒)
 端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape:
   运行任务数: 0/3 (有容量: true)
-  上次提交: 2025-03-16T10:22:44.333Z
-  时间就绪: false (经过 26.683秒，需要 30秒)
+  上次提交: 2025-03-16T10:31:47.931Z
+  时间就绪: false (经过 26.751秒，需要 30秒)
 ============================================
 检查端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape 可用性详情: {
   isActive: true,
@@ -354,7 +356,7 @@ https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape: active, 运行中: 0/3
   timeReady: false,
   actualRunning: 0,
   maxConcurrent: 3,
-  timeSinceLastSubmit: '27.84秒',
+  timeSinceLastSubmit: '27.902秒',
   '比较结果': '0 < 3 = true'
 }
 检查端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape 可用性详情: {
@@ -363,16 +365,17 @@ https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape: active, 运行中: 0/3
   timeReady: false,
   actualRunning: 0,
   maxConcurrent: 3,
-  timeSinceLastSubmit: '26.683秒',
+  timeSinceLastSubmit: '26.751秒',
   '比较结果': '0 < 3 = true'
 }
 没有可用端点（所有端点可能达到最大并发数或时间间隔未到）
 没有可用端点（所有端点可能达到最大并发数或时间间隔未到），等待5秒后重试
-发送心跳检测: https://kdw16tm655k3s1-8082.proxy.runpod.net/heartbeat?id=2011220018011
-发送心跳检测: https://os8tm9eu20m77i-8082.proxy.runpod.net/heartbeat?id=2011220011911
+发送心跳检测: https://kdw16tm655k3s1-8082.proxy.runpod.net/heartbeat?id=2011220027711
+发送心跳检测: https://os8tm9eu20m77i-8082.proxy.runpod.net/heartbeat?id=2011220026211
+任务 2011220027711 心跳状态: not_found, 进度: N/A
 
 =============== 任务处理状态 ===============
-当前时间: 2025-03-16T10:23:16.067Z
+当前时间: 2025-03-16T10:32:19.752Z
 运行中任务数: 2
 队列中任务数: 8572
 错误任务数: 4018
@@ -381,12 +384,12 @@ https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape: active, 运行中: 0/3
 =============== 详细并发状态 ===============
 端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape:
   运行任务数: 0/3 (有容量: true)
-  上次提交: 2025-03-16T10:22:43.176Z
-  时间就绪: true (经过 32.925秒，需要 30秒)
+  上次提交: 2025-03-16T10:31:46.780Z
+  时间就绪: true (经过 33.011秒，需要 30秒)
 端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape:
   运行任务数: 0/3 (有容量: true)
-  上次提交: 2025-03-16T10:22:44.333Z
-  时间就绪: true (经过 31.768秒，需要 30秒)
+  上次提交: 2025-03-16T10:31:47.931Z
+  时间就绪: true (经过 31.86秒，需要 30秒)
 ============================================
 检查端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape 可用性详情: {
   isActive: true,
@@ -394,7 +397,7 @@ https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape: active, 运行中: 0/3
   timeReady: true,
   actualRunning: 0,
   maxConcurrent: 3,
-  timeSinceLastSubmit: '32.925秒',
+  timeSinceLastSubmit: '33.011秒',
   '比较结果': '0 < 3 = true'
 }
 检查端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape 可用性详情: {
@@ -403,24 +406,26 @@ https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape: active, 运行中: 0/3
   timeReady: true,
   actualRunning: 0,
   maxConcurrent: 3,
-  timeSinceLastSubmit: '31.768秒',
+  timeSinceLastSubmit: '31.86秒',
   '比较结果': '0 < 3 = true'
 }
 选择端点: https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape 提交下一个任务
-启动任务: 2011220022312, 用户: user_1742013444, API端点: https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape
-端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape 最后提交时间更新为: 2025-03-16T10:23:16.102Z
+启动任务: 2011220024511, 用户: user_1742013445, API端点: https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape
+端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape 最后提交时间更新为: 2025-03-16T10:32:19.792Z
 任务状态已保存到文件
-开始执行工作流: kandeng.json, 用户ID: user_1742013444
+开始执行工作流: kandeng.json, 用户ID: user_1742013445
 从workflow_json目录加载工作流文件: kandeng.json
 工作流 kandeng.json 已加载，包含 15 个事件
-向API端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape 提交任务 2011220022312
-任务 2011220022312 已提交到服务器，开始监控状态
-为任务 2011220022312 设置心跳检测
+向API端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape 提交任务 2011220024511
+任务 2011220024511 已提交到服务器，开始监控状态
+为任务 2011220024511 设置心跳检测
 任务状态已保存到文件
-任务 2011220022312 执行完成
+任务状态已保存到文件
+任务 2011220024511 执行完成
+任务 2011220026211 心跳状态: not_found, 进度: N/A
 
 =============== 任务处理状态 ===============
-当前时间: 2025-03-16T10:23:17.413Z
+当前时间: 2025-03-16T10:32:20.917Z
 运行中任务数: 3
 队列中任务数: 8571
 错误任务数: 4018
@@ -429,12 +434,12 @@ https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape: active, 运行中: 0/3
 =============== 详细并发状态 ===============
 端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape:
   运行任务数: 0/3 (有容量: true)
-  上次提交: 2025-03-16T10:23:16.102Z
-  时间就绪: false (经过 1.361秒，需要 30秒)
+  上次提交: 2025-03-16T10:32:19.792Z
+  时间就绪: false (经过 1.176秒，需要 30秒)
 端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape:
   运行任务数: 0/3 (有容量: true)
-  上次提交: 2025-03-16T10:22:44.333Z
-  时间就绪: true (经过 33.13秒，需要 30秒)
+  上次提交: 2025-03-16T10:31:47.931Z
+  时间就绪: true (经过 33.037秒，需要 30秒)
 ============================================
 检查端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape 可用性详情: {
   isActive: true,
@@ -442,7 +447,7 @@ https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape: active, 运行中: 0/3
   timeReady: false,
   actualRunning: 0,
   maxConcurrent: 3,
-  timeSinceLastSubmit: '1.361秒',
+  timeSinceLastSubmit: '1.176秒',
   '比较结果': '0 < 3 = true'
 }
 检查端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape 可用性详情: {
@@ -451,24 +456,25 @@ https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape: active, 运行中: 0/3
   timeReady: true,
   actualRunning: 0,
   maxConcurrent: 3,
-  timeSinceLastSubmit: '33.13秒',
+  timeSinceLastSubmit: '33.037秒',
   '比较结果': '0 < 3 = true'
 }
 选择端点: https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape 提交下一个任务
-启动任务: 2011220024511, 用户: user_1742013445, API端点: https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape
-端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape 最后提交时间更新为: 2025-03-16T10:23:17.463Z
+启动任务: 2011220022312, 用户: user_1742013444, API端点: https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape
+端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape 最后提交时间更新为: 2025-03-16T10:32:20.969Z
 任务状态已保存到文件
-开始执行工作流: kandeng.json, 用户ID: user_1742013445
+开始执行工作流: kandeng.json, 用户ID: user_1742013444
 从workflow_json目录加载工作流文件: kandeng.json
 工作流 kandeng.json 已加载，包含 15 个事件
-向API端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape 提交任务 2011220024511
-任务 2011220024511 已提交到服务器，开始监控状态
-为任务 2011220024511 设置心跳检测
+向API端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape 提交任务 2011220022312
+任务 2011220022312 已提交到服务器，开始监控状态
+为任务 2011220022312 设置心跳检测
 任务状态已保存到文件
-任务 2011220024511 执行完成
+任务状态已保存到文件
+任务 2011220022312 执行完成
 
 =============== 任务处理状态 ===============
-当前时间: 2025-03-16T10:23:18.730Z
+当前时间: 2025-03-16T10:32:22.087Z
 运行中任务数: 4
 队列中任务数: 8570
 错误任务数: 4018
@@ -477,12 +483,12 @@ https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape: active, 运行中: 0/3
 =============== 详细并发状态 ===============
 端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape:
   运行任务数: 0/3 (有容量: true)
-  上次提交: 2025-03-16T10:23:16.102Z
-  时间就绪: false (经过 2.706秒，需要 30秒)
+  上次提交: 2025-03-16T10:32:19.792Z
+  时间就绪: false (经过 2.352秒，需要 30秒)
 端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape:
   运行任务数: 0/3 (有容量: true)
-  上次提交: 2025-03-16T10:23:17.463Z
-  时间就绪: false (经过 1.345秒，需要 30秒)
+  上次提交: 2025-03-16T10:32:20.969Z
+  时间就绪: false (经过 1.175秒，需要 30秒)
 ============================================
 检查端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape 可用性详情: {
   isActive: true,
@@ -490,7 +496,7 @@ https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape: active, 运行中: 0/3
   timeReady: false,
   actualRunning: 0,
   maxConcurrent: 3,
-  timeSinceLastSubmit: '2.706秒',
+  timeSinceLastSubmit: '2.352秒',
   '比较结果': '0 < 3 = true'
 }
 检查端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape 可用性详情: {
@@ -499,18 +505,16 @@ https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape: active, 运行中: 0/3
   timeReady: false,
   actualRunning: 0,
   maxConcurrent: 3,
-  timeSinceLastSubmit: '1.345秒',
+  timeSinceLastSubmit: '1.175秒',
   '比较结果': '0 < 3 = true'
 }
 没有可用端点（所有端点可能达到最大并发数或时间间隔未到）
 没有可用端点（所有端点可能达到最大并发数或时间间隔未到），等待5秒后重试
-初始状态检查: https://kdw16tm655k3s1-8082.proxy.runpod.net/task-status?id=2011220022312
-初始状态检查: https://os8tm9eu20m77i-8082.proxy.runpod.net/task-status?id=2011220024511
-任务 2011220022312 初始状态: not_found
-警告: 任务 2011220022312 提交后未在服务器上找到，将继续监控
+初始状态检查: https://kdw16tm655k3s1-8082.proxy.runpod.net/task-status?id=2011220024511
+初始状态检查: https://os8tm9eu20m77i-8082.proxy.runpod.net/task-status?id=2011220022312
 
 =============== 任务处理状态 ===============
-当前时间: 2025-03-16T10:23:23.880Z
+当前时间: 2025-03-16T10:32:27.200Z
 运行中任务数: 4
 队列中任务数: 8570
 错误任务数: 4018
@@ -519,12 +523,12 @@ https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape: active, 运行中: 0/3
 =============== 详细并发状态 ===============
 端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape:
   运行任务数: 0/3 (有容量: true)
-  上次提交: 2025-03-16T10:23:16.102Z
-  时间就绪: false (经过 7.815秒，需要 30秒)
+  上次提交: 2025-03-16T10:32:19.792Z
+  时间就绪: false (经过 7.452秒，需要 30秒)
 端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape:
   运行任务数: 0/3 (有容量: true)
-  上次提交: 2025-03-16T10:23:17.463Z
-  时间就绪: false (经过 6.454秒，需要 30秒)
+  上次提交: 2025-03-16T10:32:20.969Z
+  时间就绪: false (经过 6.275秒，需要 30秒)
 ============================================
 检查端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape 可用性详情: {
   isActive: true,
@@ -532,7 +536,7 @@ https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape: active, 运行中: 0/3
   timeReady: false,
   actualRunning: 0,
   maxConcurrent: 3,
-  timeSinceLastSubmit: '7.815秒',
+  timeSinceLastSubmit: '7.452秒',
   '比较结果': '0 < 3 = true'
 }
 检查端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape 可用性详情: {
@@ -541,16 +545,18 @@ https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape: active, 运行中: 0/3
   timeReady: false,
   actualRunning: 0,
   maxConcurrent: 3,
-  timeSinceLastSubmit: '6.454秒',
+  timeSinceLastSubmit: '6.275秒',
   '比较结果': '0 < 3 = true'
 }
 没有可用端点（所有端点可能达到最大并发数或时间间隔未到）
 没有可用端点（所有端点可能达到最大并发数或时间间隔未到），等待5秒后重试
 任务 2011220024511 初始状态: not_found
 警告: 任务 2011220024511 提交后未在服务器上找到，将继续监控
+任务 2011220022312 初始状态: not_found
+警告: 任务 2011220022312 提交后未在服务器上找到，将继续监控
 
 =============== 任务处理状态 ===============
-当前时间: 2025-03-16T10:23:28.992Z
+当前时间: 2025-03-16T10:32:32.324Z
 运行中任务数: 4
 队列中任务数: 8570
 错误任务数: 4018
@@ -559,12 +565,12 @@ https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape: active, 运行中: 0/3
 =============== 详细并发状态 ===============
 端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape:
   运行任务数: 0/3 (有容量: true)
-  上次提交: 2025-03-16T10:23:16.102Z
-  时间就绪: false (经过 12.932秒，需要 30秒)
+  上次提交: 2025-03-16T10:32:19.792Z
+  时间就绪: false (经过 12.572秒，需要 30秒)
 端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape:
   运行任务数: 0/3 (有容量: true)
-  上次提交: 2025-03-16T10:23:17.463Z
-  时间就绪: false (经过 11.571秒，需要 30秒)
+  上次提交: 2025-03-16T10:32:20.969Z
+  时间就绪: false (经过 11.395秒，需要 30秒)
 ============================================
 检查端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape 可用性详情: {
   isActive: true,
@@ -572,7 +578,7 @@ https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape: active, 运行中: 0/3
   timeReady: false,
   actualRunning: 0,
   maxConcurrent: 3,
-  timeSinceLastSubmit: '12.932秒',
+  timeSinceLastSubmit: '12.572秒',
   '比较结果': '0 < 3 = true'
 }
 检查端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape 可用性详情: {
@@ -581,14 +587,14 @@ https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape: active, 运行中: 0/3
   timeReady: false,
   actualRunning: 0,
   maxConcurrent: 3,
-  timeSinceLastSubmit: '11.571秒',
+  timeSinceLastSubmit: '11.395秒',
   '比较结果': '0 < 3 = true'
 }
 没有可用端点（所有端点可能达到最大并发数或时间间隔未到）
 没有可用端点（所有端点可能达到最大并发数或时间间隔未到），等待5秒后重试
 
 =============== 任务处理状态 ===============
-当前时间: 2025-03-16T10:23:34.106Z
+当前时间: 2025-03-16T10:32:37.402Z
 运行中任务数: 4
 队列中任务数: 8570
 错误任务数: 4018
@@ -597,12 +603,12 @@ https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape: active, 运行中: 0/3
 =============== 详细并发状态 ===============
 端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape:
   运行任务数: 0/3 (有容量: true)
-  上次提交: 2025-03-16T10:23:16.102Z
-  时间就绪: false (经过 18.05秒，需要 30秒)
+  上次提交: 2025-03-16T10:32:19.792Z
+  时间就绪: false (经过 17.648秒，需要 30秒)
 端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape:
   运行任务数: 0/3 (有容量: true)
-  上次提交: 2025-03-16T10:23:17.463Z
-  时间就绪: false (经过 16.689秒，需要 30秒)
+  上次提交: 2025-03-16T10:32:20.969Z
+  时间就绪: false (经过 16.471秒，需要 30秒)
 ============================================
 检查端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape 可用性详情: {
   isActive: true,
@@ -610,7 +616,7 @@ https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape: active, 运行中: 0/3
   timeReady: false,
   actualRunning: 0,
   maxConcurrent: 3,
-  timeSinceLastSubmit: '18.05秒',
+  timeSinceLastSubmit: '17.648秒',
   '比较结果': '0 < 3 = true'
 }
 检查端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape 可用性详情: {
@@ -619,7 +625,7 @@ https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape: active, 运行中: 0/3
   timeReady: false,
   actualRunning: 0,
   maxConcurrent: 3,
-  timeSinceLastSubmit: '16.689秒',
+  timeSinceLastSubmit: '16.471秒',
   '比较结果': '0 < 3 = true'
 }
 没有可用端点（所有端点可能达到最大并发数或时间间隔未到）
@@ -633,7 +639,7 @@ https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape: active, 运行中: 0/3
 - 失败: 4018
 
 =============== 任务处理状态 ===============
-当前时间: 2025-03-16T10:23:39.192Z
+当前时间: 2025-03-16T10:32:42.480Z
 运行中任务数: 4
 队列中任务数: 8570
 错误任务数: 4018
@@ -642,12 +648,12 @@ https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape: active, 运行中: 0/3
 =============== 详细并发状态 ===============
 端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape:
   运行任务数: 0/3 (有容量: true)
-  上次提交: 2025-03-16T10:23:16.102Z
-  时间就绪: false (经过 23.132秒，需要 30秒)
+  上次提交: 2025-03-16T10:32:19.792Z
+  时间就绪: false (经过 22.733秒，需要 30秒)
 端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape:
   运行任务数: 0/3 (有容量: true)
-  上次提交: 2025-03-16T10:23:17.463Z
-  时间就绪: false (经过 21.771秒，需要 30秒)
+  上次提交: 2025-03-16T10:32:20.969Z
+  时间就绪: false (经过 21.556秒，需要 30秒)
 ============================================
 检查端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape 可用性详情: {
   isActive: true,
@@ -655,7 +661,7 @@ https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape: active, 运行中: 0/3
   timeReady: false,
   actualRunning: 0,
   maxConcurrent: 3,
-  timeSinceLastSubmit: '23.132秒',
+  timeSinceLastSubmit: '22.733秒',
   '比较结果': '0 < 3 = true'
 }
 检查端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape 可用性详情: {
@@ -664,7 +670,7 @@ https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape: active, 运行中: 0/3
   timeReady: false,
   actualRunning: 0,
   maxConcurrent: 3,
-  timeSinceLastSubmit: '21.771秒',
+  timeSinceLastSubmit: '21.556秒',
   '比较结果': '0 < 3 = true'
 }
 没有可用端点（所有端点可能达到最大并发数或时间间隔未到）
@@ -679,10 +685,9 @@ https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape: active, 运行中: 0/3
 API端点状态:
 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape: active, 运行中: 2/3
 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape: active, 运行中: 2/3
-发送心跳检测: https://kdw16tm655k3s1-8082.proxy.runpod.net/heartbeat?id=2011220018011
 
 =============== 任务处理状态 ===============
-当前时间: 2025-03-16T10:23:44.272Z
+当前时间: 2025-03-16T10:32:47.582Z
 运行中任务数: 4
 队列中任务数: 8570
 错误任务数: 4018
@@ -691,12 +696,12 @@ https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape: active, 运行中: 2/3
 =============== 详细并发状态 ===============
 端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape:
   运行任务数: 0/3 (有容量: true)
-  上次提交: 2025-03-16T10:23:16.102Z
-  时间就绪: false (经过 28.206秒，需要 30秒)
+  上次提交: 2025-03-16T10:32:19.792Z
+  时间就绪: false (经过 27.845秒，需要 30秒)
 端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape:
   运行任务数: 0/3 (有容量: true)
-  上次提交: 2025-03-16T10:23:17.463Z
-  时间就绪: false (经过 26.845秒，需要 30秒)
+  上次提交: 2025-03-16T10:32:20.969Z
+  时间就绪: false (经过 26.668秒，需要 30秒)
 ============================================
 检查端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape 可用性详情: {
   isActive: true,
@@ -704,7 +709,7 @@ https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape: active, 运行中: 2/3
   timeReady: false,
   actualRunning: 0,
   maxConcurrent: 3,
-  timeSinceLastSubmit: '28.206秒',
+  timeSinceLastSubmit: '27.845秒',
   '比较结果': '0 < 3 = true'
 }
 检查端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape 可用性详情: {
@@ -713,17 +718,21 @@ https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape: active, 运行中: 2/3
   timeReady: false,
   actualRunning: 0,
   maxConcurrent: 3,
-  timeSinceLastSubmit: '26.845秒',
+  timeSinceLastSubmit: '26.668秒',
   '比较结果': '0 < 3 = true'
 }
 没有可用端点（所有端点可能达到最大并发数或时间间隔未到）
 没有可用端点（所有端点可能达到最大并发数或时间间隔未到），等待5秒后重试
-发送心跳检测: https://os8tm9eu20m77i-8082.proxy.runpod.net/heartbeat?id=2011220011911
-发送心跳检测: https://kdw16tm655k3s1-8082.proxy.runpod.net/heartbeat?id=2011220022312
-发送心跳检测: https://os8tm9eu20m77i-8082.proxy.runpod.net/heartbeat?id=2011220024511
+发送心跳检测: https://kdw16tm655k3s1-8082.proxy.runpod.net/heartbeat?id=2011220027711
+任务 2011220027711 心跳状态: not_found, 进度: N/A
+发送心跳检测: https://os8tm9eu20m77i-8082.proxy.runpod.net/heartbeat?id=2011220026211
+任务 2011220026211 心跳状态: not_found, 进度: N/A
+发送心跳检测: https://kdw16tm655k3s1-8082.proxy.runpod.net/heartbeat?id=2011220024511
+发送心跳检测: https://os8tm9eu20m77i-8082.proxy.runpod.net/heartbeat?id=2011220022312
+任务 2011220024511 心跳状态: not_found, 进度: N/A
 
 =============== 任务处理状态 ===============
-当前时间: 2025-03-16T10:23:49.369Z
+当前时间: 2025-03-16T10:32:52.678Z
 运行中任务数: 4
 队列中任务数: 8570
 错误任务数: 4018
@@ -732,12 +741,12 @@ https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape: active, 运行中: 2/3
 =============== 详细并发状态 ===============
 端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape:
   运行任务数: 0/3 (有容量: true)
-  上次提交: 2025-03-16T10:23:16.102Z
-  时间就绪: true (经过 33.31秒，需要 30秒)
+  上次提交: 2025-03-16T10:32:19.792Z
+  时间就绪: true (经过 32.928秒，需要 30秒)
 端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape:
   运行任务数: 0/3 (有容量: true)
-  上次提交: 2025-03-16T10:23:17.463Z
-  时间就绪: true (经过 31.949秒，需要 30秒)
+  上次提交: 2025-03-16T10:32:20.969Z
+  时间就绪: true (经过 31.751秒，需要 30秒)
 ============================================
 检查端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape 可用性详情: {
   isActive: true,
@@ -745,7 +754,7 @@ https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape: active, 运行中: 2/3
   timeReady: true,
   actualRunning: 0,
   maxConcurrent: 3,
-  timeSinceLastSubmit: '33.31秒',
+  timeSinceLastSubmit: '32.928秒',
   '比较结果': '0 < 3 = true'
 }
 检查端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape 可用性详情: {
@@ -754,24 +763,26 @@ https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape: active, 运行中: 2/3
   timeReady: true,
   actualRunning: 0,
   maxConcurrent: 3,
-  timeSinceLastSubmit: '31.949秒',
+  timeSinceLastSubmit: '31.751秒',
   '比较结果': '0 < 3 = true'
 }
 选择端点: https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape 提交下一个任务
-启动任务: 2011220026211, 用户: user_1742013447, API端点: https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape
-端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape 最后提交时间更新为: 2025-03-16T10:23:49.413Z
+启动任务: 2011220011911, 用户: user_1742013437, API端点: https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape
+端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape 最后提交时间更新为: 2025-03-16T10:32:52.721Z
+任务 2011220022312 心跳状态: not_found, 进度: N/A
 任务状态已保存到文件
-开始执行工作流: kandeng.json, 用户ID: user_1742013447
+开始执行工作流: kandeng.json, 用户ID: user_1742013437
 从workflow_json目录加载工作流文件: kandeng.json
 工作流 kandeng.json 已加载，包含 15 个事件
-向API端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape 提交任务 2011220026211
-任务 2011220026211 已提交到服务器，开始监控状态
-为任务 2011220026211 设置心跳检测
+向API端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape 提交任务 2011220011911
+任务 2011220011911 已提交到服务器，开始监控状态
+为任务 2011220011911 设置心跳检测
 任务状态已保存到文件
-任务 2011220026211 执行完成
+任务状态已保存到文件
+任务 2011220011911 执行完成
 
 =============== 任务处理状态 ===============
-当前时间: 2025-03-16T10:23:50.692Z
+当前时间: 2025-03-16T10:32:54.121Z
 运行中任务数: 5
 队列中任务数: 8569
 错误任务数: 4018
@@ -780,12 +791,12 @@ https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape: active, 运行中: 2/3
 =============== 详细并发状态 ===============
 端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape:
   运行任务数: 0/3 (有容量: true)
-  上次提交: 2025-03-16T10:23:49.413Z
-  时间就绪: false (经过 1.397秒，需要 30秒)
+  上次提交: 2025-03-16T10:32:52.721Z
+  时间就绪: false (经过 1.469秒，需要 30秒)
 端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape:
   运行任务数: 0/3 (有容量: true)
-  上次提交: 2025-03-16T10:23:17.463Z
-  时间就绪: true (经过 33.347秒，需要 30秒)
+  上次提交: 2025-03-16T10:32:20.969Z
+  时间就绪: true (经过 33.221秒，需要 30秒)
 ============================================
 检查端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape 可用性详情: {
   isActive: true,
@@ -793,7 +804,7 @@ https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape: active, 运行中: 2/3
   timeReady: false,
   actualRunning: 0,
   maxConcurrent: 3,
-  timeSinceLastSubmit: '1.397秒',
+  timeSinceLastSubmit: '1.469秒',
   '比较结果': '0 < 3 = true'
 }
 检查端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape 可用性详情: {
@@ -802,24 +813,25 @@ https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape: active, 运行中: 2/3
   timeReady: true,
   actualRunning: 0,
   maxConcurrent: 3,
-  timeSinceLastSubmit: '33.347秒',
+  timeSinceLastSubmit: '33.221秒',
   '比较结果': '0 < 3 = true'
 }
 选择端点: https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape 提交下一个任务
-启动任务: 2011220027711, 用户: user_1742013449, API端点: https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape
-端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape 最后提交时间更新为: 2025-03-16T10:23:50.810Z
+启动任务: 2011220018011, 用户: user_1742013441, API端点: https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape
+端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape 最后提交时间更新为: 2025-03-16T10:32:54.191Z
 任务状态已保存到文件
-开始执行工作流: kandeng.json, 用户ID: user_1742013449
+开始执行工作流: kandeng.json, 用户ID: user_1742013441
 从workflow_json目录加载工作流文件: kandeng.json
 工作流 kandeng.json 已加载，包含 15 个事件
-向API端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape 提交任务 2011220027711
-任务 2011220027711 已提交到服务器，开始监控状态
-为任务 2011220027711 设置心跳检测
+向API端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape 提交任务 2011220018011
+任务 2011220018011 已提交到服务器，开始监控状态
+为任务 2011220018011 设置心跳检测
 任务状态已保存到文件
-任务 2011220027711 执行完成
+任务状态已保存到文件
+任务 2011220018011 执行完成
 
 =============== 任务处理状态 ===============
-当前时间: 2025-03-16T10:23:51.924Z
+当前时间: 2025-03-16T10:32:55.339Z
 运行中任务数: 6
 队列中任务数: 8568
 错误任务数: 4018
@@ -828,12 +840,12 @@ https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape: active, 运行中: 2/3
 =============== 详细并发状态 ===============
 端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape:
   运行任务数: 0/3 (有容量: true)
-  上次提交: 2025-03-16T10:23:49.413Z
-  时间就绪: false (经过 2.576秒，需要 30秒)
+  上次提交: 2025-03-16T10:32:52.721Z
+  时间就绪: false (经过 2.654秒，需要 30秒)
 端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape:
   运行任务数: 0/3 (有容量: true)
-  上次提交: 2025-03-16T10:23:50.810Z
-  时间就绪: false (经过 1.179秒，需要 30秒)
+  上次提交: 2025-03-16T10:32:54.191Z
+  时间就绪: false (经过 1.184秒，需要 30秒)
 ============================================
 检查端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape 可用性详情: {
   isActive: true,
@@ -841,7 +853,7 @@ https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape: active, 运行中: 2/3
   timeReady: false,
   actualRunning: 0,
   maxConcurrent: 3,
-  timeSinceLastSubmit: '2.576秒',
+  timeSinceLastSubmit: '2.654秒',
   '比较结果': '0 < 3 = true'
 }
 检查端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape 可用性详情: {
@@ -850,18 +862,18 @@ https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape: active, 运行中: 2/3
   timeReady: false,
   actualRunning: 0,
   maxConcurrent: 3,
-  timeSinceLastSubmit: '1.179秒',
+  timeSinceLastSubmit: '1.184秒',
   '比较结果': '0 < 3 = true'
 }
 没有可用端点（所有端点可能达到最大并发数或时间间隔未到）
 没有可用端点（所有端点可能达到最大并发数或时间间隔未到），等待5秒后重试
-初始状态检查: https://kdw16tm655k3s1-8082.proxy.runpod.net/task-status?id=2011220026211
-初始状态检查: https://os8tm9eu20m77i-8082.proxy.runpod.net/task-status?id=2011220027711
-任务 2011220026211 初始状态: not_found
-警告: 任务 2011220026211 提交后未在服务器上找到，将继续监控
+初始状态检查: https://kdw16tm655k3s1-8082.proxy.runpod.net/task-status?id=2011220011911
+初始状态检查: https://os8tm9eu20m77i-8082.proxy.runpod.net/task-status?id=2011220018011
+任务 2011220011911 初始状态: not_found
+警告: 任务 2011220011911 提交后未在服务器上找到，将继续监控
 
 =============== 任务处理状态 ===============
-当前时间: 2025-03-16T10:23:57.058Z
+当前时间: 2025-03-16T10:33:00.451Z
 运行中任务数: 6
 队列中任务数: 8568
 错误任务数: 4018
@@ -870,12 +882,12 @@ https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape: active, 运行中: 2/3
 =============== 详细并发状态 ===============
 端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape:
   运行任务数: 0/3 (有容量: true)
-  上次提交: 2025-03-16T10:23:49.413Z
-  时间就绪: false (经过 7.687秒，需要 30秒)
+  上次提交: 2025-03-16T10:32:52.721Z
+  时间就绪: false (经过 7.77秒，需要 30秒)
 端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape:
   运行任务数: 0/3 (有容量: true)
-  上次提交: 2025-03-16T10:23:50.810Z
-  时间就绪: false (经过 6.29秒，需要 30秒)
+  上次提交: 2025-03-16T10:32:54.191Z
+  时间就绪: false (经过 6.3秒，需要 30秒)
 ============================================
 检查端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape 可用性详情: {
   isActive: true,
@@ -883,7 +895,7 @@ https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape: active, 运行中: 2/3
   timeReady: false,
   actualRunning: 0,
   maxConcurrent: 3,
-  timeSinceLastSubmit: '7.687秒',
+  timeSinceLastSubmit: '7.77秒',
   '比较结果': '0 < 3 = true'
 }
 检查端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape 可用性详情: {
@@ -892,16 +904,16 @@ https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape: active, 运行中: 2/3
   timeReady: false,
   actualRunning: 0,
   maxConcurrent: 3,
-  timeSinceLastSubmit: '6.29秒',
+  timeSinceLastSubmit: '6.3秒',
   '比较结果': '0 < 3 = true'
 }
 没有可用端点（所有端点可能达到最大并发数或时间间隔未到）
 没有可用端点（所有端点可能达到最大并发数或时间间隔未到），等待5秒后重试
-任务 2011220027711 初始状态: not_found
-警告: 任务 2011220027711 提交后未在服务器上找到，将继续监控
+任务 2011220018011 初始状态: not_found
+警告: 任务 2011220018011 提交后未在服务器上找到，将继续监控
 
 =============== 任务处理状态 ===============
-当前时间: 2025-03-16T10:24:02.184Z
+当前时间: 2025-03-16T10:33:05.549Z
 运行中任务数: 6
 队列中任务数: 8568
 错误任务数: 4018
@@ -910,12 +922,12 @@ https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape: active, 运行中: 2/3
 =============== 详细并发状态 ===============
 端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape:
   运行任务数: 0/3 (有容量: true)
-  上次提交: 2025-03-16T10:23:49.413Z
-  时间就绪: false (经过 12.81秒，需要 30秒)
+  上次提交: 2025-03-16T10:32:52.721Z
+  时间就绪: false (经过 12.868秒，需要 30秒)
 端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape:
   运行任务数: 0/3 (有容量: true)
-  上次提交: 2025-03-16T10:23:50.810Z
-  时间就绪: false (经过 11.413秒，需要 30秒)
+  上次提交: 2025-03-16T10:32:54.191Z
+  时间就绪: false (经过 11.398秒，需要 30秒)
 ============================================
 检查端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape 可用性详情: {
   isActive: true,
@@ -923,7 +935,7 @@ https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape: active, 运行中: 2/3
   timeReady: false,
   actualRunning: 0,
   maxConcurrent: 3,
-  timeSinceLastSubmit: '12.81秒',
+  timeSinceLastSubmit: '12.868秒',
   '比较结果': '0 < 3 = true'
 }
 检查端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape 可用性详情: {
@@ -932,14 +944,14 @@ https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape: active, 运行中: 2/3
   timeReady: false,
   actualRunning: 0,
   maxConcurrent: 3,
-  timeSinceLastSubmit: '11.413秒',
+  timeSinceLastSubmit: '11.398秒',
   '比较结果': '0 < 3 = true'
 }
 没有可用端点（所有端点可能达到最大并发数或时间间隔未到）
 没有可用端点（所有端点可能达到最大并发数或时间间隔未到），等待5秒后重试
 
 =============== 任务处理状态 ===============
-当前时间: 2025-03-16T10:24:07.279Z
+当前时间: 2025-03-16T10:33:10.648Z
 运行中任务数: 6
 队列中任务数: 8568
 错误任务数: 4018
@@ -948,12 +960,12 @@ https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape: active, 运行中: 2/3
 =============== 详细并发状态 ===============
 端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape:
   运行任务数: 0/3 (有容量: true)
-  上次提交: 2025-03-16T10:23:49.413Z
-  时间就绪: false (经过 17.923秒，需要 30秒)
+  上次提交: 2025-03-16T10:32:52.721Z
+  时间就绪: false (经过 17.971秒，需要 30秒)
 端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape:
   运行任务数: 0/3 (有容量: true)
-  上次提交: 2025-03-16T10:23:50.810Z
-  时间就绪: false (经过 16.526秒，需要 30秒)
+  上次提交: 2025-03-16T10:32:54.191Z
+  时间就绪: false (经过 16.501秒，需要 30秒)
 ============================================
 检查端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape 可用性详情: {
   isActive: true,
@@ -961,7 +973,7 @@ https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape: active, 运行中: 2/3
   timeReady: false,
   actualRunning: 0,
   maxConcurrent: 3,
-  timeSinceLastSubmit: '17.923秒',
+  timeSinceLastSubmit: '17.971秒',
   '比较结果': '0 < 3 = true'
 }
 检查端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape 可用性详情: {
@@ -970,7 +982,7 @@ https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape: active, 运行中: 2/3
   timeReady: false,
   actualRunning: 0,
   maxConcurrent: 3,
-  timeSinceLastSubmit: '16.526秒',
+  timeSinceLastSubmit: '16.501秒',
   '比较结果': '0 < 3 = true'
 }
 没有可用端点（所有端点可能达到最大并发数或时间间隔未到）
@@ -980,3 +992,1743 @@ https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape: active, 运行中: 2/3
 - 运行中: 6
 - 已完成: 268
 - 失败: 4018
+
+=============== 任务处理状态 ===============
+当前时间: 2025-03-16T10:33:15.748Z
+运行中任务数: 6
+队列中任务数: 8568
+错误任务数: 4018
+============================================
+
+=============== 详细并发状态 ===============
+端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape:
+  运行任务数: 0/3 (有容量: true)
+  上次提交: 2025-03-16T10:32:52.721Z
+  时间就绪: false (经过 23.067秒，需要 30秒)
+端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape:
+  运行任务数: 0/3 (有容量: true)
+  上次提交: 2025-03-16T10:32:54.191Z
+  时间就绪: false (经过 21.597秒，需要 30秒)
+============================================
+检查端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape 可用性详情: {
+  isActive: true,
+  hasCapacity: true,
+  timeReady: false,
+  actualRunning: 0,
+  maxConcurrent: 3,
+  timeSinceLastSubmit: '23.067秒',
+  '比较结果': '0 < 3 = true'
+}
+检查端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape 可用性详情: {
+  isActive: true,
+  hasCapacity: true,
+  timeReady: false,
+  actualRunning: 0,
+  maxConcurrent: 3,
+  timeSinceLastSubmit: '21.597秒',
+  '比较结果': '0 < 3 = true'
+}
+没有可用端点（所有端点可能达到最大并发数或时间间隔未到）
+没有可用端点（所有端点可能达到最大并发数或时间间隔未到），等待5秒后重试
+发送心跳检测: https://kdw16tm655k3s1-8082.proxy.runpod.net/heartbeat?id=2011220027711
+发送心跳检测: https://os8tm9eu20m77i-8082.proxy.runpod.net/heartbeat?id=2011220026211
+任务 2011220027711 心跳状态: not_found, 进度: N/A
+任务 2011220026211 心跳状态: not_found, 进度: N/A
+发送心跳检测: https://kdw16tm655k3s1-8082.proxy.runpod.net/heartbeat?id=2011220024511
+
+=============== 任务处理状态 ===============
+当前时间: 2025-03-16T10:33:20.836Z
+运行中任务数: 6
+队列中任务数: 8568
+错误任务数: 4018
+============================================
+
+=============== 详细并发状态 ===============
+端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape:
+  运行任务数: 0/3 (有容量: true)
+  上次提交: 2025-03-16T10:32:52.721Z
+  时间就绪: false (经过 28.15秒，需要 30秒)
+端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape:
+  运行任务数: 0/3 (有容量: true)
+  上次提交: 2025-03-16T10:32:54.191Z
+  时间就绪: false (经过 26.68秒，需要 30秒)
+============================================
+检查端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape 可用性详情: {
+  isActive: true,
+  hasCapacity: true,
+  timeReady: false,
+  actualRunning: 0,
+  maxConcurrent: 3,
+  timeSinceLastSubmit: '28.15秒',
+  '比较结果': '0 < 3 = true'
+}
+检查端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape 可用性详情: {
+  isActive: true,
+  hasCapacity: true,
+  timeReady: false,
+  actualRunning: 0,
+  maxConcurrent: 3,
+  timeSinceLastSubmit: '26.68秒',
+  '比较结果': '0 < 3 = true'
+}
+没有可用端点（所有端点可能达到最大并发数或时间间隔未到）
+没有可用端点（所有端点可能达到最大并发数或时间间隔未到），等待5秒后重试
+任务 2011220024511 心跳状态: not_found, 进度: N/A
+发送心跳检测: https://os8tm9eu20m77i-8082.proxy.runpod.net/heartbeat?id=2011220022312
+任务 2011220022312 心跳状态: not_found, 进度: N/A
+发送心跳检测: https://kdw16tm655k3s1-8082.proxy.runpod.net/heartbeat?id=2011220011911
+任务 2011220011911 心跳状态: not_found, 进度: N/A
+发送心跳检测: https://os8tm9eu20m77i-8082.proxy.runpod.net/heartbeat?id=2011220018011
+
+=============== 任务处理状态 ===============
+当前时间: 2025-03-16T10:33:25.945Z
+运行中任务数: 6
+队列中任务数: 8568
+错误任务数: 4018
+============================================
+
+=============== 详细并发状态 ===============
+端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape:
+  运行任务数: 0/3 (有容量: true)
+  上次提交: 2025-03-16T10:32:52.721Z
+  时间就绪: true (经过 33.263秒，需要 30秒)
+端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape:
+  运行任务数: 0/3 (有容量: true)
+  上次提交: 2025-03-16T10:32:54.191Z
+  时间就绪: true (经过 31.793秒，需要 30秒)
+============================================
+检查端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape 可用性详情: {
+  isActive: true,
+  hasCapacity: true,
+  timeReady: true,
+  actualRunning: 0,
+  maxConcurrent: 3,
+  timeSinceLastSubmit: '33.263秒',
+  '比较结果': '0 < 3 = true'
+}
+检查端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape 可用性详情: {
+  isActive: true,
+  hasCapacity: true,
+  timeReady: true,
+  actualRunning: 0,
+  maxConcurrent: 3,
+  timeSinceLastSubmit: '31.793秒',
+  '比较结果': '0 < 3 = true'
+}
+选择端点: https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape 提交下一个任务
+启动任务: 2011210014511, 用户: user_1742013430, API端点: https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape
+端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape 最后提交时间更新为: 2025-03-16T10:33:25.984Z
+任务 2011220018011 心跳状态: not_found, 进度: N/A
+任务状态已保存到文件
+开始执行工作流: kandeng.json, 用户ID: user_1742013430
+从workflow_json目录加载工作流文件: kandeng.json
+工作流 kandeng.json 已加载，包含 15 个事件
+向API端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape 提交任务 2011210014511
+
+=============== 任务处理状态 ===============
+当前时间: 2025-03-16T10:33:27.083Z
+运行中任务数: 7
+队列中任务数: 8567
+错误任务数: 4018
+============================================
+
+=============== 详细并发状态 ===============
+端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape:
+  运行任务数: 1/3 (有容量: true)
+  上次提交: 2025-03-16T10:33:25.984Z
+  时间就绪: false (经过 1.152秒，需要 30秒)
+  1. kandeng.json (用户: user_1742013430)
+端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape:
+  运行任务数: 0/3 (有容量: true)
+  上次提交: 2025-03-16T10:32:54.191Z
+  时间就绪: true (经过 32.945秒，需要 30秒)
+============================================
+检查端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape 可用性详情: {
+  isActive: true,
+  hasCapacity: true,
+  timeReady: false,
+  actualRunning: 1,
+  maxConcurrent: 3,
+  timeSinceLastSubmit: '1.152秒',
+  '比较结果': '1 < 3 = true'
+}
+检查端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape 可用性详情: {
+  isActive: true,
+  hasCapacity: true,
+  timeReady: true,
+  actualRunning: 0,
+  maxConcurrent: 3,
+  timeSinceLastSubmit: '32.945秒',
+  '比较结果': '0 < 3 = true'
+}
+选择端点: https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape 提交下一个任务
+启动任务: 2011210014311, 用户: user_1742013429, API端点: https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape
+端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape 最后提交时间更新为: 2025-03-16T10:33:27.137Z
+任务 2011210014511 已提交到服务器，开始监控状态
+为任务 2011210014511 设置心跳检测
+任务状态已保存到文件
+开始执行工作流: kandeng.json, 用户ID: user_1742013429
+从workflow_json目录加载工作流文件: kandeng.json
+工作流 kandeng.json 已加载，包含 15 个事件
+向API端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape 提交任务 2011210014311
+任务状态已保存到文件
+任务状态已保存到文件
+任务 2011210014511 执行完成
+任务 2011210014311 已提交到服务器，开始监控状态
+为任务 2011210014311 设置心跳检测
+任务状态已保存到文件
+任务状态已保存到文件
+任务 2011210014311 执行完成
+
+=============== 任务处理状态 ===============
+当前时间: 2025-03-16T10:33:28.362Z
+运行中任务数: 8
+队列中任务数: 8566
+错误任务数: 4018
+============================================
+
+=============== 详细并发状态 ===============
+端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape:
+  运行任务数: 0/3 (有容量: true)
+  上次提交: 2025-03-16T10:33:25.984Z
+  时间就绪: false (经过 2.477秒，需要 30秒)
+端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape:
+  运行任务数: 0/3 (有容量: true)
+  上次提交: 2025-03-16T10:33:27.137Z
+  时间就绪: false (经过 1.324秒，需要 30秒)
+============================================
+检查端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape 可用性详情: {
+  isActive: true,
+  hasCapacity: true,
+  timeReady: false,
+  actualRunning: 0,
+  maxConcurrent: 3,
+  timeSinceLastSubmit: '2.477秒',
+  '比较结果': '0 < 3 = true'
+}
+检查端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape 可用性详情: {
+  isActive: true,
+  hasCapacity: true,
+  timeReady: false,
+  actualRunning: 0,
+  maxConcurrent: 3,
+  timeSinceLastSubmit: '1.324秒',
+  '比较结果': '0 < 3 = true'
+}
+没有可用端点（所有端点可能达到最大并发数或时间间隔未到）
+没有可用端点（所有端点可能达到最大并发数或时间间隔未到），等待5秒后重试
+初始状态检查: https://kdw16tm655k3s1-8082.proxy.runpod.net/task-status?id=2011210014511
+初始状态检查: https://os8tm9eu20m77i-8082.proxy.runpod.net/task-status?id=2011210014311
+
+=============== 任务处理状态 ===============
+当前时间: 2025-03-16T10:33:33.559Z
+运行中任务数: 8
+队列中任务数: 8566
+错误任务数: 4018
+============================================
+
+=============== 详细并发状态 ===============
+端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape:
+  运行任务数: 0/3 (有容量: true)
+  上次提交: 2025-03-16T10:33:25.984Z
+  时间就绪: false (经过 7.62秒，需要 30秒)
+端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape:
+  运行任务数: 0/3 (有容量: true)
+  上次提交: 2025-03-16T10:33:27.137Z
+  时间就绪: false (经过 6.467秒，需要 30秒)
+============================================
+检查端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape 可用性详情: {
+  isActive: true,
+  hasCapacity: true,
+  timeReady: false,
+  actualRunning: 0,
+  maxConcurrent: 3,
+  timeSinceLastSubmit: '7.62秒',
+  '比较结果': '0 < 3 = true'
+}
+检查端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape 可用性详情: {
+  isActive: true,
+  hasCapacity: true,
+  timeReady: false,
+  actualRunning: 0,
+  maxConcurrent: 3,
+  timeSinceLastSubmit: '6.467秒',
+  '比较结果': '0 < 3 = true'
+}
+没有可用端点（所有端点可能达到最大并发数或时间间隔未到）
+没有可用端点（所有端点可能达到最大并发数或时间间隔未到），等待5秒后重试
+任务 2011210014511 初始状态: not_found
+警告: 任务 2011210014511 提交后未在服务器上找到，将继续监控
+任务 2011210014311 初始状态: not_found
+警告: 任务 2011210014311 提交后未在服务器上找到，将继续监控
+
+=============== 任务处理状态 ===============
+当前时间: 2025-03-16T10:33:38.669Z
+运行中任务数: 8
+队列中任务数: 8566
+错误任务数: 4018
+============================================
+
+=============== 详细并发状态 ===============
+端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape:
+  运行任务数: 0/3 (有容量: true)
+  上次提交: 2025-03-16T10:33:25.984Z
+  时间就绪: false (经过 12.732秒，需要 30秒)
+端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape:
+  运行任务数: 0/3 (有容量: true)
+  上次提交: 2025-03-16T10:33:27.137Z
+  时间就绪: false (经过 11.579秒，需要 30秒)
+============================================
+检查端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape 可用性详情: {
+  isActive: true,
+  hasCapacity: true,
+  timeReady: false,
+  actualRunning: 0,
+  maxConcurrent: 3,
+  timeSinceLastSubmit: '12.732秒',
+  '比较结果': '0 < 3 = true'
+}
+检查端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape 可用性详情: {
+  isActive: true,
+  hasCapacity: true,
+  timeReady: false,
+  actualRunning: 0,
+  maxConcurrent: 3,
+  timeSinceLastSubmit: '11.579秒',
+  '比较结果': '0 < 3 = true'
+}
+没有可用端点（所有端点可能达到最大并发数或时间间隔未到）
+没有可用端点（所有端点可能达到最大并发数或时间间隔未到），等待5秒后重试
+执行API端点健康检查...
+检查基础URL: https://kdw16tm655k3s1-8082.proxy.runpod.net
+任务状态报告:
+- 队列中: 8566
+- 运行中: 8
+- 已完成: 268
+- 失败: 4018
+
+=============== 任务处理状态 ===============
+当前时间: 2025-03-16T10:33:43.773Z
+运行中任务数: 8
+队列中任务数: 8566
+错误任务数: 4018
+============================================
+
+基础端口检查状态码: 404
+=============== 详细并发状态 ===============
+端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape:
+  运行任务数: 0/3 (有容量: true)
+  上次提交: 2025-03-16T10:33:25.984Z
+  时间就绪: false (经过 17.845秒，需要 30秒)
+端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape:
+  运行任务数: 0/3 (有容量: true)
+  上次提交: 2025-03-16T10:33:27.137Z
+  时间就绪: false (经过 16.692秒，需要 30秒)
+============================================
+检查端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape 可用性详情: {
+  isActive: true,
+  hasCapacity: true,
+  timeReady: false,
+  actualRunning: 0,
+  maxConcurrent: 3,
+  timeSinceLastSubmit: '17.845秒',
+  '比较结果': '0 < 3 = true'
+}
+检查端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape 可用性详情: {
+  isActive: true,
+  hasCapacity: true,
+  timeReady: false,
+  actualRunning: 0,
+  maxConcurrent: 3,
+  timeSinceLastSubmit: '16.692秒',
+  '比较结果': '0 < 3 = true'
+}
+没有可用端点（所有端点可能达到最大并发数或时间间隔未到）
+没有可用端点（所有端点可能达到最大并发数或时间间隔未到），等待5秒后重试
+端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape 状态更新: { running: '4/3', status: 'active', maxConcurrent: 3 }
+端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape 健康检查: 正常 (端口活跃)
+检查基础URL: https://os8tm9eu20m77i-8082.proxy.runpod.net
+基础端口检查状态码: 404
+端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape 状态更新: { running: '4/3', status: 'active', maxConcurrent: 3 }
+端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape 健康检查: 正常 (端口活跃)
+API端点状态:
+https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape: active, 运行中: 4/3
+https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape: active, 运行中: 4/3
+发送心跳检测: https://kdw16tm655k3s1-8082.proxy.runpod.net/heartbeat?id=2011220027711
+任务 2011220027711 心跳状态: not_found, 进度: N/A
+发送心跳检测: https://os8tm9eu20m77i-8082.proxy.runpod.net/heartbeat?id=2011220026211
+
+=============== 任务处理状态 ===============
+当前时间: 2025-03-16T10:33:48.886Z
+运行中任务数: 8
+队列中任务数: 8566
+错误任务数: 4018
+============================================
+
+=============== 详细并发状态 ===============
+端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape:
+  运行任务数: 0/3 (有容量: true)
+  上次提交: 2025-03-16T10:33:25.984Z
+  时间就绪: false (经过 22.944秒，需要 30秒)
+端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape:
+  运行任务数: 0/3 (有容量: true)
+  上次提交: 2025-03-16T10:33:27.137Z
+  时间就绪: false (经过 21.791秒，需要 30秒)
+============================================
+检查端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape 可用性详情: {
+  isActive: true,
+  hasCapacity: true,
+  timeReady: false,
+  actualRunning: 0,
+  maxConcurrent: 3,
+  timeSinceLastSubmit: '22.944秒',
+  '比较结果': '0 < 3 = true'
+}
+检查端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape 可用性详情: {
+  isActive: true,
+  hasCapacity: true,
+  timeReady: false,
+  actualRunning: 0,
+  maxConcurrent: 3,
+  timeSinceLastSubmit: '21.791秒',
+  '比较结果': '0 < 3 = true'
+}
+没有可用端点（所有端点可能达到最大并发数或时间间隔未到）
+没有可用端点（所有端点可能达到最大并发数或时间间隔未到），等待5秒后重试
+任务 2011220026211 心跳状态: not_found, 进度: N/A
+发送心跳检测: https://kdw16tm655k3s1-8082.proxy.runpod.net/heartbeat?id=2011220024511
+发送心跳检测: https://os8tm9eu20m77i-8082.proxy.runpod.net/heartbeat?id=2011220022312
+任务 2011220024511 心跳状态: not_found, 进度: N/A
+任务 2011220022312 心跳状态: not_found, 进度: N/A
+发送心跳检测: https://kdw16tm655k3s1-8082.proxy.runpod.net/heartbeat?id=2011220011911
+任务 2011220011911 心跳状态: not_found, 进度: N/A
+
+=============== 任务处理状态 ===============
+当前时间: 2025-03-16T10:33:53.969Z
+运行中任务数: 8
+队列中任务数: 8566
+错误任务数: 4018
+============================================
+
+=============== 详细并发状态 ===============
+端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape:
+  运行任务数: 0/3 (有容量: true)
+  上次提交: 2025-03-16T10:33:25.984Z
+  时间就绪: false (经过 28.026秒，需要 30秒)
+端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape:
+  运行任务数: 0/3 (有容量: true)
+  上次提交: 2025-03-16T10:33:27.137Z
+  时间就绪: false (经过 26.873秒，需要 30秒)
+============================================
+检查端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape 可用性详情: {
+  isActive: true,
+  hasCapacity: true,
+  timeReady: false,
+  actualRunning: 0,
+  maxConcurrent: 3,
+  timeSinceLastSubmit: '28.026秒',
+  '比较结果': '0 < 3 = true'
+}
+检查端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape 可用性详情: {
+  isActive: true,
+  hasCapacity: true,
+  timeReady: false,
+  actualRunning: 0,
+  maxConcurrent: 3,
+  timeSinceLastSubmit: '26.873秒',
+  '比较结果': '0 < 3 = true'
+}
+没有可用端点（所有端点可能达到最大并发数或时间间隔未到）
+没有可用端点（所有端点可能达到最大并发数或时间间隔未到），等待5秒后重试
+发送心跳检测: https://os8tm9eu20m77i-8082.proxy.runpod.net/heartbeat?id=2011220018011
+任务 2011220018011 心跳状态: not_found, 进度: N/A
+发送心跳检测: https://kdw16tm655k3s1-8082.proxy.runpod.net/heartbeat?id=2011210014511
+发送心跳检测: https://os8tm9eu20m77i-8082.proxy.runpod.net/heartbeat?id=2011210014311
+任务 2011210014511 心跳状态: not_found, 进度: N/A
+
+=============== 任务处理状态 ===============
+当前时间: 2025-03-16T10:33:59.047Z
+运行中任务数: 8
+队列中任务数: 8566
+错误任务数: 4018
+============================================
+
+=============== 详细并发状态 ===============
+端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape:
+  运行任务数: 0/3 (有容量: true)
+  上次提交: 2025-03-16T10:33:25.984Z
+  时间就绪: true (经过 33.107秒，需要 30秒)
+端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape:
+  运行任务数: 0/3 (有容量: true)
+  上次提交: 2025-03-16T10:33:27.137Z
+  时间就绪: true (经过 31.954秒，需要 30秒)
+============================================
+检查端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape 可用性详情: {
+  isActive: true,
+  hasCapacity: true,
+  timeReady: true,
+  actualRunning: 0,
+  maxConcurrent: 3,
+  timeSinceLastSubmit: '33.107秒',
+  '比较结果': '0 < 3 = true'
+}
+检查端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape 可用性详情: {
+  isActive: true,
+  hasCapacity: true,
+  timeReady: true,
+  actualRunning: 0,
+  maxConcurrent: 3,
+  timeSinceLastSubmit: '31.954秒',
+  '比较结果': '0 < 3 = true'
+}
+选择端点: https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape 提交下一个任务
+启动任务: 2011230004311, 用户: user_1742013457, API端点: https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape
+端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape 最后提交时间更新为: 2025-03-16T10:33:59.092Z
+任务状态已保存到文件
+开始执行工作流: kandeng.json, 用户ID: user_1742013457
+从workflow_json目录加载工作流文件: kandeng.json
+工作流 kandeng.json 已加载，包含 15 个事件
+向API端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape 提交任务 2011230004311
+任务 2011210014311 心跳状态: not_found, 进度: N/A
+任务 2011230004311 已提交到服务器，开始监控状态
+为任务 2011230004311 设置心跳检测
+任务状态已保存到文件
+任务状态已保存到文件
+任务 2011230004311 执行完成
+
+=============== 任务处理状态 ===============
+当前时间: 2025-03-16T10:34:00.211Z
+运行中任务数: 9
+队列中任务数: 8565
+错误任务数: 4018
+============================================
+
+=============== 详细并发状态 ===============
+端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape:
+  运行任务数: 0/3 (有容量: true)
+  上次提交: 2025-03-16T10:33:59.092Z
+  时间就绪: false (经过 1.217秒，需要 30秒)
+端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape:
+  运行任务数: 0/3 (有容量: true)
+  上次提交: 2025-03-16T10:33:27.137Z
+  时间就绪: true (经过 33.172秒，需要 30秒)
+============================================
+检查端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape 可用性详情: {
+  isActive: true,
+  hasCapacity: true,
+  timeReady: false,
+  actualRunning: 0,
+  maxConcurrent: 3,
+  timeSinceLastSubmit: '1.217秒',
+  '比较结果': '0 < 3 = true'
+}
+检查端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape 可用性详情: {
+  isActive: true,
+  hasCapacity: true,
+  timeReady: true,
+  actualRunning: 0,
+  maxConcurrent: 3,
+  timeSinceLastSubmit: '33.172秒',
+  '比较结果': '0 < 3 = true'
+}
+选择端点: https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape 提交下一个任务
+启动任务: 2011230004711, 用户: user_1742013457, API端点: https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape
+端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape 最后提交时间更新为: 2025-03-16T10:34:00.310Z
+任务状态已保存到文件
+开始执行工作流: kandeng.json, 用户ID: user_1742013457
+从workflow_json目录加载工作流文件: kandeng.json
+工作流 kandeng.json 已加载，包含 15 个事件
+向API端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape 提交任务 2011230004711
+任务 2011230004711 已提交到服务器，开始监控状态
+为任务 2011230004711 设置心跳检测
+任务状态已保存到文件
+任务状态已保存到文件
+任务 2011230004711 执行完成
+
+=============== 任务处理状态 ===============
+当前时间: 2025-03-16T10:34:01.452Z
+运行中任务数: 10
+队列中任务数: 8564
+错误任务数: 4018
+============================================
+
+=============== 详细并发状态 ===============
+端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape:
+  运行任务数: 0/3 (有容量: true)
+  上次提交: 2025-03-16T10:33:59.092Z
+  时间就绪: false (经过 2.497秒，需要 30秒)
+端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape:
+  运行任务数: 1/3 (有容量: true)
+  上次提交: 2025-03-16T10:34:00.310Z
+  时间就绪: false (经过 1.279秒，需要 30秒)
+  1. kandeng.json (用户: user_1742013457)
+============================================
+检查端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape 可用性详情: {
+  isActive: true,
+  hasCapacity: true,
+  timeReady: false,
+  actualRunning: 0,
+  maxConcurrent: 3,
+  timeSinceLastSubmit: '2.497秒',
+  '比较结果': '0 < 3 = true'
+}
+检查端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape 可用性详情: {
+  isActive: true,
+  hasCapacity: true,
+  timeReady: false,
+  actualRunning: 1,
+  maxConcurrent: 3,
+  timeSinceLastSubmit: '1.279秒',
+  '比较结果': '1 < 3 = true'
+}
+没有可用端点（所有端点可能达到最大并发数或时间间隔未到）
+没有可用端点（所有端点可能达到最大并发数或时间间隔未到），等待5秒后重试
+初始状态检查: https://kdw16tm655k3s1-8082.proxy.runpod.net/task-status?id=2011230004311
+初始状态检查: https://os8tm9eu20m77i-8082.proxy.runpod.net/task-status?id=2011230004711
+任务 2011230004311 初始状态: not_found
+警告: 任务 2011230004311 提交后未在服务器上找到，将继续监控
+
+=============== 任务处理状态 ===============
+当前时间: 2025-03-16T10:34:06.666Z
+运行中任务数: 10
+队列中任务数: 8564
+错误任务数: 4018
+============================================
+
+=============== 详细并发状态 ===============
+端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape:
+  运行任务数: 0/3 (有容量: true)
+  上次提交: 2025-03-16T10:33:59.092Z
+  时间就绪: false (经过 7.612秒，需要 30秒)
+端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape:
+  运行任务数: 1/3 (有容量: true)
+  上次提交: 2025-03-16T10:34:00.310Z
+  时间就绪: false (经过 6.394秒，需要 30秒)
+  1. kandeng.json (用户: user_1742013457)
+============================================
+检查端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape 可用性详情: {
+  isActive: true,
+  hasCapacity: true,
+  timeReady: false,
+  actualRunning: 0,
+  maxConcurrent: 3,
+  timeSinceLastSubmit: '7.612秒',
+  '比较结果': '0 < 3 = true'
+}
+检查端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape 可用性详情: {
+  isActive: true,
+  hasCapacity: true,
+  timeReady: false,
+  actualRunning: 1,
+  maxConcurrent: 3,
+  timeSinceLastSubmit: '6.394秒',
+  '比较结果': '1 < 3 = true'
+}
+没有可用端点（所有端点可能达到最大并发数或时间间隔未到）
+没有可用端点（所有端点可能达到最大并发数或时间间隔未到），等待5秒后重试
+任务 2011230004711 初始状态: not_found
+警告: 任务 2011230004711 提交后未在服务器上找到，将继续监控
+
+=============== 任务处理状态 ===============
+当前时间: 2025-03-16T10:34:11.768Z
+运行中任务数: 10
+队列中任务数: 8564
+错误任务数: 4018
+============================================
+
+=============== 详细并发状态 ===============
+端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape:
+  运行任务数: 0/3 (有容量: true)
+  上次提交: 2025-03-16T10:33:59.092Z
+  时间就绪: false (经过 12.717秒，需要 30秒)
+端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape:
+  运行任务数: 1/3 (有容量: true)
+  上次提交: 2025-03-16T10:34:00.310Z
+  时间就绪: false (经过 11.499秒，需要 30秒)
+  1. kandeng.json (用户: user_1742013457)
+============================================
+检查端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape 可用性详情: {
+  isActive: true,
+  hasCapacity: true,
+  timeReady: false,
+  actualRunning: 0,
+  maxConcurrent: 3,
+  timeSinceLastSubmit: '12.717秒',
+  '比较结果': '0 < 3 = true'
+}
+检查端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape 可用性详情: {
+  isActive: true,
+  hasCapacity: true,
+  timeReady: false,
+  actualRunning: 1,
+  maxConcurrent: 3,
+  timeSinceLastSubmit: '11.499秒',
+  '比较结果': '1 < 3 = true'
+}
+没有可用端点（所有端点可能达到最大并发数或时间间隔未到）
+没有可用端点（所有端点可能达到最大并发数或时间间隔未到），等待5秒后重试
+任务状态报告:
+- 队列中: 8564
+- 运行中: 10
+- 已完成: 268
+- 失败: 4018
+
+=============== 任务处理状态 ===============
+当前时间: 2025-03-16T10:34:16.897Z
+运行中任务数: 10
+队列中任务数: 8564
+错误任务数: 4018
+============================================
+
+=============== 详细并发状态 ===============
+端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape:
+  运行任务数: 0/3 (有容量: true)
+  上次提交: 2025-03-16T10:33:59.092Z
+  时间就绪: false (经过 17.844秒，需要 30秒)
+端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape:
+  运行任务数: 1/3 (有容量: true)
+  上次提交: 2025-03-16T10:34:00.310Z
+  时间就绪: false (经过 16.626秒，需要 30秒)
+  1. kandeng.json (用户: user_1742013457)
+============================================
+检查端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape 可用性详情: {
+  isActive: true,
+  hasCapacity: true,
+  timeReady: false,
+  actualRunning: 0,
+  maxConcurrent: 3,
+  timeSinceLastSubmit: '17.844秒',
+  '比较结果': '0 < 3 = true'
+}
+检查端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape 可用性详情: {
+  isActive: true,
+  hasCapacity: true,
+  timeReady: false,
+  actualRunning: 1,
+  maxConcurrent: 3,
+  timeSinceLastSubmit: '16.626秒',
+  '比较结果': '1 < 3 = true'
+}
+没有可用端点（所有端点可能达到最大并发数或时间间隔未到）
+没有可用端点（所有端点可能达到最大并发数或时间间隔未到），等待5秒后重试
+发送心跳检测: https://kdw16tm655k3s1-8082.proxy.runpod.net/heartbeat?id=2011220027711
+发送心跳检测: https://os8tm9eu20m77i-8082.proxy.runpod.net/heartbeat?id=2011220026211
+任务 2011220027711 心跳状态: not_found, 进度: N/A
+任务 2011220026211 心跳状态: not_found, 进度: N/A
+发送心跳检测: https://kdw16tm655k3s1-8082.proxy.runpod.net/heartbeat?id=2011220024511
+任务 2011220024511 心跳状态: not_found, 进度: N/A
+发送心跳检测: https://os8tm9eu20m77i-8082.proxy.runpod.net/heartbeat?id=2011220022312
+
+=============== 任务处理状态 ===============
+当前时间: 2025-03-16T10:34:22.000Z
+运行中任务数: 10
+队列中任务数: 8564
+错误任务数: 4018
+============================================
+
+=============== 详细并发状态 ===============
+端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape:
+  运行任务数: 0/3 (有容量: true)
+  上次提交: 2025-03-16T10:33:59.092Z
+  时间就绪: false (经过 22.944秒，需要 30秒)
+端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape:
+  运行任务数: 1/3 (有容量: true)
+  上次提交: 2025-03-16T10:34:00.310Z
+  时间就绪: false (经过 21.726秒，需要 30秒)
+  1. kandeng.json (用户: user_1742013457)
+============================================
+检查端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape 可用性详情: {
+  isActive: true,
+  hasCapacity: true,
+  timeReady: false,
+  actualRunning: 0,
+  maxConcurrent: 3,
+  timeSinceLastSubmit: '22.944秒',
+  '比较结果': '0 < 3 = true'
+}
+检查端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape 可用性详情: {
+  isActive: true,
+  hasCapacity: true,
+  timeReady: false,
+  actualRunning: 1,
+  maxConcurrent: 3,
+  timeSinceLastSubmit: '21.726秒',
+  '比较结果': '1 < 3 = true'
+}
+没有可用端点（所有端点可能达到最大并发数或时间间隔未到）
+没有可用端点（所有端点可能达到最大并发数或时间间隔未到），等待5秒后重试
+任务 2011220022312 心跳状态: not_found, 进度: N/A
+发送心跳检测: https://kdw16tm655k3s1-8082.proxy.runpod.net/heartbeat?id=2011220011911
+任务 2011220011911 心跳状态: not_found, 进度: N/A
+发送心跳检测: https://os8tm9eu20m77i-8082.proxy.runpod.net/heartbeat?id=2011220018011
+任务 2011220018011 心跳状态: not_found, 进度: N/A
+
+=============== 任务处理状态 ===============
+当前时间: 2025-03-16T10:34:27.098Z
+运行中任务数: 10
+队列中任务数: 8564
+错误任务数: 4018
+============================================
+
+=============== 详细并发状态 ===============
+端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape:
+  运行任务数: 0/3 (有容量: true)
+  上次提交: 2025-03-16T10:33:59.092Z
+  时间就绪: false (经过 28.039秒，需要 30秒)
+端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape:
+  运行任务数: 1/3 (有容量: true)
+  上次提交: 2025-03-16T10:34:00.310Z
+  时间就绪: false (经过 26.821秒，需要 30秒)
+  1. kandeng.json (用户: user_1742013457)
+============================================
+检查端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape 可用性详情: {
+  isActive: true,
+  hasCapacity: true,
+  timeReady: false,
+  actualRunning: 0,
+  maxConcurrent: 3,
+  timeSinceLastSubmit: '28.039秒',
+  '比较结果': '0 < 3 = true'
+}
+检查端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape 可用性详情: {
+  isActive: true,
+  hasCapacity: true,
+  timeReady: false,
+  actualRunning: 1,
+  maxConcurrent: 3,
+  timeSinceLastSubmit: '26.821秒',
+  '比较结果': '1 < 3 = true'
+}
+没有可用端点（所有端点可能达到最大并发数或时间间隔未到）
+没有可用端点（所有端点可能达到最大并发数或时间间隔未到），等待5秒后重试
+发送心跳检测: https://kdw16tm655k3s1-8082.proxy.runpod.net/heartbeat?id=2011210014511
+发送心跳检测: https://os8tm9eu20m77i-8082.proxy.runpod.net/heartbeat?id=2011210014311
+任务 2011210014311 心跳状态: not_found, 进度: N/A
+任务 2011210014511 心跳状态: not_found, 进度: N/A
+发送心跳检测: https://kdw16tm655k3s1-8082.proxy.runpod.net/heartbeat?id=2011230004311
+任务 2011230004311 心跳状态: not_found, 进度: N/A
+发送心跳检测: https://os8tm9eu20m77i-8082.proxy.runpod.net/heartbeat?id=2011230004711
+任务 2011230004711 心跳状态: not_found, 进度: N/A
+
+=============== 任务处理状态 ===============
+当前时间: 2025-03-16T10:34:32.188Z
+运行中任务数: 10
+队列中任务数: 8564
+错误任务数: 4018
+============================================
+
+=============== 详细并发状态 ===============
+端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape:
+  运行任务数: 0/3 (有容量: true)
+  上次提交: 2025-03-16T10:33:59.092Z
+  时间就绪: true (经过 33.156秒，需要 30秒)
+端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape:
+  运行任务数: 1/3 (有容量: true)
+  上次提交: 2025-03-16T10:34:00.310Z
+  时间就绪: true (经过 31.938秒，需要 30秒)
+  1. kandeng.json (用户: user_1742013457)
+============================================
+检查端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape 可用性详情: {
+  isActive: true,
+  hasCapacity: true,
+  timeReady: true,
+  actualRunning: 0,
+  maxConcurrent: 3,
+  timeSinceLastSubmit: '33.156秒',
+  '比较结果': '0 < 3 = true'
+}
+检查端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape 可用性详情: {
+  isActive: true,
+  hasCapacity: true,
+  timeReady: true,
+  actualRunning: 1,
+  maxConcurrent: 3,
+  timeSinceLastSubmit: '31.938秒',
+  '比较结果': '1 < 3 = true'
+}
+选择端点: https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape 提交下一个任务
+启动任务: 2011230005011, 用户: user_1742013458, API端点: https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape
+端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape 最后提交时间更新为: 2025-03-16T10:34:32.249Z
+任务状态已保存到文件
+开始执行工作流: kandeng.json, 用户ID: user_1742013458
+从workflow_json目录加载工作流文件: kandeng.json
+工作流 kandeng.json 已加载，包含 15 个事件
+向API端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape 提交任务 2011230005011
+
+=============== 任务处理状态 ===============
+当前时间: 2025-03-16T10:34:33.419Z
+运行中任务数: 11
+队列中任务数: 8563
+错误任务数: 4018
+============================================
+
+任务 2011230005011 已提交到服务器，开始监控状态
+为任务 2011230005011 设置心跳检测
+=============== 详细并发状态 ===============
+端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape:
+  运行任务数: 1/3 (有容量: true)
+  上次提交: 2025-03-16T10:34:32.249Z
+  时间就绪: false (经过 1.237秒，需要 30秒)
+  1. kandeng.json (用户: user_1742013458)
+端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape:
+  运行任务数: 1/3 (有容量: true)
+  上次提交: 2025-03-16T10:34:00.310Z
+  时间就绪: true (经过 33.176秒，需要 30秒)
+  1. kandeng.json (用户: user_1742013457)
+============================================
+检查端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape 可用性详情: {
+  isActive: true,
+  hasCapacity: true,
+  timeReady: false,
+  actualRunning: 1,
+  maxConcurrent: 3,
+  timeSinceLastSubmit: '1.237秒',
+  '比较结果': '1 < 3 = true'
+}
+检查端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape 可用性详情: {
+  isActive: true,
+  hasCapacity: true,
+  timeReady: true,
+  actualRunning: 1,
+  maxConcurrent: 3,
+  timeSinceLastSubmit: '33.176秒',
+  '比较结果': '1 < 3 = true'
+}
+选择端点: https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape 提交下一个任务
+启动任务: 2011230005111, 用户: user_1742013458, API端点: https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape
+端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape 最后提交时间更新为: 2025-03-16T10:34:33.487Z
+任务状态已保存到文件
+开始执行工作流: kandeng.json, 用户ID: user_1742013458
+从workflow_json目录加载工作流文件: kandeng.json
+工作流 kandeng.json 已加载，包含 15 个事件
+向API端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape 提交任务 2011230005111
+任务状态已保存到文件
+任务状态已保存到文件
+任务 2011230005011 执行完成
+任务 2011230005111 已提交到服务器，开始监控状态
+为任务 2011230005111 设置心跳检测
+任务状态已保存到文件
+任务状态已保存到文件
+任务 2011230005111 执行完成
+
+=============== 任务处理状态 ===============
+当前时间: 2025-03-16T10:34:34.689Z
+运行中任务数: 11
+队列中任务数: 8563
+错误任务数: 4018
+============================================
+
+=============== 详细并发状态 ===============
+端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape:
+  运行任务数: 0/3 (有容量: true)
+  上次提交: 2025-03-16T10:34:32.249Z
+  时间就绪: false (经过 2.479秒，需要 30秒)
+端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape:
+  运行任务数: 1/3 (有容量: true)
+  上次提交: 2025-03-16T10:34:33.487Z
+  时间就绪: false (经过 1.241秒，需要 30秒)
+  1. kandeng.json (用户: user_1742013457)
+============================================
+检查端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape 可用性详情: {
+  isActive: true,
+  hasCapacity: true,
+  timeReady: false,
+  actualRunning: 0,
+  maxConcurrent: 3,
+  timeSinceLastSubmit: '2.479秒',
+  '比较结果': '0 < 3 = true'
+}
+检查端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape 可用性详情: {
+  isActive: true,
+  hasCapacity: true,
+  timeReady: false,
+  actualRunning: 1,
+  maxConcurrent: 3,
+  timeSinceLastSubmit: '1.241秒',
+  '比较结果': '1 < 3 = true'
+}
+没有可用端点（所有端点可能达到最大并发数或时间间隔未到）
+没有可用端点（所有端点可能达到最大并发数或时间间隔未到），等待5秒后重试
+初始状态检查: https://kdw16tm655k3s1-8082.proxy.runpod.net/task-status?id=2011230005011
+初始状态检查: https://os8tm9eu20m77i-8082.proxy.runpod.net/task-status?id=2011230005111
+
+=============== 任务处理状态 ===============
+当前时间: 2025-03-16T10:34:39.805Z
+运行中任务数: 11
+队列中任务数: 8563
+错误任务数: 4018
+============================================
+
+=============== 详细并发状态 ===============
+端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape:
+  运行任务数: 0/3 (有容量: true)
+  上次提交: 2025-03-16T10:34:32.249Z
+  时间就绪: false (经过 7.601秒，需要 30秒)
+端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape:
+  运行任务数: 1/3 (有容量: true)
+  上次提交: 2025-03-16T10:34:33.487Z
+  时间就绪: false (经过 6.363秒，需要 30秒)
+  1. kandeng.json (用户: user_1742013457)
+============================================
+检查端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape 可用性详情: {
+  isActive: true,
+  hasCapacity: true,
+  timeReady: false,
+  actualRunning: 0,
+  maxConcurrent: 3,
+  timeSinceLastSubmit: '7.601秒',
+  '比较结果': '0 < 3 = true'
+}
+检查端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape 可用性详情: {
+  isActive: true,
+  hasCapacity: true,
+  timeReady: false,
+  actualRunning: 1,
+  maxConcurrent: 3,
+  timeSinceLastSubmit: '6.363秒',
+  '比较结果': '1 < 3 = true'
+}
+没有可用端点（所有端点可能达到最大并发数或时间间隔未到）
+没有可用端点（所有端点可能达到最大并发数或时间间隔未到），等待5秒后重试
+任务 2011230005011 初始状态: not_found
+警告: 任务 2011230005011 提交后未在服务器上找到，将继续监控
+任务 2011230005111 初始状态: not_found
+警告: 任务 2011230005111 提交后未在服务器上找到，将继续监控
+执行API端点健康检查...
+检查基础URL: https://kdw16tm655k3s1-8082.proxy.runpod.net
+任务状态报告:
+- 队列中: 8563
+- 运行中: 11
+- 已完成: 268
+- 失败: 4018
+基础端口检查状态码: 404
+端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape 状态更新: { running: '6/3', status: 'active', maxConcurrent: 3 }
+端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape 健康检查: 正常 (端口活跃)
+检查基础URL: https://os8tm9eu20m77i-8082.proxy.runpod.net
+基础端口检查状态码: 404
+端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape 状态更新: { running: '5/3', status: 'active', maxConcurrent: 3 }
+端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape 健康检查: 正常 (端口活跃)
+API端点状态:
+https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape: active, 运行中: 6/3
+https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape: active, 运行中: 5/3
+
+=============== 任务处理状态 ===============
+当前时间: 2025-03-16T10:34:44.908Z
+运行中任务数: 11
+队列中任务数: 8563
+错误任务数: 4018
+============================================
+
+=============== 详细并发状态 ===============
+端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape:
+  运行任务数: 0/3 (有容量: true)
+  上次提交: 2025-03-16T10:34:32.249Z
+  时间就绪: false (经过 12.696秒，需要 30秒)
+端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape:
+  运行任务数: 1/3 (有容量: true)
+  上次提交: 2025-03-16T10:34:33.487Z
+  时间就绪: false (经过 11.458秒，需要 30秒)
+  1. kandeng.json (用户: user_1742013457)
+============================================
+检查端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape 可用性详情: {
+  isActive: true,
+  hasCapacity: true,
+  timeReady: false,
+  actualRunning: 0,
+  maxConcurrent: 3,
+  timeSinceLastSubmit: '12.696秒',
+  '比较结果': '0 < 3 = true'
+}
+检查端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape 可用性详情: {
+  isActive: true,
+  hasCapacity: true,
+  timeReady: false,
+  actualRunning: 1,
+  maxConcurrent: 3,
+  timeSinceLastSubmit: '11.458秒',
+  '比较结果': '1 < 3 = true'
+}
+没有可用端点（所有端点可能达到最大并发数或时间间隔未到）
+没有可用端点（所有端点可能达到最大并发数或时间间隔未到），等待5秒后重试
+发送心跳检测: https://kdw16tm655k3s1-8082.proxy.runpod.net/heartbeat?id=2011220027711
+发送心跳检测: https://os8tm9eu20m77i-8082.proxy.runpod.net/heartbeat?id=2011220026211
+任务 2011220027711 心跳状态: not_found, 进度: N/A
+
+=============== 任务处理状态 ===============
+当前时间: 2025-03-16T10:34:49.986Z
+运行中任务数: 11
+队列中任务数: 8563
+错误任务数: 4018
+============================================
+
+=============== 详细并发状态 ===============
+端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape:
+  运行任务数: 0/3 (有容量: true)
+  上次提交: 2025-03-16T10:34:32.249Z
+  时间就绪: false (经过 17.773秒，需要 30秒)
+端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape:
+  运行任务数: 1/3 (有容量: true)
+  上次提交: 2025-03-16T10:34:33.487Z
+  时间就绪: false (经过 16.535秒，需要 30秒)
+  1. kandeng.json (用户: user_1742013457)
+============================================
+检查端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape 可用性详情: {
+  isActive: true,
+  hasCapacity: true,
+  timeReady: false,
+  actualRunning: 0,
+  maxConcurrent: 3,
+  timeSinceLastSubmit: '17.773秒',
+  '比较结果': '0 < 3 = true'
+}
+检查端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape 可用性详情: {
+  isActive: true,
+  hasCapacity: true,
+  timeReady: false,
+  actualRunning: 1,
+  maxConcurrent: 3,
+  timeSinceLastSubmit: '16.535秒',
+  '比较结果': '1 < 3 = true'
+}
+没有可用端点（所有端点可能达到最大并发数或时间间隔未到）
+没有可用端点（所有端点可能达到最大并发数或时间间隔未到），等待5秒后重试
+发送心跳检测: https://kdw16tm655k3s1-8082.proxy.runpod.net/heartbeat?id=2011220024511
+任务 2011220026211 心跳状态: not_found, 进度: N/A
+任务 2011220024511 心跳状态: not_found, 进度: N/A
+发送心跳检测: https://os8tm9eu20m77i-8082.proxy.runpod.net/heartbeat?id=2011220022312
+任务 2011220022312 心跳状态: not_found, 进度: N/A
+发送心跳检测: https://kdw16tm655k3s1-8082.proxy.runpod.net/heartbeat?id=2011220011911
+任务 2011220011911 心跳状态: not_found, 进度: N/A
+发送心跳检测: https://os8tm9eu20m77i-8082.proxy.runpod.net/heartbeat?id=2011220018011
+
+=============== 任务处理状态 ===============
+当前时间: 2025-03-16T10:34:55.068Z
+运行中任务数: 11
+队列中任务数: 8563
+错误任务数: 4018
+============================================
+
+=============== 详细并发状态 ===============
+端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape:
+  运行任务数: 0/3 (有容量: true)
+  上次提交: 2025-03-16T10:34:32.249Z
+  时间就绪: false (经过 22.861秒，需要 30秒)
+端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape:
+  运行任务数: 1/3 (有容量: true)
+  上次提交: 2025-03-16T10:34:33.487Z
+  时间就绪: false (经过 21.623秒，需要 30秒)
+  1. kandeng.json (用户: user_1742013457)
+============================================
+检查端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape 可用性详情: {
+  isActive: true,
+  hasCapacity: true,
+  timeReady: false,
+  actualRunning: 0,
+  maxConcurrent: 3,
+  timeSinceLastSubmit: '22.861秒',
+  '比较结果': '0 < 3 = true'
+}
+检查端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape 可用性详情: {
+  isActive: true,
+  hasCapacity: true,
+  timeReady: false,
+  actualRunning: 1,
+  maxConcurrent: 3,
+  timeSinceLastSubmit: '21.623秒',
+  '比较结果': '1 < 3 = true'
+}
+没有可用端点（所有端点可能达到最大并发数或时间间隔未到）
+没有可用端点（所有端点可能达到最大并发数或时间间隔未到），等待5秒后重试
+任务 2011220018011 心跳状态: not_found, 进度: N/A
+发送心跳检测: https://kdw16tm655k3s1-8082.proxy.runpod.net/heartbeat?id=2011210014511
+发送心跳检测: https://os8tm9eu20m77i-8082.proxy.runpod.net/heartbeat?id=2011210014311
+任务 2011210014511 心跳状态: not_found, 进度: N/A
+任务 2011210014311 心跳状态: not_found, 进度: N/A
+发送心跳检测: https://kdw16tm655k3s1-8082.proxy.runpod.net/heartbeat?id=2011230004311
+
+=============== 任务处理状态 ===============
+当前时间: 2025-03-16T10:35:00.177Z
+运行中任务数: 11
+队列中任务数: 8563
+错误任务数: 4018
+============================================
+
+=============== 详细并发状态 ===============
+端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape:
+  运行任务数: 0/3 (有容量: true)
+  上次提交: 2025-03-16T10:34:32.249Z
+  时间就绪: false (经过 27.965秒，需要 30秒)
+端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape:
+  运行任务数: 1/3 (有容量: true)
+  上次提交: 2025-03-16T10:34:33.487Z
+  时间就绪: false (经过 26.727秒，需要 30秒)
+  1. kandeng.json (用户: user_1742013457)
+============================================
+检查端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape 可用性详情: {
+  isActive: true,
+  hasCapacity: true,
+  timeReady: false,
+  actualRunning: 0,
+  maxConcurrent: 3,
+  timeSinceLastSubmit: '27.965秒',
+  '比较结果': '0 < 3 = true'
+}
+检查端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape 可用性详情: {
+  isActive: true,
+  hasCapacity: true,
+  timeReady: false,
+  actualRunning: 1,
+  maxConcurrent: 3,
+  timeSinceLastSubmit: '26.727秒',
+  '比较结果': '1 < 3 = true'
+}
+没有可用端点（所有端点可能达到最大并发数或时间间隔未到）
+没有可用端点（所有端点可能达到最大并发数或时间间隔未到），等待5秒后重试
+任务 2011230004311 心跳状态: not_found, 进度: N/A
+发送心跳检测: https://os8tm9eu20m77i-8082.proxy.runpod.net/heartbeat?id=2011230004711
+任务 2011230004711 心跳状态: not_found, 进度: N/A
+发送心跳检测: https://kdw16tm655k3s1-8082.proxy.runpod.net/heartbeat?id=2011230005011
+任务 2011230005011 心跳状态: not_found, 进度: N/A
+任务 2011230005111 不再处于运行状态，停止心跳检测
+
+=============== 任务处理状态 ===============
+当前时间: 2025-03-16T10:35:05.273Z
+运行中任务数: 11
+队列中任务数: 8563
+错误任务数: 4018
+============================================
+
+=============== 详细并发状态 ===============
+端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape:
+  运行任务数: 0/3 (有容量: true)
+  上次提交: 2025-03-16T10:34:32.249Z
+  时间就绪: true (经过 33.058秒，需要 30秒)
+端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape:
+  运行任务数: 1/3 (有容量: true)
+  上次提交: 2025-03-16T10:34:33.487Z
+  时间就绪: true (经过 31.82秒，需要 30秒)
+  1. kandeng.json (用户: user_1742013457)
+============================================
+检查端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape 可用性详情: {
+  isActive: true,
+  hasCapacity: true,
+  timeReady: true,
+  actualRunning: 0,
+  maxConcurrent: 3,
+  timeSinceLastSubmit: '33.058秒',
+  '比较结果': '0 < 3 = true'
+}
+检查端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape 可用性详情: {
+  isActive: true,
+  hasCapacity: true,
+  timeReady: true,
+  actualRunning: 1,
+  maxConcurrent: 3,
+  timeSinceLastSubmit: '31.82秒',
+  '比较结果': '1 < 3 = true'
+}
+选择端点: https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape 提交下一个任务
+启动任务: 2011230005111, 用户: user_1742013458, API端点: https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape
+端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape 最后提交时间更新为: 2025-03-16T10:35:05.307Z
+任务状态已保存到文件
+开始执行工作流: kandeng.json, 用户ID: user_1742013458
+从workflow_json目录加载工作流文件: kandeng.json
+工作流 kandeng.json 已加载，包含 15 个事件
+向API端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape 提交任务 2011230005111
+
+=============== 任务处理状态 ===============
+当前时间: 2025-03-16T10:35:06.408Z
+运行中任务数: 12
+队列中任务数: 8562
+错误任务数: 4018
+============================================
+
+任务 2011230005111 已提交到服务器，开始监控状态
+为任务 2011230005111 设置心跳检测
+=============== 详细并发状态 ===============
+端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape:
+  运行任务数: 1/3 (有容量: true)
+  上次提交: 2025-03-16T10:35:05.307Z
+  时间就绪: false (经过 1.141秒，需要 30秒)
+  1. kandeng.json (用户: user_1742013458)
+端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape:
+  运行任务数: 1/3 (有容量: true)
+  上次提交: 2025-03-16T10:34:33.487Z
+  时间就绪: true (经过 32.961秒，需要 30秒)
+  1. kandeng.json (用户: user_1742013457)
+============================================
+检查端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape 可用性详情: {
+  isActive: true,
+  hasCapacity: true,
+  timeReady: false,
+  actualRunning: 1,
+  maxConcurrent: 3,
+  timeSinceLastSubmit: '1.141秒',
+  '比较结果': '1 < 3 = true'
+}
+检查端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape 可用性详情: {
+  isActive: true,
+  hasCapacity: true,
+  timeReady: true,
+  actualRunning: 1,
+  maxConcurrent: 3,
+  timeSinceLastSubmit: '32.961秒',
+  '比较结果': '1 < 3 = true'
+}
+选择端点: https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape 提交下一个任务
+启动任务: 2011230005611, 用户: user_1742013458, API端点: https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape
+端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape 最后提交时间更新为: 2025-03-16T10:35:06.448Z
+任务状态已保存到文件
+开始执行工作流: kandeng.json, 用户ID: user_1742013458
+从workflow_json目录加载工作流文件: kandeng.json
+工作流 kandeng.json 已加载，包含 15 个事件
+向API端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape 提交任务 2011230005611
+任务状态已保存到文件
+任务状态已保存到文件
+任务 2011230005111 执行完成
+
+=============== 任务处理状态 ===============
+当前时间: 2025-03-16T10:35:07.617Z
+运行中任务数: 12
+队列中任务数: 8562
+错误任务数: 4018
+============================================
+
+=============== 详细并发状态 ===============
+端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape:
+  运行任务数: 1/3 (有容量: true)
+  上次提交: 2025-03-16T10:35:05.307Z
+  时间就绪: false (经过 2.377秒，需要 30秒)
+  1. kandeng.json (用户: user_1742013458)
+端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape:
+  运行任务数: 1/3 (有容量: true)
+  上次提交: 2025-03-16T10:35:06.448Z
+  时间就绪: false (经过 1.236秒，需要 30秒)
+  1. kandeng.json (用户: user_1742013457)
+============================================
+检查端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape 可用性详情: {
+  isActive: true,
+  hasCapacity: true,
+  timeReady: false,
+  actualRunning: 1,
+  maxConcurrent: 3,
+  timeSinceLastSubmit: '2.377秒',
+  '比较结果': '1 < 3 = true'
+}
+检查端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape 可用性详情: {
+  isActive: true,
+  hasCapacity: true,
+  timeReady: false,
+  actualRunning: 1,
+  maxConcurrent: 3,
+  timeSinceLastSubmit: '1.236秒',
+  '比较结果': '1 < 3 = true'
+}
+没有可用端点（所有端点可能达到最大并发数或时间间隔未到）
+没有可用端点（所有端点可能达到最大并发数或时间间隔未到），等待5秒后重试
+任务 2011230005611 已提交到服务器，开始监控状态
+为任务 2011230005611 设置心跳检测
+任务状态已保存到文件
+任务状态已保存到文件
+任务 2011230005611 执行完成
+初始状态检查: https://kdw16tm655k3s1-8082.proxy.runpod.net/task-status?id=2011230005111
+任务状态报告:
+- 队列中: 8562
+- 运行中: 12
+- 已完成: 268
+- 失败: 4018
+初始状态检查: https://os8tm9eu20m77i-8082.proxy.runpod.net/task-status?id=2011230005611
+
+=============== 任务处理状态 ===============
+当前时间: 2025-03-16T10:35:12.741Z
+运行中任务数: 12
+队列中任务数: 8562
+错误任务数: 4018
+============================================
+
+=============== 详细并发状态 ===============
+端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape:
+  运行任务数: 1/3 (有容量: true)
+  上次提交: 2025-03-16T10:35:05.307Z
+  时间就绪: false (经过 7.471秒，需要 30秒)
+  1. kandeng.json (用户: user_1742013458)
+端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape:
+  运行任务数: 1/3 (有容量: true)
+  上次提交: 2025-03-16T10:35:06.448Z
+  时间就绪: false (经过 6.33秒，需要 30秒)
+  1. kandeng.json (用户: user_1742013457)
+============================================
+检查端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape 可用性详情: {
+  isActive: true,
+  hasCapacity: true,
+  timeReady: false,
+  actualRunning: 1,
+  maxConcurrent: 3,
+  timeSinceLastSubmit: '7.471秒',
+  '比较结果': '1 < 3 = true'
+}
+检查端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape 可用性详情: {
+  isActive: true,
+  hasCapacity: true,
+  timeReady: false,
+  actualRunning: 1,
+  maxConcurrent: 3,
+  timeSinceLastSubmit: '6.33秒',
+  '比较结果': '1 < 3 = true'
+}
+没有可用端点（所有端点可能达到最大并发数或时间间隔未到）
+没有可用端点（所有端点可能达到最大并发数或时间间隔未到），等待5秒后重试
+任务 2011230005111 初始状态: not_found
+警告: 任务 2011230005111 提交后未在服务器上找到，将继续监控
+任务 2011230005611 初始状态: not_found
+警告: 任务 2011230005611 提交后未在服务器上找到，将继续监控
+发送心跳检测: https://kdw16tm655k3s1-8082.proxy.runpod.net/heartbeat?id=2011220027711
+
+=============== 任务处理状态 ===============
+当前时间: 2025-03-16T10:35:17.828Z
+运行中任务数: 12
+队列中任务数: 8562
+错误任务数: 4018
+============================================
+
+=============== 详细并发状态 ===============
+端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape:
+  运行任务数: 1/3 (有容量: true)
+  上次提交: 2025-03-16T10:35:05.307Z
+  时间就绪: false (经过 12.559秒，需要 30秒)
+  1. kandeng.json (用户: user_1742013458)
+端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape:
+  运行任务数: 1/3 (有容量: true)
+  上次提交: 2025-03-16T10:35:06.448Z
+  时间就绪: false (经过 11.418秒，需要 30秒)
+  1. kandeng.json (用户: user_1742013457)
+============================================
+检查端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape 可用性详情: {
+  isActive: true,
+  hasCapacity: true,
+  timeReady: false,
+  actualRunning: 1,
+  maxConcurrent: 3,
+  timeSinceLastSubmit: '12.559秒',
+  '比较结果': '1 < 3 = true'
+}
+检查端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape 可用性详情: {
+  isActive: true,
+  hasCapacity: true,
+  timeReady: false,
+  actualRunning: 1,
+  maxConcurrent: 3,
+  timeSinceLastSubmit: '11.418秒',
+  '比较结果': '1 < 3 = true'
+}
+没有可用端点（所有端点可能达到最大并发数或时间间隔未到）
+没有可用端点（所有端点可能达到最大并发数或时间间隔未到），等待5秒后重试
+发送心跳检测: https://os8tm9eu20m77i-8082.proxy.runpod.net/heartbeat?id=2011220026211
+任务 2011220027711 心跳状态: not_found, 进度: N/A
+任务 2011220026211 心跳状态: not_found, 进度: N/A
+发送心跳检测: https://kdw16tm655k3s1-8082.proxy.runpod.net/heartbeat?id=2011220024511
+任务 2011220024511 心跳状态: not_found, 进度: N/A
+发送心跳检测: https://os8tm9eu20m77i-8082.proxy.runpod.net/heartbeat?id=2011220022312
+任务 2011220022312 心跳状态: not_found, 进度: N/A
+
+=============== 任务处理状态 ===============
+当前时间: 2025-03-16T10:35:22.912Z
+运行中任务数: 12
+队列中任务数: 8562
+错误任务数: 4018
+============================================
+
+=============== 详细并发状态 ===============
+端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape:
+  运行任务数: 1/3 (有容量: true)
+  上次提交: 2025-03-16T10:35:05.307Z
+  时间就绪: false (经过 17.638秒，需要 30秒)
+  1. kandeng.json (用户: user_1742013458)
+端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape:
+  运行任务数: 1/3 (有容量: true)
+  上次提交: 2025-03-16T10:35:06.448Z
+  时间就绪: false (经过 16.497秒，需要 30秒)
+  1. kandeng.json (用户: user_1742013457)
+============================================
+检查端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape 可用性详情: {
+  isActive: true,
+  hasCapacity: true,
+  timeReady: false,
+  actualRunning: 1,
+  maxConcurrent: 3,
+  timeSinceLastSubmit: '17.638秒',
+  '比较结果': '1 < 3 = true'
+}
+检查端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape 可用性详情: {
+  isActive: true,
+  hasCapacity: true,
+  timeReady: false,
+  actualRunning: 1,
+  maxConcurrent: 3,
+  timeSinceLastSubmit: '16.497秒',
+  '比较结果': '1 < 3 = true'
+}
+没有可用端点（所有端点可能达到最大并发数或时间间隔未到）
+没有可用端点（所有端点可能达到最大并发数或时间间隔未到），等待5秒后重试
+发送心跳检测: https://kdw16tm655k3s1-8082.proxy.runpod.net/heartbeat?id=2011220011911
+任务 2011220011911 心跳状态: not_found, 进度: N/A
+发送心跳检测: https://os8tm9eu20m77i-8082.proxy.runpod.net/heartbeat?id=2011220018011
+任务 2011220018011 心跳状态: not_found, 进度: N/A
+发送心跳检测: https://kdw16tm655k3s1-8082.proxy.runpod.net/heartbeat?id=2011210014511
+发送心跳检测: https://os8tm9eu20m77i-8082.proxy.runpod.net/heartbeat?id=2011210014311
+任务 2011210014511 心跳状态: not_found, 进度: N/A
+
+=============== 任务处理状态 ===============
+当前时间: 2025-03-16T10:35:27.989Z
+运行中任务数: 12
+队列中任务数: 8562
+错误任务数: 4018
+============================================
+
+=============== 详细并发状态 ===============
+端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape:
+  运行任务数: 1/3 (有容量: true)
+  上次提交: 2025-03-16T10:35:05.307Z
+  时间就绪: false (经过 22.715秒，需要 30秒)
+  1. kandeng.json (用户: user_1742013458)
+端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape:
+  运行任务数: 1/3 (有容量: true)
+  上次提交: 2025-03-16T10:35:06.448Z
+  时间就绪: false (经过 21.574秒，需要 30秒)
+  1. kandeng.json (用户: user_1742013457)
+============================================
+检查端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape 可用性详情: {
+  isActive: true,
+  hasCapacity: true,
+  timeReady: false,
+  actualRunning: 1,
+  maxConcurrent: 3,
+  timeSinceLastSubmit: '22.715秒',
+  '比较结果': '1 < 3 = true'
+}
+检查端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape 可用性详情: {
+  isActive: true,
+  hasCapacity: true,
+  timeReady: false,
+  actualRunning: 1,
+  maxConcurrent: 3,
+  timeSinceLastSubmit: '21.574秒',
+  '比较结果': '1 < 3 = true'
+}
+没有可用端点（所有端点可能达到最大并发数或时间间隔未到）
+没有可用端点（所有端点可能达到最大并发数或时间间隔未到），等待5秒后重试
+任务 2011210014311 心跳状态: not_found, 进度: N/A
+发送心跳检测: https://kdw16tm655k3s1-8082.proxy.runpod.net/heartbeat?id=2011230004311
+任务 2011230004311 心跳状态: not_found, 进度: N/A
+发送心跳检测: https://os8tm9eu20m77i-8082.proxy.runpod.net/heartbeat?id=2011230004711
+任务 2011230004711 心跳状态: not_found, 进度: N/A
+
+=============== 任务处理状态 ===============
+当前时间: 2025-03-16T10:35:33.066Z
+运行中任务数: 12
+队列中任务数: 8562
+错误任务数: 4018
+============================================
+
+=============== 详细并发状态 ===============
+端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape:
+  运行任务数: 1/3 (有容量: true)
+  上次提交: 2025-03-16T10:35:05.307Z
+  时间就绪: false (经过 27.802秒，需要 30秒)
+  1. kandeng.json (用户: user_1742013458)
+端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape:
+  运行任务数: 1/3 (有容量: true)
+  上次提交: 2025-03-16T10:35:06.448Z
+  时间就绪: false (经过 26.661秒，需要 30秒)
+  1. kandeng.json (用户: user_1742013457)
+============================================
+检查端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape 可用性详情: {
+  isActive: true,
+  hasCapacity: true,
+  timeReady: false,
+  actualRunning: 1,
+  maxConcurrent: 3,
+  timeSinceLastSubmit: '27.802秒',
+  '比较结果': '1 < 3 = true'
+}
+检查端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape 可用性详情: {
+  isActive: true,
+  hasCapacity: true,
+  timeReady: false,
+  actualRunning: 1,
+  maxConcurrent: 3,
+  timeSinceLastSubmit: '26.661秒',
+  '比较结果': '1 < 3 = true'
+}
+没有可用端点（所有端点可能达到最大并发数或时间间隔未到）
+没有可用端点（所有端点可能达到最大并发数或时间间隔未到），等待5秒后重试
+发送心跳检测: https://kdw16tm655k3s1-8082.proxy.runpod.net/heartbeat?id=2011230005011
+任务 2011230005011 心跳状态: not_found, 进度: N/A
+发送心跳检测: https://kdw16tm655k3s1-8082.proxy.runpod.net/heartbeat?id=2011230005111
+任务 2011230005111 心跳状态: not_found, 进度: N/A
+任务 2011230005611 不再处于运行状态，停止心跳检测
+
+=============== 任务处理状态 ===============
+当前时间: 2025-03-16T10:35:38.149Z
+运行中任务数: 12
+队列中任务数: 8562
+错误任务数: 4018
+============================================
+
+=============== 详细并发状态 ===============
+端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape:
+  运行任务数: 1/3 (有容量: true)
+  上次提交: 2025-03-16T10:35:05.307Z
+  时间就绪: true (经过 32.877秒，需要 30秒)
+  1. kandeng.json (用户: user_1742013458)
+端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape:
+  运行任务数: 1/3 (有容量: true)
+  上次提交: 2025-03-16T10:35:06.448Z
+  时间就绪: true (经过 31.736秒，需要 30秒)
+  1. kandeng.json (用户: user_1742013457)
+============================================
+检查端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape 可用性详情: {
+  isActive: true,
+  hasCapacity: true,
+  timeReady: true,
+  actualRunning: 1,
+  maxConcurrent: 3,
+  timeSinceLastSubmit: '32.877秒',
+  '比较结果': '1 < 3 = true'
+}
+检查端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape 可用性详情: {
+  isActive: true,
+  hasCapacity: true,
+  timeReady: true,
+  actualRunning: 1,
+  maxConcurrent: 3,
+  timeSinceLastSubmit: '31.736秒',
+  '比较结果': '1 < 3 = true'
+}
+选择端点: https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape 提交下一个任务
+启动任务: 2011230005611, 用户: user_1742013458, API端点: https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape
+端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape 最后提交时间更新为: 2025-03-16T10:35:38.184Z
+任务状态已保存到文件
+开始执行工作流: kandeng.json, 用户ID: user_1742013458
+从workflow_json目录加载工作流文件: kandeng.json
+工作流 kandeng.json 已加载，包含 15 个事件
+向API端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape 提交任务 2011230005611
+任务 2011230005611 已提交到服务器，开始监控状态
+为任务 2011230005611 设置心跳检测
+任务状态已保存到文件
+任务状态已保存到文件
+任务 2011230005611 执行完成
+
+=============== 任务处理状态 ===============
+当前时间: 2025-03-16T10:35:39.279Z
+运行中任务数: 13
+队列中任务数: 8561
+错误任务数: 4018
+============================================
+
+=============== 详细并发状态 ===============
+端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape:
+  运行任务数: 2/3 (有容量: true)
+  上次提交: 2025-03-16T10:35:38.184Z
+  时间就绪: false (经过 1.154秒，需要 30秒)
+  1. kandeng.json (用户: user_1742013458)
+  2. kandeng.json (用户: user_1742013458)
+端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape:
+  运行任务数: 1/3 (有容量: true)
+  上次提交: 2025-03-16T10:35:06.448Z
+  时间就绪: true (经过 32.89秒，需要 30秒)
+  1. kandeng.json (用户: user_1742013457)
+============================================
+检查端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape 可用性详情: {
+  isActive: true,
+  hasCapacity: true,
+  timeReady: false,
+  actualRunning: 2,
+  maxConcurrent: 3,
+  timeSinceLastSubmit: '1.154秒',
+  '比较结果': '2 < 3 = true'
+}
+检查端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape 可用性详情: {
+  isActive: true,
+  hasCapacity: true,
+  timeReady: true,
+  actualRunning: 1,
+  maxConcurrent: 3,
+  timeSinceLastSubmit: '32.89秒',
+  '比较结果': '1 < 3 = true'
+}
+选择端点: https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape 提交下一个任务
+启动任务: 2011230006211, 用户: user_1742013459, API端点: https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape
+端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape 最后提交时间更新为: 2025-03-16T10:35:39.339Z
+任务状态已保存到文件
+开始执行工作流: kandeng.json, 用户ID: user_1742013459
+从workflow_json目录加载工作流文件: kandeng.json
+工作流 kandeng.json 已加载，包含 15 个事件
+向API端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape 提交任务 2011230006211
+
+=============== 任务处理状态 ===============
+当前时间: 2025-03-16T10:35:40.474Z
+运行中任务数: 14
+队列中任务数: 8560
+错误任务数: 4018
+============================================
+
+=============== 详细并发状态 ===============
+端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape:
+  运行任务数: 2/3 (有容量: true)
+  上次提交: 2025-03-16T10:35:38.184Z
+  时间就绪: false (经过 2.335秒，需要 30秒)
+  1. kandeng.json (用户: user_1742013458)
+  2. kandeng.json (用户: user_1742013458)
+端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape:
+  运行任务数: 2/3 (有容量: true)
+  上次提交: 2025-03-16T10:35:39.339Z
+  时间就绪: false (经过 1.18秒，需要 30秒)
+  1. kandeng.json (用户: user_1742013457)
+  2. kandeng.json (用户: user_1742013459)
+============================================
+检查端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape 可用性详情: {
+  isActive: true,
+  hasCapacity: true,
+  timeReady: false,
+  actualRunning: 2,
+  maxConcurrent: 3,
+  timeSinceLastSubmit: '2.335秒',
+  '比较结果': '2 < 3 = true'
+}
+检查端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape 可用性详情: {
+  isActive: true,
+  hasCapacity: true,
+  timeReady: false,
+  actualRunning: 2,
+  maxConcurrent: 3,
+  timeSinceLastSubmit: '1.18秒',
+  '比较结果': '2 < 3 = true'
+}
+没有可用端点（所有端点可能达到最大并发数或时间间隔未到）
+没有可用端点（所有端点可能达到最大并发数或时间间隔未到），等待5秒后重试
+任务 2011230006211 已提交到服务器，开始监控状态
+为任务 2011230006211 设置心跳检测
+任务状态已保存到文件
+任务状态已保存到文件
+任务 2011230006211 执行完成
+执行API端点健康检查...
+检查基础URL: https://kdw16tm655k3s1-8082.proxy.runpod.net
+任务状态报告:
+- 队列中: 8560
+- 运行中: 14
+- 已完成: 268
+- 失败: 4018
+基础端口检查状态码: 404
+端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape 状态更新: { running: '8/3', status: 'active', maxConcurrent: 3 }
+端点 https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape 健康检查: 正常 (端口活跃)
+检查基础URL: https://os8tm9eu20m77i-8082.proxy.runpod.net
+初始状态检查: https://kdw16tm655k3s1-8082.proxy.runpod.net/task-status?id=2011230005611
+基础端口检查状态码: 404
+任务 2011230005611 初始状态: not_found
+警告: 任务 2011230005611 提交后未在服务器上找到，将继续监控
+端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape 状态更新: { running: '6/3', status: 'active', maxConcurrent: 3 }
+端点 https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape 健康检查: 正常 (端口活跃)
+API端点状态:
+https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape: active, 运行中: 8/3
+https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape: active, 运行中: 6/3
