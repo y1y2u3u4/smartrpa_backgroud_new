@@ -20,6 +20,7 @@ import { processProductImages } from './modules/imageProcessor.js';
 import dotenv from 'dotenv';
 dotenv.config();
 
+
 async function uploadFileToS3(filePath, s3Key) {
     try {
         // 配置AWS
@@ -921,9 +922,6 @@ export async function handler_run_base(req, res) {
 }
 
 
-
-
-
 export async function handler_run(req, res) {
     // 添加未捕获异常的全局处理
     process.on('uncaughtException', (error) => {
@@ -967,8 +965,9 @@ export async function handler_run(req, res) {
         });
 }
 
+
 // 内部处理函数 - 包含原来handler_run的主要逻辑
-async function handler_run_internal(reqBody, taskId) {
+export async function handler_run_internal(reqBody, taskId) {
     let browser, page;
     let timeoutId;
     let isTimedOut = false;
@@ -1171,7 +1170,7 @@ async function handler_run_internal(reqBody, taskId) {
                     checkTimeout();
                     const currentTime = new Date(time).getTime();
                     const nextTime = sortedData_new[index + 1]
-                        ? new Date(sortedData_new[index + 1].time).getTime()
+                        ? new Date(sorted_new[index + 1].time).getTime()
                         : currentTime;
                     const waitTime = Math.max(2000, Math.min(nextTime - currentTime, 120000));
                     await new Promise(resolve => setTimeout(resolve, waitTime));
@@ -1306,72 +1305,3 @@ async function handler_run_internal(reqBody, taskId) {
 
 
 
-
-export async function handler_run_test(params) {
-
-    const environment = process.env.ENVIRONMENT;
-    let config;
-    if (environment === 'cloud') {
-        config = loadConfig('config/config.json');
-    } else {
-        config = loadConfig('config/config_off.json');
-    }
-    const sortedData = params.sortedData;
-    const row = params.row;
-    const task_name = params.task_name;
-    
-    const handleEvent = await importHandleEvent(task_name);
-    // const task_name = 'douyin';
-    console.log('task_name_0:', task_name);
-    const TaskList = await findTaskList(task_name);
-    TaskList.sort((a, b) => b.id - a.id);
-    const latestTask = TaskList[0];
-    const jsonString = latestTask ? JSON.parse(latestTask.task_cookies) : "";
-    const cookies = latestTask ? JSON.parse(jsonString) : [];
-
-    // console.log('cookies', cookies)
-
-
-    // const browser = await launchBrowser(config.puppeteerConfig);
-    // let page = await setupPage(browser, cookies);
-    const config_adsPower = {
-        adsPowerUserId: 'kn8o287', // 替换为您的AdsPower用户ID
-        adsPowerId: '35.225.115.200', // 替换为您的AdsPower用户ID
-        // ... 其他配置项 ...
-    };
-    const browser = await launchBrowser_adsPower(config_adsPower);
-    let page = await setupPage_adsPower(browser, cookies);
-
-
-    const sortedData_new = matchAndReplace(sortedData, row);
-    console.log('sortedData_new_run:', sortedData_new);
-
-    const monitorResults = {
-        clicks: [],
-        navigations: [],
-        inputs: [],
-        scrolls: [],
-        keydowns: [],
-    };
-
-    const dataProcessor = new DataProcessor(monitorResults);
-    dataProcessor.addMonitor(page);
-    let cityname = row.cityname
-    console.log('cityname_0:', cityname);
-
-    // 获取定义的 handleEvent 函数
-    for (const [index, event] of sortedData_new.entries()) {
-        const { type, time } = event;
-        console.log('event:', event);
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        console.log('event:', event);
-        page = await handleEvent(event, page, browser, index, sortedData_new, task_name, cityname);
-        const currentTime = new Date(time).getTime();
-        const nextTime = sortedData[sortedData.indexOf(event) + 1] ? new Date(sortedData[sortedData.indexOf(event) + 1].time).getTime() : currentTime;
-        const waitTime = Math.min(nextTime - currentTime, 2000);
-        await new Promise(resolve => setTimeout(resolve, waitTime));
-    }
-    await new Promise(resolve => setTimeout(resolve, 200000));
-    // await browser.close();
-    await closeBrowser_adsPower(browser, config_adsPower.adsPowerUserId);
-}
