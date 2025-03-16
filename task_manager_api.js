@@ -1174,6 +1174,22 @@ async function executeWorkflow(workflowItem) {
             if (statusData.status === 'not_found') {
               console.warn(`警告: 任务 ${taskId} 提交后未在服务器上找到，将继续监控`);
               // 不立即标记为错误，让心跳检测机制处理
+            } else if (statusData.status === 'running') {
+              console.log(`确认任务 ${taskId} 已在远程服务器上开始执行`);
+              // 更新任务状态为远程执行中
+              const taskStatus = await getTaskStatus();
+              const index = taskStatus.running.findIndex(item => 
+                (item.workflowFile === workflowItem.workflowFile || item.id === taskId) && 
+                item.userId === workflowItem.userId
+              );
+              
+              if (index !== -1) {
+                // 确保任务状态为远程执行中
+                taskStatus.running[index].status = 'remote_running';
+                taskStatus.running[index].remoteStartedAt = new Date().toISOString();
+                await saveTaskStatus(taskStatus);
+                console.log(`任务 ${taskId} 状态已更新为远程执行中`);
+              }
             }
           }
         } catch (checkError) {
@@ -1185,22 +1201,25 @@ async function executeWorkflow(workflowItem) {
       const result = {
         status: 'submitted',
         taskId: taskId,
-        message: initialResponse.message || '任务已提交并开始执行',
+        message: initialResponse.message || '任务已提交到远程服务器执行，请等待完成',
         initialResponse: initialResponse
       };
       
       // 更新任务状态
       const taskStatus = await getTaskStatus();
       const index = taskStatus.running.findIndex(item => 
-        item.workflowFile === workflowItem.workflowFile && 
+        (item.workflowFile === workflowItem.workflowFile || item.id === taskId) && 
         item.userId === workflowItem.userId
       );
       
       if (index !== -1) {
-        // 更新任务状态为已提交
+        // 更新任务状态为已提交，但仍保持在running列表中
         taskStatus.running[index].status = 'submitted';
         taskStatus.running[index].submittedAt = new Date().toISOString();
+        // 添加标记，表明这是远程执行的任务
+        taskStatus.running[index].isRemoteTask = true;
         await saveTaskStatus(taskStatus);
+        console.log(`任务状态已保存到文件`);
       }
       
       return result;
@@ -1800,17 +1819,20 @@ function setupTaskHeartbeat(taskId, endpoint, userId) {
     try {
       // 首先检查任务是否仍在running列表中
       const taskStatus = await getTaskStatus();
-      const taskExists = taskStatus.running.some(task => 
-        (task.taskConfig?.row?.系统SKU === taskId || task.workflowFile === taskId) && 
+      const taskIndex = taskStatus.running.findIndex(task => 
+        (task.taskConfig?.row?.系统SKU === taskId || task.workflowFile === taskId || task.id === taskId) && 
         task.userId === userId
       );
       
-      if (!taskExists) {
+      if (taskIndex === -1) {
         console.log(`任务 ${taskId} 不再处于运行状态，停止心跳检测`);
         clearInterval(taskHeartbeats[taskId]);
         delete taskHeartbeats[taskId];
         return;
       }
+      
+      // 获取当前任务
+      const currentTask = taskStatus.running[taskIndex];
       
       // 构建心跳检测URL
       const heartbeatUrl = endpoint.replace('/scrape', '/heartbeat') + `?id=${taskId}`;
@@ -1819,7 +1841,7 @@ function setupTaskHeartbeat(taskId, endpoint, userId) {
       const response = await fetch(heartbeatUrl, {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' },
-        timeout: 3000
+        timeout: 5000  // 增加超时时间
       });
       
       if (!response.ok) {
@@ -1828,12 +1850,22 @@ function setupTaskHeartbeat(taskId, endpoint, userId) {
         // 连续失败计数
         taskHeartbeats[`${taskId}_failures`] = (taskHeartbeats[`${taskId}_failures`] || 0) + 1;
         
-        // 如果连续3次心跳失败，标记任务为错误
+        // 如果连续3次心跳失败，但不立即标记为错误，而是标记为可疑状态
         if (taskHeartbeats[`${taskId}_failures`] >= 3) {
-          console.log(`任务 ${taskId} 连续3次心跳检测失败，标记为错误`);
-          await updateTaskStatus(taskId, 'error', '心跳检测失败，任务可能已异常终止');
-          clearInterval(taskHeartbeats[taskId]);
-          delete taskHeartbeats[taskId];
+          console.log(`任务 ${taskId} 连续3次心跳检测失败，标记为可疑状态`);
+          
+          // 更新任务状态为可疑，但仍保留在running列表中
+          currentTask.status = 'suspicious';
+          currentTask.lastError = '心跳检测失败，但任务可能仍在执行';
+          currentTask.lastErrorAt = new Date().toISOString();
+          await saveTaskStatus(taskStatus);
+          
+          // 不立即停止心跳检测，继续尝试
+          if (taskHeartbeats[`${taskId}_failures`] >= 10) {
+            console.log(`任务 ${taskId} 连续10次心跳检测失败，停止心跳检测`);
+            clearInterval(taskHeartbeats[taskId]);
+            delete taskHeartbeats[taskId];
+          }
         }
         return;
       }
@@ -1841,38 +1873,95 @@ function setupTaskHeartbeat(taskId, endpoint, userId) {
       // 心跳成功，重置失败计数
       taskHeartbeats[`${taskId}_failures`] = 0;
       
+      // 如果任务之前是可疑状态，恢复为正常状态
+      if (currentTask.status === 'suspicious') {
+        console.log(`任务 ${taskId} 心跳恢复正常，从可疑状态恢复`);
+        currentTask.status = 'remote_running';
+        delete currentTask.lastError;
+        delete currentTask.lastErrorAt;
+        await saveTaskStatus(taskStatus);
+      }
+      
       // 解析心跳响应
       const heartbeatData = await response.json();
+      console.log(`任务 ${taskId} 心跳状态: ${heartbeatData.status}, 进度: ${heartbeatData.progress || 'N/A'}`);
+      
+      // 更新任务进度
+      if (heartbeatData.progress !== undefined) {
+        currentTask.progress = heartbeatData.progress;
+        await saveTaskStatus(taskStatus);
+      }
       
       // 根据心跳响应更新任务状态
       if (heartbeatData.status === 'completed') {
-        console.log(`心跳检测显示任务 ${taskId} 已完成`);
-        await updateTaskStatus(taskId, 'completed', '心跳检测显示任务已完成');
+        console.log(`心跳检测显示任务 ${taskId} 已完成，更新状态`);
+        
+        // 将任务从running移到completed
+        const completedTask = {
+          ...currentTask,
+          status: 'completed',
+          completedAt: new Date().toISOString(),
+          message: '远程服务器报告任务已完成'
+        };
+        
+        taskStatus.running.splice(taskIndex, 1);
+        taskStatus.completed.push(completedTask);
+        await saveTaskStatus(taskStatus);
+        
+        // 更新端点计数
+        const endpointIndex = API_ENDPOINTS.findIndex(e => e.url === endpoint);
+        if (endpointIndex !== -1) {
+          API_ENDPOINTS[endpointIndex].running = Math.max(0, API_ENDPOINTS[endpointIndex].running - 1);
+          console.log(`更新端点 ${endpoint} 运行任务数: ${API_ENDPOINTS[endpointIndex].running}`);
+        }
+        
+        // 停止心跳检测
         clearInterval(taskHeartbeats[taskId]);
         delete taskHeartbeats[taskId];
       } else if (heartbeatData.status === 'error') {
         console.log(`心跳检测显示任务 ${taskId} 出错`);
-        await updateTaskStatus(taskId, 'error', `心跳检测显示任务出错: ${heartbeatData.message || '未知错误'}`);
+        
+        // 将任务从running移到errors
+        const failedTask = {
+          ...currentTask,
+          status: 'error',
+          error: `远程服务器报告错误: ${heartbeatData.message || '未知错误'}`,
+          errorAt: new Date().toISOString()
+        };
+        
+        taskStatus.running.splice(taskIndex, 1);
+        taskStatus.errors.push(failedTask);
+        await saveTaskStatus(taskStatus);
+        
+        // 更新端点计数
+        const endpointIndex = API_ENDPOINTS.findIndex(e => e.url === endpoint);
+        if (endpointIndex !== -1) {
+          API_ENDPOINTS[endpointIndex].running = Math.max(0, API_ENDPOINTS[endpointIndex].running - 1);
+          console.log(`更新端点 ${endpoint} 运行任务数: ${API_ENDPOINTS[endpointIndex].running}`);
+        }
+        
+        // 停止心跳检测
         clearInterval(taskHeartbeats[taskId]);
         delete taskHeartbeats[taskId];
+      } else if (heartbeatData.status === 'running') {
+        // 任务正在运行，确保状态正确
+        if (currentTask.status !== 'remote_running') {
+          console.log(`更新任务 ${taskId} 状态为远程执行中`);
+          currentTask.status = 'remote_running';
+          await saveTaskStatus(taskStatus);
+        }
       } else if (heartbeatData.status === 'not_found') {
-        // 如果任务运行超过10分钟但远程找不到，标记为错误
-        const taskStatus = await getTaskStatus();
-        const task = taskStatus.running.find(t => 
-          t.taskConfig?.row?.系统SKU === taskId || t.workflowFile === taskId
-        );
+        // 如果任务运行超过10分钟但远程找不到，标记为可疑状态
+        const now = Date.now();
+        const taskStartTime = currentTask.startedAt ? new Date(currentTask.startedAt).getTime() : 0;
+        const runningTime = now - taskStartTime;
         
-        if (task) {
-          const now = Date.now();
-          const taskStartTime = task.startedAt ? new Date(task.startedAt).getTime() : 0;
-          const runningTime = now - taskStartTime;
-          
-          if (runningTime > 10 * 60 * 1000) {
-            console.log(`任务 ${taskId} 运行超过10分钟但远程找不到，标记为错误`);
-            await updateTaskStatus(taskId, 'error', '远程服务器找不到任务，可能已异常终止');
-            clearInterval(taskHeartbeats[taskId]);
-            delete taskHeartbeats[taskId];
-          }
+        if (runningTime > 10 * 60 * 1000) {
+          console.log(`任务 ${taskId} 运行超过10分钟但远程找不到，标记为可疑状态`);
+          currentTask.status = 'suspicious';
+          currentTask.lastError = '远程服务器找不到任务，可能已异常终止';
+          currentTask.lastErrorAt = new Date().toISOString();
+          await saveTaskStatus(taskStatus);
         }
       }
     } catch (error) {
@@ -1881,27 +1970,36 @@ function setupTaskHeartbeat(taskId, endpoint, userId) {
       // 连续失败计数
       taskHeartbeats[`${taskId}_failures`] = (taskHeartbeats[`${taskId}_failures`] || 0) + 1;
       
-      // 如果连续5次心跳失败，标记任务为错误
+      // 如果连续5次心跳失败，标记任务为可疑状态
       if (taskHeartbeats[`${taskId}_failures`] >= 5) {
-        console.log(`任务 ${taskId} 连续5次心跳检测错误，标记为错误`);
-        await updateTaskStatus(taskId, 'error', `心跳检测错误: ${error.message}`);
-        clearInterval(taskHeartbeats[taskId]);
-        delete taskHeartbeats[taskId];
+        console.log(`任务 ${taskId} 连续5次心跳检测错误，标记为可疑状态`);
+        
+        // 获取当前任务状态
+        const taskStatus = await getTaskStatus();
+        const taskIndex = taskStatus.running.findIndex(task => 
+          (task.taskConfig?.row?.系统SKU === taskId || task.workflowFile === taskId || task.id === taskId) && 
+          task.userId === userId
+        );
+        
+        if (taskIndex !== -1) {
+          // 更新任务状态为可疑，但仍保留在running列表中
+          taskStatus.running[taskIndex].status = 'suspicious';
+          taskStatus.running[taskIndex].lastError = `心跳检测错误: ${error.message}`;
+          taskStatus.running[taskIndex].lastErrorAt = new Date().toISOString();
+          await saveTaskStatus(taskStatus);
+        }
+        
+        // 如果连续10次失败，停止心跳检测
+        if (taskHeartbeats[`${taskId}_failures`] >= 10) {
+          clearInterval(taskHeartbeats[taskId]);
+          delete taskHeartbeats[taskId];
+        }
       }
     }
   }, 30000); // 每30秒检查一次
   
   // 存储心跳检测定时器ID
   taskHeartbeats[taskId] = heartbeatInterval;
-  
-  // 设置心跳检测的最大持续时间（2小时）
-  setTimeout(() => {
-    if (taskHeartbeats[taskId]) {
-      console.log(`任务 ${taskId} 心跳检测超过2小时，自动停止`);
-      clearInterval(taskHeartbeats[taskId]);
-      delete taskHeartbeats[taskId];
-    }
-  }, 2 * 60 * 60 * 1000);
 }
 
 

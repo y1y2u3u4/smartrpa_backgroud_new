@@ -1170,7 +1170,7 @@ export async function handler_run_internal(reqBody, taskId) {
                     checkTimeout();
                     const currentTime = new Date(time).getTime();
                     const nextTime = sortedData_new[index + 1]
-                        ? new Date(sorted_new[index + 1].time).getTime()
+                        ? new Date(sortedData_new[index + 1].time).getTime()
                         : currentTime;
                     const waitTime = Math.max(2000, Math.min(nextTime - currentTime, 120000));
                     await new Promise(resolve => setTimeout(resolve, waitTime));
