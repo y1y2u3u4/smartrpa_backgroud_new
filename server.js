@@ -84,9 +84,6 @@ app.get('/task-status', (req, res) => {
   }
   
   // 如果任务不在运行中，可能已完成或未启动
-  // 这里可以添加检查任务结果的逻辑
-  
-  // 添加一个简单的结果存储
   if (taskResults && taskResults.has(id)) {
     const result = taskResults.get(id);
     return res.json({

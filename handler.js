@@ -934,6 +934,41 @@ export async function handler_run(req, res) {
         console.error('未处理的Promise拒绝:', reason);
     });
 
+    // 获取任务ID
+    const taskId = req.body.taskId || 
+                  req.body.workflowFile || 
+                  (req.body.taskConfig?.row?.系统SKU) || 
+                  `task_${Date.now()}`;
+    
+    console.log(`接收到任务: ${taskId}`);
+    
+    // 立即标记任务开始
+    markTaskStart(taskId);
+    
+    // 立即返回确认信息
+    res.status(200).json({
+        status: 'accepted',
+        taskId: taskId,
+        message: '任务已接受，开始处理',
+        timestamp: new Date().toISOString()
+    });
+    
+    // 在后台处理任务，不影响响应
+    handler_run_internal(req.body, taskId)
+        .then(result => {
+            console.log(`任务 ${taskId} 完成`);
+            // 保存结果并标记任务结束
+            markTaskEnd(taskId, result);
+        })
+        .catch(error => {
+            console.error(`任务 ${taskId} 执行出错:`, error);
+            // 标记任务结束，但不保存结果
+            markTaskEnd(taskId);
+        });
+}
+
+// 内部处理函数 - 包含原来handler_run的主要逻辑
+async function handler_run_internal(reqBody, taskId) {
     let browser, page;
     let timeoutId;
     let isTimedOut = false;
@@ -947,33 +982,17 @@ export async function handler_run(req, res) {
     };
     
     try {
-        console.log('开始处理任务请求');
+        console.log(`开始处理任务 ${taskId}`);
         
         // 设置超时定时器
         timeoutId = setTimeout(async () => {
             isTimedOut = true;
-            console.error('任务执行超时，强制终止');
+            console.error(`任务 ${taskId} 执行超时，强制终止`);
             
             try {
                 // 强制关闭页面和浏览器
                 if (page && !page.isClosed()) {
                     await page.close().catch(() => {});
-                }
-                
-                // 发送超时响应
-                if (!res.writableEnded) {
-                    const timeoutResponse = {
-                        status: 'error',
-                        message: '任务执行超时，已强制终止',
-                        error: 'TIMEOUT'
-                    };
-                    
-                    if (!res.headersSent) {
-                        res.status(500).json(timeoutResponse);
-                    } else {
-                        res.write(JSON.stringify(timeoutResponse) + '\n');
-                        res.end();
-                    }
                 }
             } catch (error) {
                 console.error('超时清理过程中出错:', error);
@@ -988,28 +1007,25 @@ export async function handler_run(req, res) {
             config = loadConfig('config/config_off.json');
         }
 
-        const sortedData = req.body.sortedData;
-        console.log('req.body.row:', req.body.row);
-        const rows = Array.isArray(req.body.row) ? req.body.row : [req.body.row];
-        const task_name = req.body.task_name;
+        const sortedData = reqBody.sortedData;
+        console.log('reqBody.row:', reqBody.row);
+        const rows = Array.isArray(reqBody.row) ? reqBody.row : [reqBody.row];
+        const task_name = reqBody.task_name;
 
         console.log('task_name:', task_name);
-        const leixing = req.body.leixing;
-        const adsPowerUserId = req.body.adsPowerUserId || 'kn8o287';
-        const BASE_URL = req.body.BASE_URL;
-        const adsPowerId = req.body.adsPowerId || '10.128.0.3';
+        const leixing = reqBody.leixing;
+        const adsPowerUserId = reqBody.adsPowerUserId || 'kn8o287';
+        const BASE_URL = reqBody.BASE_URL;
+        const adsPowerId = reqBody.adsPowerId || '10.128.0.3';
 
-        // 初始化响应头
-        res.writeHead(200, {
-            'Content-Type': 'application/json',
-            'Transfer-Encoding': 'chunked'
-        });
-        
-        // 发送初始状态
-        res.write(JSON.stringify({
-            status: 'initializing',
-            message: '开始执行代码'
-        }) + '\n');
+        // 记录任务进度
+        const updateTaskProgress = (status, message, progress = null) => {
+            // 这里可以将任务进度保存到某个地方，比如Redis或数据库
+            // 也可以通过WebSocket推送给客户端
+            console.log(`任务 ${taskId} 进度更新: ${status} - ${message}${progress ? ` (${progress})` : ''}`);
+        };
+
+        updateTaskProgress('initializing', '开始执行代码');
 
         checkTimeout();
         //获取执行代码
@@ -1020,11 +1036,7 @@ export async function handler_run(req, res) {
         console.log('task_name_0:', task_name);
         console.log('leixing:', leixing);
 
-        // 发送状态更新
-        res.write(JSON.stringify({
-            status: 'loading',
-            message: '正在加载Cookie'
-        }) + '\n');
+        updateTaskProgress('loading', '正在加载Cookie');
 
         checkTimeout();
         let cookies = [];
@@ -1098,11 +1110,7 @@ export async function handler_run(req, res) {
             }
         }
 
-        // 发送浏览器初始化状态
-        res.write(JSON.stringify({
-            status: 'browser_initializing',
-            message: '正在初始化浏览器'
-        }) + '\n');
+        updateTaskProgress('browser_initializing', '正在初始化浏览器');
         
         checkTimeout();
         browser = await launchBrowser_adsPower_lianjie_local_api(adsPowerUserId, BASE_URL);
@@ -1110,11 +1118,7 @@ export async function handler_run(req, res) {
         checkTimeout();
         page = await setupPage_adsPower(browser, cookies);
 
-        // 发送浏览器就绪状态
-        res.write(JSON.stringify({
-            status: 'browser_ready',
-            message: '浏览器初始化完成'
-        }) + '\n');
+        updateTaskProgress('browser_ready', '浏览器初始化完成');
 
         const monitorResults = {
             clicks: [],
@@ -1145,12 +1149,7 @@ export async function handler_run(req, res) {
                     const { type, time } = event;
                     console.log('正在处理事件:', event);
 
-                    // 发送事件处理状态
-                    res.write(JSON.stringify({
-                        status: 'processing',
-                        progress: `${index + 1}/${sortedData_new.length}`,
-                        message: `正在处理事件: ${type}`
-                    }) + '\n');
+                    updateTaskProgress('processing', `正在处理事件: ${type}`, `${index + 1}/${sortedData_new.length}`);
 
                     await new Promise(resolve => setTimeout(resolve, 2000));
                     
@@ -1182,11 +1181,7 @@ export async function handler_run(req, res) {
                     if (isTimedOut) throw new Error('任务执行超时，已自动终止');
                     
                     console.error(`处理非循环事件 ${index} 时出错:`, error);
-                    res.write(JSON.stringify({
-                        status: 'event_error',
-                        message: `事件处理错误: ${error.message}`,
-                        eventIndex: index
-                    }) + '\n');
+                    updateTaskProgress('event_error', `事件处理错误: ${error.message}`);
                 }
             }
         }
@@ -1206,11 +1201,7 @@ export async function handler_run(req, res) {
                         let cityname = row.cityname;
                         console.log('cityname:', cityname);
 
-                        // 发送循环事件状态
-                        res.write(JSON.stringify({
-                            status: 'processing_loop',
-                            message: `正在处理循环事件: ${cityname}`
-                        }) + '\n');
+                        updateTaskProgress('processing_loop', `正在处理循环事件: ${cityname}`);
 
                         await new Promise(resolve => setTimeout(resolve, 2000));
                         const loopEvents_new = matchAndReplace(event.loopEvents, row);
@@ -1244,10 +1235,7 @@ export async function handler_run(req, res) {
                                 if (isTimedOut) throw new Error('任务执行超时，已自动终止');
                                 
                                 console.error(`处理循环子事件时出错:`, error);
-                                res.write(JSON.stringify({
-                                    status: 'loop_event_error',
-                                    message: `循环事件处理错误: ${error.message}`
-                                }) + '\n');
+                                updateTaskProgress('loop_event_error', `循环事件处理错误: ${error.message}`);
                             }
                         }
                     } catch (error) {
@@ -1260,31 +1248,27 @@ export async function handler_run(req, res) {
             }
         }
 
-        // 正常完成时发送成功响应
-        res.write(JSON.stringify({
+        // 正常完成时返回成功结果
+        updateTaskProgress('success', '任务执行完成');
+        
+        return {
             status: 'success',
-            message: '任务执行完成'
-        }) + '\n');
-        res.end();
+            message: '任务执行完成',
+            taskId: taskId,
+            completedAt: new Date().toISOString()
+        };
 
     } catch (error) {
-        console.error('任务执行过程中发生错误:', error);
-        if (!res.writableEnded) {
-            if (!res.headersSent) {
-                res.status(500).json({
-                    status: 'error',
-                    message: error.message.includes('超时') ? '任务执行超时' : '任务执行失败',
-                    error: error.message
-                });
-            } else {
-                res.write(JSON.stringify({
-                    status: 'error',
-                    message: error.message.includes('超时') ? '任务执行超时' : '任务执行失败',
-                    error: error.message
-                }) + '\n');
-                res.end();
-            }
-        }
+        console.error(`任务 ${taskId} 执行过程中发生错误:`, error);
+        
+        // 返回错误结果
+        return {
+            status: 'error',
+            message: error.message.includes('超时') ? '任务执行超时' : '任务执行失败',
+            error: error.message,
+            taskId: taskId,
+            errorAt: new Date().toISOString()
+        };
     } finally {
         // 清除超时定时器
         if (timeoutId) clearTimeout(timeoutId);
