@@ -1902,22 +1902,36 @@ function setupTaskHeartbeat(taskId, endpoint, userId) {
         // 连续失败计数
         taskHeartbeats[`${taskId}_failures`] = (taskHeartbeats[`${taskId}_failures`] || 0) + 1;
         
-        // 如果连续3次心跳失败，但不立即标记为错误，而是标记为可疑状态
+        // 如果连续3次心跳失败，标记为可疑状态并从running列表移除
         if (taskHeartbeats[`${taskId}_failures`] >= 3) {
-          console.log(`任务 ${taskId} 连续3次心跳检测失败，标记为可疑状态`);
+          console.log(`任务 ${taskId} 连续3次心跳检测失败，标记为可疑状态并释放资源`);
           
-          // 更新任务状态为可疑，但仍保留在running列表中
-          currentTask.status = 'suspicious';
-          currentTask.lastError = '心跳检测失败，但任务可能仍在执行';
-          currentTask.lastErrorAt = new Date().toISOString();
+          // 创建可疑任务对象
+          const suspiciousTask = {
+            ...currentTask,
+            status: 'suspicious',
+            lastError: '心跳检测失败，但任务可能仍在执行',
+            lastErrorAt: new Date().toISOString()
+          };
+          
+          // 从running列表中移除
+          taskStatus.running.splice(taskIndex, 1);
+          
+          // 创建suspicious列表（如果不存在）并添加任务
+          taskStatus.suspicious = taskStatus.suspicious || [];
+          taskStatus.suspicious.push(suspiciousTask);
           await saveTaskStatus(taskStatus);
           
-          // 不立即停止心跳检测，继续尝试
-          if (taskHeartbeats[`${taskId}_failures`] >= 10) {
-            console.log(`任务 ${taskId} 连续10次心跳检测失败，停止心跳检测`);
-            clearInterval(taskHeartbeats[taskId]);
-            delete taskHeartbeats[taskId];
+          // 更新端点计数，释放资源
+          const endpointIndex = API_ENDPOINTS.findIndex(e => e && e.url === endpoint);
+          if (endpointIndex !== -1 && API_ENDPOINTS[endpointIndex]) {
+            API_ENDPOINTS[endpointIndex].running = Math.max(0, API_ENDPOINTS[endpointIndex].running - 1);
+            console.log(`更新端点 ${endpoint} 运行任务数: ${API_ENDPOINTS[endpointIndex].running}`);
           }
+          
+          // 停止心跳检测
+          clearInterval(taskHeartbeats[taskId]);
+          delete taskHeartbeats[taskId];
         }
         return;
       }
@@ -2003,17 +2017,40 @@ function setupTaskHeartbeat(taskId, endpoint, userId) {
           await saveTaskStatus(taskStatus);
         }
       } else if (heartbeatData.status === 'not_found') {
-        // 如果任务运行超过10分钟但远程找不到，标记为可疑状态
+        // 如果任务运行超过10分钟但远程找不到，标记为可疑状态并从running列表移除
         const now = Date.now();
         const taskStartTime = currentTask.startedAt ? new Date(currentTask.startedAt).getTime() : 0;
         const runningTime = now - taskStartTime;
         
         if (runningTime > 10 * 60 * 1000) {
-          console.log(`任务 ${taskId} 运行超过10分钟但远程找不到，标记为可疑状态`);
-          currentTask.status = 'suspicious';
-          currentTask.lastError = '远程服务器找不到任务，可能已异常终止';
-          currentTask.lastErrorAt = new Date().toISOString();
+          console.log(`任务 ${taskId} 运行超过10分钟但远程找不到，标记为可疑状态并释放资源`);
+          
+          // 创建可疑任务对象
+          const suspiciousTask = {
+            ...currentTask,
+            status: 'suspicious',
+            lastError: '远程服务器找不到任务，可能已异常终止',
+            lastErrorAt: new Date().toISOString()
+          };
+          
+          // 从running列表中移除
+          taskStatus.running.splice(taskIndex, 1);
+          
+          // 创建suspicious列表（如果不存在）并添加任务
+          taskStatus.suspicious = taskStatus.suspicious || [];
+          taskStatus.suspicious.push(suspiciousTask);
           await saveTaskStatus(taskStatus);
+          
+          // 更新端点计数，释放资源
+          const endpointIndex = API_ENDPOINTS.findIndex(e => e && e.url === endpoint);
+          if (endpointIndex !== -1 && API_ENDPOINTS[endpointIndex]) {
+            API_ENDPOINTS[endpointIndex].running = Math.max(0, API_ENDPOINTS[endpointIndex].running - 1);
+            console.log(`更新端点 ${endpoint} 运行任务数: ${API_ENDPOINTS[endpointIndex].running}`);
+          }
+          
+          // 停止心跳检测
+          clearInterval(taskHeartbeats[taskId]);
+          delete taskHeartbeats[taskId];
         }
       }
     } catch (error) {
@@ -2022,9 +2059,9 @@ function setupTaskHeartbeat(taskId, endpoint, userId) {
       // 连续失败计数
       taskHeartbeats[`${taskId}_failures`] = (taskHeartbeats[`${taskId}_failures`] || 0) + 1;
       
-      // 如果连续5次心跳失败，标记任务为可疑状态
-      if (taskHeartbeats[`${taskId}_failures`] >= 5) {
-        console.log(`任务 ${taskId} 连续5次心跳检测错误，标记为可疑状态`);
+      // 如果连续2次心跳失败，标记任务为可疑状态并从running列表移除
+      if (taskHeartbeats[`${taskId}_failures`] >= 2) {
+        console.log(`任务 ${taskId} 连续2次心跳检测错误，标记为可疑状态并释放资源`);
         
         // 获取当前任务状态
         const taskStatus = await getTaskStatus();
@@ -2034,21 +2071,36 @@ function setupTaskHeartbeat(taskId, endpoint, userId) {
         );
         
         if (taskIndex !== -1) {
-          // 更新任务状态为可疑，但仍保留在running列表中
-          taskStatus.running[taskIndex].status = 'suspicious';
-          taskStatus.running[taskIndex].lastError = `心跳检测错误: ${error.message}`;
-          taskStatus.running[taskIndex].lastErrorAt = new Date().toISOString();
+          // 创建可疑任务对象
+          const suspiciousTask = {
+            ...taskStatus.running[taskIndex],
+            status: 'suspicious',
+            lastError: `心跳检测错误: ${error.message}`,
+            lastErrorAt: new Date().toISOString()
+          };
+          
+          // 从running列表中移除
+          taskStatus.running.splice(taskIndex, 1);
+          
+          // 创建suspicious列表（如果不存在）并添加任务
+          taskStatus.suspicious = taskStatus.suspicious || [];
+          taskStatus.suspicious.push(suspiciousTask);
           await saveTaskStatus(taskStatus);
-        }
-        
-        // 如果连续10次失败，停止心跳检测
-        if (taskHeartbeats[`${taskId}_failures`] >= 10) {
+          
+          // 更新端点计数，释放资源
+          const endpointIndex = API_ENDPOINTS.findIndex(e => e && e.url === endpoint);
+          if (endpointIndex !== -1 && API_ENDPOINTS[endpointIndex]) {
+            API_ENDPOINTS[endpointIndex].running = Math.max(0, API_ENDPOINTS[endpointIndex].running - 1);
+            console.log(`更新端点 ${endpoint} 运行任务数: ${API_ENDPOINTS[endpointIndex].running}`);
+          }
+          
+          // 停止心跳检测
           clearInterval(taskHeartbeats[taskId]);
           delete taskHeartbeats[taskId];
         }
       }
     }
-  }, 30000); // 每30秒检查一次
+  }, 60000); // 每60秒检查一次
   
   // 存储心跳检测定时器ID
   taskHeartbeats[taskId] = heartbeatInterval;
@@ -2239,55 +2291,6 @@ async function checkEndpointHealth(endpoint) {
   }
 }
 
-// 添加清理特定端点上所有任务的函数
-async function cleanupTasksForEndpoint(endpointUrl) {
-  console.log(`清理端点 ${endpointUrl} 上的所有任务...`);
-  
-  try {
-    const taskStatus = await getTaskStatus();
-    let cleanedCount = 0;
-    
-    // 找出该端点上的所有任务
-    for (let i = taskStatus.running.length - 1; i >= 0; i--) {
-      if (taskStatus.running[i].endpoint === endpointUrl) {
-        const task = taskStatus.running[i];
-        const taskId = task.taskConfig?.row?.系统SKU || task.workflowFile;
-        
-        console.log(`清理端点 ${endpointUrl} 上的任务: ${taskId}`);
-        
-        // 移到错误列表
-        task.status = 'error';
-        task.error = `端点 ${endpointUrl} 不可用，任务自动终止`;
-        task.completedAt = new Date().toISOString();
-        taskStatus.errors.push(task);
-        taskStatus.running.splice(i, 1);
-        cleanedCount++;
-        
-        // 如果有心跳检测，停止它
-        if (taskHeartbeats && taskHeartbeats[taskId]) {
-          clearInterval(taskHeartbeats[taskId]);
-          delete taskHeartbeats[taskId];
-          delete taskHeartbeats[`${taskId}_failures`];
-        }
-      }
-    }
-    
-    if (cleanedCount > 0) {
-      console.log(`已清理端点 ${endpointUrl} 上的 ${cleanedCount} 个任务`);
-      await saveTaskStatus(taskStatus);
-      
-      // 更新端点状态
-      const endpointIndex = API_ENDPOINTS.findIndex(e => e && e.url === endpointUrl);
-      if (endpointIndex !== -1 && API_ENDPOINTS[endpointIndex]) {
-        API_ENDPOINTS[endpointIndex].running = 0;
-      }
-    } else {
-      console.log(`端点 ${endpointUrl} 上没有运行中的任务`);
-    }
-  } catch (error) {
-    console.error(`清理端点 ${endpointUrl} 上的任务时出错:`, error);
-  }
-}
 
 
 
