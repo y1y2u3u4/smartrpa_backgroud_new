@@ -629,74 +629,112 @@ export class OutputTask extends Task {
                 return new Promise((resolve) => {
                     setTimeout(() => {
                         const products = [];
-                        // 使用新的选择器来定位商品卡片
-                        const productCards = document.querySelectorAll('div.xi4_23.i5x_23.tile-root');
+                        // 使用更新后的选择器来定位商品卡片
+                        const productCards = document.querySelectorAll('div[class*="tile-root"]');
                         console.log('找到的产品卡片数量:', productCards.length);
-        
+
                         productCards.forEach((card, index) => {
                             const product = {};
-        
+
                             // 提取链接和ID
-                            const linkElement = card.querySelector('a.iz_23.tile-clickable-element');
+                            const linkElement = card.querySelector('a[class*="tile-clickable-element"]');
                             product.link = linkElement ? linkElement.href : '未找到链接';
                             product.id = product.link ? product.link.match(/\/product\/([^\/\?]+)/)?.[1] : '未找到ID';
-        
-                            // 提取图片URL
-                            const imageElement = card.querySelector('img.yi7_23.b933-a');
-                            product.imageUrl = imageElement ? imageElement.src : '未找到图片URL';
-        
-                            // 提取价格信息
-                            const currentPriceElement = card.querySelector('span.c3024-a1.tsHeadline500Medium');
-                            product.currentPrice = currentPriceElement ? currentPriceElement.textContent.trim() : '未找到当前价格';
-        
-                            const oldPriceElement = card.querySelector('span.c3024-a1.tsBodyControl400Small');
-                            product.oldPrice = oldPriceElement ? oldPriceElement.textContent.trim() : '未找到原价';
-        
-                            // 提取折扣信息
-                            const discountElement = card.querySelector('span.tsBodyControl400Small.c3024-a6.c3024-b4');
-                            product.discount = discountElement ? discountElement.textContent.trim() : '未找到折扣';
-        
-                            // 提取标题
-                            const titleElement = card.querySelector('span.tsBody500Medium');
-                            product.title = titleElement ? titleElement.textContent.trim() : '未找到标题';
-        
-                            // 提取评分和评论数（兼容两种样式）
-                            const ratingSpans = [
-                                card.querySelector('.p6b17-a4 span[style*="color:rgba(7, 7, 7, 1)"]'),
-                                card.querySelector('.p6b17-a4 span[style*="color: rgb(7, 7, 7)"]'),
-                                card.querySelector('.p6b13-a4 span[style*="color:rgba(7, 7, 7, 1)"]'),
-                                card.querySelector('.p6b13-a4 span[style*="color: rgb(7, 7, 7)"]')
-                            ];
-                            const ratingElement = ratingSpans.find(span => span !== null);
-                            product.rating = ratingElement ? ratingElement.textContent.trim() : '未找到评分';
 
-                            // 提取评论数（兼容两种样式）
-                            const reviewSpans = [
-                                card.querySelector('.p6b17-a4 span[style*="color:rgba(0, 26, 52, 0.6)"]'),
-                                card.querySelector('.p6b17-a4 span[style*="color: rgba(0, 26, 52, 0.6)"]'),
-                                card.querySelector('.p6b13-a4 span[style*="color:rgba(0, 26, 52, 0.6)"]'),
-                                card.querySelector('.p6b13-a4 span[style*="color: rgba(0, 26, 52, 0.6)"]')
-                            ];
-                            const reviewElement = reviewSpans.find(span => span !== null);
-                            if (reviewElement) {
-                                const reviewText = reviewElement.textContent.trim();
-                                product.reviewCount = reviewText.replace(/[^\d]/g, ''); // 只保留数字
+                            // 提取图片URL
+                            const imageElement = card.querySelector('img[class*="b933-a"]');
+                            product.imageUrl = imageElement ? imageElement.src : '未找到图片URL';
+
+                            // 提取价格信息
+                            const currentPriceElement = card.querySelector('span[class*="tsHeadline500Medium"]');
+                            product.currentPrice = currentPriceElement ? currentPriceElement.textContent.trim() : '未找到当前价格';
+
+                            const oldPriceElement = card.querySelector('span[class*="tsBodyControl400Small"]');
+                            product.oldPrice = oldPriceElement ? oldPriceElement.textContent.trim() : '未找到原价';
+
+                            // 提取折扣信息
+                            const discountElement = card.querySelector('span[class*="c3025-b4"]');
+                            product.discount = discountElement ? discountElement.textContent.trim() : '未找到折扣';
+
+                            // 提取标题
+                            const titleElement = card.querySelector('span[class*="tsBody500Medium"]');
+                            product.title = titleElement ? titleElement.textContent.trim() : '未找到标题';
+
+                            // ---------- 优化评分收集 (开始) ----------
+                            // 使用三种不同方法尝试提取评分
+                            let rating = null;
+                            
+                            // 方法1: 通过原始选择器查找黄色星星图标附近的评分文本
+                            const ratingContainer1 = card.querySelector('svg[class*="p6b18-a5"][style*="color:rgba(255, 165, 0, 1)"]');
+                            if (ratingContainer1 && !rating) {
+                                const ratingElement = ratingContainer1.closest('span[class*="p6b18-a4"]')?.querySelector('span[style*="color:rgba(7, 7, 7, 1)"]');
+                                if (ratingElement) {
+                                    rating = ratingElement.textContent.trim();
+                                }
+                            }
+                            
+                            // 方法2: 通过替代颜色格式查找黄色星星图标
+                            if (!rating) {
+                                const ratingContainer2 = card.querySelector('svg[style*="color: rgb(255, 165, 0)"]');
+                                if (ratingContainer2) {
+                                    const ratingElement = ratingContainer2.closest('span')?.querySelector('span[style*="color: rgb(7, 7, 7)"]');
+                                    if (ratingElement) {
+                                        rating = ratingElement.textContent.trim();
+                                    }
+                                }
+                            }
+                            
+                            // 方法3: 查找任何包含可能是评分的数值文本(通常是1-5之间带小数点的数字)
+                            if (!rating) {
+                                // 检查p6b类元素内的所有span
+                                const ratingContainers = card.querySelectorAll('div[class*="p6b"]');
+                                for (const container of ratingContainers) {
+                                    const spans = container.querySelectorAll('span');
+                                    for (const span of spans) {
+                                        const text = span.textContent.trim();
+                                        // 评分一般是1到5之间的数字，可能带有小数点
+                                        if (/^[1-5](\.\d)?$/.test(text)) {
+                                            rating = text;
+                                            break;
+                                        }
+                                    }
+                                    if (rating) break;
+                                }
+                            }
+                            
+                            product.rating = rating || '未找到评分';
+                            // ---------- 优化评分收集 (结束) ----------
+
+                            // 提取评论数（寻找包含"отзыва"文字的元素）
+                            const reviewContainer = card.querySelector('svg[class*="p6b18-a5"][style*="color:rgba(0, 26, 52, 0.4)"]');
+                            if (reviewContainer) {
+                                const reviewElement = reviewContainer.closest('span[class*="p6b18-a4"]').querySelector('span[style*="color:rgba(0, 26, 52, 0.6)"]');
+                                if (reviewElement) {
+                                    const reviewText = reviewElement.textContent.trim();
+                                    product.reviewCount = reviewText.replace(/[^\d]/g, ''); // 只保留数字
+                                } else {
+                                    product.reviewCount = '0';
+                                }
                             } else {
                                 product.reviewCount = '0';
                             }
-        
-                            // 提取库存状态
-                            const stockElement = card.querySelector('.bq013-a.bq013-a4.bq013-a5 span.tsBodyControl400Small');
-                            product.stockStatus = stockElement ? stockElement.textContent.trim() : '';
-        
+
                             // 提取配送信息
-                            const deliveryElement = card.querySelector('.b2121-a8.tsBodyControl500Medium');
+                            const deliveryElement = card.querySelector('div[class*="tsBodyControl500Medium"]');
                             product.deliveryDate = deliveryElement ? deliveryElement.textContent.trim() : '未找到配送日期';
-        
+
+                            // 检查是否标注为优惠活动
+                            const promotionElement = card.querySelector('svg[style*="color: rgb(16, 196, 76)"]');
+                            product.hasPromotion = !!promotionElement;
+
+                            // 收集"添加到购物车"按钮信息
+                            const cartButtonElement = card.querySelector('button[class*="b2122-"]');
+                            product.cartButtonText = cartButtonElement ? cartButtonElement.textContent.trim() : '';
+
                             console.log(`产品 ${index + 1}:`, product);
                             products.push(product);
                         });
-        
+
                         resolve(products);
                     }, 5000);
                 });
@@ -825,7 +863,7 @@ export class ScrollTask extends Task {
                 }, this.distance, this.direction);
 
                 // 等待新内容加载
-                await page.waitForTimeout(4000);
+                await page.waitForTimeout(10000);
 
                 previousCount = currentCount;
             }
