@@ -1,6 +1,6 @@
 // handler.js
 import { loadConfig } from './modules/configManager.js';
-import { launchBrowser, setupPage, launchBrowser_adsPower, setupPage_adsPower, closeBrowser_adsPower, launchBrowser_adsPower_lianjie, launchBrowser_adsPower_lianjie_local,launchBrowser_adsPower_lianjie_linux,launchBrowser_adsPower_lianjie_local_api,launchBrowser_adsPower_lianjie_linux_api, closePage_adsPower, launchBrowser_adsPower_bendi } from './modules/puppeteerManager.js';
+import { launchBrowser, setupPage, launchBrowser_adsPower, setupPage_adsPower, closeBrowser_adsPower, launchBrowser_adsPower_lianjie, launchBrowser_adsPower_lianjie_local,launchBrowser_adsPower_lianjie_linux,launchBrowser_adsPower_lianjie_local_api,launchBrowser_adsPower_lianjie_linux_api, closePage_adsPower, launchBrowser_adsPower_bendi, setupPage_adsPower_base } from './modules/puppeteerManager.js';
 import { matchAndReplace, DataProcessor } from './modules/dataProcessor.js';
 import { OutputFactory } from './modules/outputHandler.js';
 import { inserttask, findTaskList, findTaskcookies, findTaskCategoryNames, findTaskDetail, findTaskinfo,updatetask_status } from "./modules/notes.js";
@@ -972,12 +972,20 @@ export async function handler_run_internal(reqBody, taskId) {
     let timeoutId;
     let isTimedOut = false;
     
-    // 设置总体超时时间（20分钟）
-    const TIMEOUT_DURATION = 20 * 60 * 1000;
+    // 从请求体获取超时时间，如果没有则使用默认值（20分钟）
+    const TIMEOUT_DURATION = reqBody.TIMEOUT_DURATION 
+        ? parseInt(reqBody.TIMEOUT_DURATION) * 60 * 1000  // 将分钟转换为毫秒
+        : 20 * 60 * 1000;  // 默认20分钟
+    
+    console.log(`任务超时时间设置为: ${TIMEOUT_DURATION/60000} 分钟`);
     
     // 超时检查函数
     const checkTimeout = () => {
-        if (isTimedOut) throw new Error('任务执行超时，已自动终止');
+        if (isTimedOut) {
+            const timeoutError = new Error('任务执行超时，已自动终止');
+            timeoutError.isTimeout = true;  // 添加标记以区分超时错误
+            throw timeoutError;
+        }
     };
     
     try {
@@ -986,7 +994,7 @@ export async function handler_run_internal(reqBody, taskId) {
         // 设置超时定时器
         timeoutId = setTimeout(async () => {
             isTimedOut = true;
-            console.error(`任务 ${taskId} 执行超时，强制终止`);
+            console.error(`任务 ${taskId} 执行超时（${TIMEOUT_DURATION/60000}分钟），强制终止`);
             
             try {
                 // 强制关闭页面和浏览器
@@ -1013,7 +1021,8 @@ export async function handler_run_internal(reqBody, taskId) {
 
         console.log('task_name:', task_name);
         const leixing = reqBody.leixing;
-        const adsPowerUserId = reqBody.adsPowerUserId || 'kn8o287';
+        const adsPowerUserId = reqBody.row[0].浏览器id || 'kn8o287';
+        console.log('adsPowerUserId_check:', adsPowerUserId);
         const BASE_URL = reqBody.BASE_URL;
         const adsPowerId = reqBody.adsPowerId || '10.128.0.3';
 
@@ -1115,7 +1124,7 @@ export async function handler_run_internal(reqBody, taskId) {
         browser = await launchBrowser_adsPower_lianjie_local_api(adsPowerUserId, BASE_URL);
         
         checkTimeout();
-        page = await setupPage_adsPower(browser, cookies);
+        page = await setupPage_adsPower_base(browser);
 
         updateTaskProgress('browser_ready', '浏览器初始化完成');
 
@@ -1260,13 +1269,14 @@ export async function handler_run_internal(reqBody, taskId) {
     } catch (error) {
         console.error(`任务 ${taskId} 执行过程中发生错误:`, error);
         
-        // 返回错误结果
+        // 返回错误结果，区分超时错误和其他错误
         return {
             status: 'error',
-            message: error.message.includes('超时') ? '任务执行超时' : '任务执行失败',
+            message: error.isTimeout ? `任务执行超时（${TIMEOUT_DURATION/60000}分钟）` : '任务执行失败',
             error: error.message,
             taskId: taskId,
-            errorAt: new Date().toISOString()
+            errorAt: new Date().toISOString(),
+            timeout: error.isTimeout ? TIMEOUT_DURATION/60000 : undefined  // 添加超时时间信息
         };
     } finally {
         // 清除超时定时器
@@ -1298,9 +1308,6 @@ export async function handler_run_internal(reqBody, taskId) {
         }
     }
 }
-
-
-
 
 
 

@@ -93,6 +93,8 @@ async function processTask(taskData, taskId) {
     }
 }
 
+
+
 // 修改/scrape路由，使用改进的markTaskStart和markTaskEnd函数
 app.post('/scrape', async (req, res) => {
     try {
@@ -155,6 +157,111 @@ app.post('/scrape', async (req, res) => {
         });
     }
 });
+
+
+async function processTask_dengdai(taskData, taskId) {
+    console.log(`开始处理任务: ${taskId}`);
+    
+    try {
+        // 更新任务状态为处理中
+        if (runningTasks.has(taskId)) {
+            const taskInfo = runningTasks.get(taskId);
+            taskInfo.status = 'processing';
+            taskInfo.progress = 10; // 初始进度
+            runningTasks.set(taskId, taskInfo);
+        }
+        
+        // 调用handler_run_internal函数处理任务
+        const result = await handler_run_internal(taskData, taskId);
+        
+        console.log(`任务 ${taskId} 处理完成`);
+        return result;
+    } catch (error) {
+        console.error(`处理任务 ${taskId} 时出错:`, error);
+        throw error; // 重新抛出错误，让调用者处理
+    }
+}
+
+
+app.post('/scrape_dengdai', async (req, res) => {
+    try {
+        // 确保 taskId 为字符串格式
+        let taskId = req.body.taskId || req.body.taskConfig?.row?.系统SKU;
+        if (!taskId) {
+            return res.status(400).json({
+                status: 'error',
+                message: '缺少任务ID'
+            });
+        }
+        
+        // 统一转换为字符串格式
+        taskId = String(taskId);
+        
+        console.log('收到任务提交请求:', {
+            taskId,
+            taskIdType: typeof taskId,
+            originalTaskId: req.body.taskId,
+            configSKU: req.body.taskConfig?.row?.系统SKU
+        });
+
+        // 保存任务信息到 runningTasks
+        runningTasks.set(taskId, {
+            startTime: new Date().toISOString(),
+            progress: 0,
+            status: 'running'
+        });
+
+        console.log(`任务 ${taskId} 已添加到运行队列，当前运行任务数: ${runningTasks.size}`);
+
+        // 标记任务开始
+        markTaskStart(taskId);
+        
+ 
+        try {
+            // 等待任务处理完成
+            console.log(`开始执行任务 ${taskId}，将等待其完成...`);
+            const result = await processTask_dengdai(req.body, taskId);
+            
+            // 任务完成，标记结束
+            markTaskEnd(taskId, result);
+            console.log(`任务 ${taskId} 成功完成，准备发送响应`);
+            
+            // 发送成功响应
+            res.status(200).json({
+                status: result.status || 'success',
+                taskId: taskId,
+                message: '任务已完成',
+                result: result,
+                timestamp: new Date().toISOString()
+            });
+        } catch (taskError) {
+            // 任务出错，标记结束并记录错误
+            const errorResult = {
+                status: 'error',
+                error: taskError.message
+            };
+            markTaskEnd(taskId, errorResult);
+            console.error(`任务 ${taskId} 执行失败:`, taskError.message);
+            
+            // 发送错误响应
+            res.status(500).json({
+                status: 'error',
+                taskId: taskId,
+                message: '任务执行失败',
+                error: taskError.message,
+                timestamp: new Date().toISOString()
+            });
+        }
+    } catch (error) {
+        console.error('处理请求时出错:', error);
+        res.status(500).json({
+            status: 'error',
+            message: error.message
+        });
+    }
+});
+
+
 
 app.post('/scrape_base', handler_run_base);
 

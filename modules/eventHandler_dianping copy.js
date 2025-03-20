@@ -1,5 +1,5 @@
 ///大众点评获取商户名称+调用 api 实现电话查询流程by最细颗粒度
-import { ClickTask, InputTask, OutputTask, KeydownTask, NavigationTask, ScrollTask } from './taskExecutor_1.js';
+import { ClickTask, InputTask, OutputTask, KeydownTask, NavigationTask, ScrollTask } from './taskExecutor_dianping.js';
 
 function getRandomInterval(min = 2000, max = 8000) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -18,8 +18,11 @@ class LoopTask {
         const excludeDistricts = [];
         for (let text of data.filter(d => !excludeDistricts.includes(d))) {
             console.log('Processing text:', text);
+            let retryCount = 0;
+            const maxRetries = 3;
 
-            try {
+            while (retryCount < maxRetries) {
+                try {
                 // 确保页面完全加载
                 await page.goto(page.url(), { waitUntil: 'load', timeout: 60000 });
                 console.log('Page loaded.');
@@ -166,96 +169,72 @@ class LoopTask {
                     }
 
 
-                    await page.waitForSelector('#region-nav-sub');
+                    await page.waitForTimeout(1000);
+                    console.log('当前页面URL:', await page.url());
 
-                    const subRegions = await page.evaluate(() => {
-                        const links = document.querySelectorAll('#region-nav-sub a');
-                        return Array.from(links)
-                            .map(link => link.textContent.trim())
-                            .filter(text => text !== '不限' && text !== '收起'); // 剔除"不限"和"收起"选项
+                    const loopEvents = this.loopEvents || [];
+                    console.log('task_name_1.1:', task_name);
+                    console.log('cityname_1.1:', cityname);
+                    page = await handleEvent(loopEvents[0], page, browser, index, sortedData_new, task_name, cityname);
+                    await page.waitForSelector('.page a');
+                    const totalPageNumber = await page.evaluate(() => {
+                        let pageLinks = document.querySelectorAll('.page a');
+                        return pageLinks.length > 0 ? parseInt(pageLinks[pageLinks.length - 2].innerText) : 1;
                     });
 
-                    console.log('Found sub-regions:', subRegions);
-
-                    // for (const subRegion of subRegions.filter(region => region !== '中国贸/建外' && region !== '三里屯/工体')) {
-                    for (const subRegion of subRegions) {
-                        try {
-                            // 点击子区域链接
-                            console.log('Found sub-region:', subRegion);
-                            // ... existing code ...
-                            await Promise.race([
-                                page.waitForNavigation({ waitUntil: 'networkidle0' }),
-                                page.evaluate((subRegion) => {
-                                    // 使用更通用的选择器来查找子区域链接
-                                    const links = Array.from(document.querySelectorAll('#region-nav-sub a'));
-                                    const targetLink = links.find(link => link.textContent.trim() === subRegion);
-
-                                    if (targetLink) {
-                                        console.log(`找到${subRegion}链接`);
-                                        targetLink.click();
-                                        console.log('点击执行完成');
-                                        return true;
-                                    } else {
-                                        console.log(`未找到${subRegion}链接`);
-                                        return false;
-                                    }
-                                }, subRegion),
-                                new Promise(resolve => setTimeout(resolve, 3000))
-                            ]);
-
-                            // 添加点击后的验证
-                            await page.waitForTimeout(1000);
-                            console.log('当前页面URL:', await page.url());
-
-                            const loopEvents = this.loopEvents || [];
-                            console.log('task_name_1.1:', task_name);
-                            console.log('cityname_1.1:', cityname);
-                            page = await handleEvent(loopEvents[0], page, browser, index, sortedData_new, task_name, cityname);
-                            await page.waitForSelector('.page a');
-                            const totalPageNumber = await page.evaluate(() => {
-                                let pageLinks = document.querySelectorAll('.page a');
-                                return pageLinks.length > 0 ? parseInt(pageLinks[pageLinks.length - 2].innerText) : 1;
-                            });
-
-                            console.log('Total page number:', totalPageNumber);
-                            
-                            for (let i = 0; i < totalPageNumber; i++) {
-                                const notFoundElement = await page.$('.not-found-pic');
-                                if (notFoundElement) {
-                                    console.log('未找到相关商户，尝试导航到下一页');
-                                    let currentUrl = page.url();
-                                    let urlParts = currentUrl.split('/');
-                                    let lastPart = urlParts[urlParts.length - 1];
-                                    let newPageNumber = parseInt(lastPart) + 1;
-                                    urlParts[urlParts.length - 1] = newPageNumber.toString();
-                                    let newUrl = urlParts.join('/');
-                                    await page.goto(newUrl, { waitUntil: 'networkidle0' });
-                                    console.log(`已导航到新的 URL: ${newUrl}`);
-                                    continue;
-                                }
-
-                                for (const loopEvent of loopEvents) {
-                                    try {
-                                        console.log(`Executing loop event:`, loopEvent);
-                                        page = await handleEvent(loopEvent, page, browser, index, sortedData_new, task_name, cityname);
-                                    } catch (error) {
-                                        console.error(`An error occurred in the loop:`, error);
-                                    }
-                                }
-
-                                const randomInterval = getRandomInterval();
-                                console.log(`Waiting for ${randomInterval} milliseconds before next loop iteration`);
-                                await new Promise(resolve => setTimeout(resolve, randomInterval));
-                            }
-                        } catch (error) {
-                            console.error(`Error processing sub-region ${subRegion}:`, error);
+                    console.log('Total page number:', totalPageNumber);
+                    
+                    for (let i = 0; i < totalPageNumber; i++) {
+                        const notFoundElement = await page.$('.not-found-pic');
+                        if (notFoundElement) {
+                            console.log('未找到相关商户，尝试导航到下一页');
+                            let currentUrl = page.url();
+                            let urlParts = currentUrl.split('/');
+                            let lastPart = urlParts[urlParts.length - 1];
+                            let newPageNumber = parseInt(lastPart) + 1;
+                            urlParts[urlParts.length - 1] = newPageNumber.toString();
+                            let newUrl = urlParts.join('/');
+                            await page.goto(newUrl, { waitUntil: 'networkidle0' });
+                            console.log(`已导航到新的 URL: ${newUrl}`);
+                            continue;
                         }
+
+                        for (const loopEvent of loopEvents) {
+                            try {
+                                console.log(`Executing loop event:`, loopEvent);
+                                await Promise.race([
+                                    handleEvent(loopEvent, page, browser, index, sortedData_new, task_name, cityname).then(newPage => {
+                                        page = newPage;
+                                    }),
+                                    new Promise((_, reject) => setTimeout(() => reject(new Error('超时10秒')), 10000))
+                                ]);
+                            } catch (error) {
+                                console.log('操作超时10秒或发生错误，继续下一个事件:', error.message);
+                                continue;
+                            }
+                        }
+
+                        const randomInterval = getRandomInterval();
+                        console.log(`Waiting for ${randomInterval} milliseconds before next loop iteration`);
+                        await new Promise(resolve => setTimeout(resolve, randomInterval));
                     }
                 } else {
                     console.log(`没有找到文本为" 的链接`);
                 }
-            } catch (error) {
-                console.error(`An error occurred while processing text":`, error);
+                    break; // 如果成功执行，跳出重试循环
+                } catch (error) {
+                    retryCount++;
+                    console.error(`尝试第 ${retryCount} 次出错:`, error);
+                    
+                    if (retryCount < maxRetries) {
+                        console.log(`正在进行第 ${retryCount} 次重试...`);
+                        await page.reload({ waitUntil: 'networkidle0', timeout: 60000 });
+                        await new Promise(resolve => setTimeout(resolve, 2000));
+                    } else {
+                        console.error(`在 ${maxRetries} 次尝试后仍然失败，跳过当前处理:`, error);
+                        break;
+                    }
+                }
             }
         }
     

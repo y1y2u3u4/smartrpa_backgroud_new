@@ -2344,24 +2344,6 @@ async function updateTaskToFailed(taskId, errorMessage) {
 }
 
 
-// nohup  node task_manager_api.js > task_manager_api.log 2>&1 &
-
-
-// nohup node --max-old-space-size=8192 task_manager_api.js > task_manager_api.log 2>&1 &
-
-
-// chmod +x monitor.sh
-// nohup ./monitor.sh > monitor.log 2>&1 &
-
-// ps aux | grep "monitor.sh"
-// # 或者
-// pgrep -f "monitor.sh"
-
-// kill <进程ID>
-// # 或者强制终止
-// kill -9 <进程ID>
-
-// ps aux | grep "task_manager_api.js"
 
 // 添加一个函数来清理API_ENDPOINTS中的无效元素
 function cleanupApiEndpoints() {
@@ -2390,3 +2372,23 @@ cleanupApiEndpoints();
 // 定期清理API_ENDPOINTS
 setInterval(cleanupApiEndpoints, 60 * 60 * 1000); // 每小时清理一次
 
+
+
+// nohup  node task_manager_api.js > task_manager_api.log 2>&1 &
+
+
+// nohup node --max-old-space-size=8192 task_manager_api.js > task_manager_api.log 2>&1 &
+
+
+// chmod +x monitor.sh
+// nohup ./monitor.sh > monitor.log 2>&1 &
+
+// ps aux | grep "monitor.sh"
+// # 或者
+// pgrep -f "monitor.sh"
+
+// kill <进程ID>
+// # 或者强制终止
+// kill -9 <进程ID>
+
+// ps aux | grep "task_manager_api.js"

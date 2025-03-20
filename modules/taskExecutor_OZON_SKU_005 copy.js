@@ -42,16 +42,14 @@ async function waitForTableData(page, task_name, cityname) {
         
         // 等待表格和分页器出现
         await Promise.all([
-            page.waitForSelector('tr.table-row-module_row_tR-2M', { timeout: 30000, visible: true }),
-            page.waitForSelector('article.styles_paginationWrapper_0I0St, article.styles_paginationWrapper_24KuK', { timeout: 30000 })
+            page.waitForSelector('tr.table-row-module_row_JSSv0', { timeout: 30000, visible: true }),
+            page.waitForSelector('article.styles_paginationWrapper_24KuK.styles_pagination_3RNLQ', { timeout: 30000 })
         ]);
-
-        
 
         // 获取总页数
         const totalPages = await page.evaluate(() => {
             // 首先尝试从总数信息获取
-            const totalText = document.querySelector('.text-view-module_caption_1lZxA, .text-view-module_caption_ytwaB')?.textContent;
+            const totalText = document.querySelector('.text-view-module_caption_ytwaB')?.textContent;
             if (totalText) {
                 const match = totalText.match(/(\d+)中的/);
                 if (match) {
@@ -61,7 +59,7 @@ async function waitForTableData(page, task_name, cityname) {
             }
 
             // 如果无法从总数信息获取，则从分页按钮获取
-            const pagination = document.querySelector('article.styles_paginationWrapper_0I0St ul.pagination-module_pagination_2UpUe, article.styles_paginationWrapper_24KuK ul.pagination-module_pagination_OvL2B');
+            const pagination = document.querySelector('article.styles_paginationWrapper_24KuK.styles_pagination_3RNLQ ul.pagination-module_pagination_OvL2B');
             if (!pagination) {
                 console.log('未找到分页器，返回1页');
                 return 1;
@@ -95,7 +93,7 @@ async function waitForTableData(page, task_name, cityname) {
             // 如果不是第一页，需要点击翻页按钮
             if (currentPage > 1) {
                 await page.evaluate((pageNum) => {
-                    const pagination = document.querySelector('article.styles_paginationWrapper_0I0St ul.pagination-module_pagination_2UpUe, article.styles_paginationWrapper_24KuK ul.pagination-module_pagination_OvL2B');
+                    const pagination = document.querySelector('article.styles_paginationWrapper_24KuK.styles_pagination_3RNLQ ul.pagination-module_pagination_OvL2B');
                     const buttons = Array.from(pagination.querySelectorAll('button'));
                     const targetButton = buttons.find(btn => btn.textContent.trim() === String(pageNum));
                     if (targetButton) {
@@ -110,95 +108,64 @@ async function waitForTableData(page, task_name, cityname) {
                 }, { timeout: 30000 });
                 
                 // 确保新数据已加载
-                await page.waitForTimeout(10000);
+                await page.waitForTimeout(2000);
             }
 
             // 提取当前页数据
             const pageData = await page.evaluate(() => {
-                // 使用更通用的选择器匹配可能的行样式
-                const rows = document.querySelectorAll('tr.table-row-module_row_tR-2M, tr.table-row-module_row_JSSv0, tr.table-row-module_hoverable_1BGOb');
-                console.log(`找到 ${rows.length} 行数据`);
-                
+                const rows = document.querySelectorAll('tr.table-row-module_row_JSSv0');
                 return Array.from(rows).map(row => {
-                    try {
-                        // 获取产品信息 - 兼容多种可能的类名
-                        const nameCell = row.querySelector('.styles_nameCellContent_3a8_L, .styles_nameCellContent_vSzxt');
-                        const nameLink = nameCell?.querySelector('a');
-                        const name = nameLink?.textContent?.trim() || '';
-                        const productUrl = nameLink?.href || '';
-                        const productId = productUrl ? (productUrl.split('/product/')[1] || '').split('?')[0] : '';
-                        
-                        // 获取图片信息 - 兼容多种可能的类名
-                        const imgElement = row.querySelector('.styles_nameCellImage_oiDkW img, .styles_nameCellImage_C8Ibb img');
-                        const imageUrl = imgElement?.src || '';
-                        
-                        // 获取品牌和卖家信息 - 兼容多种可能的类名
-                        const brandDivs = nameCell?.querySelectorAll('.styles_brand_3WOGM, .styles_brand_ofFTK');
-                        const brand = brandDivs?.[0]?.querySelector('span')?.getAttribute('title')?.trim() || '';
-                        const seller = brandDivs?.[1]?.querySelector('span')?.getAttribute('title')?.trim() || '';
-                        
-                        // 获取货号
-                        let skuNumber = '';
-                        if (brandDivs && brandDivs.length > 2) {
-                            const skuText = brandDivs[2]?.textContent || '';
-                            skuNumber = skuText.replace('货号:', '').trim();
-                        }
+                    // 获取产品信息
+                    const nameCell = row.querySelector('.styles_nameCellContent_3a8_L');
+                    const nameLink = nameCell?.querySelector('a');
+                    const name = nameLink?.textContent?.trim() || '';
+                    const productUrl = nameLink?.href || '';
+                    const productId = productUrl ? productUrl.split('/product/')[1] : '';
+                    
+                    // 获取图片信息
+                    const imgElement = row.querySelector('.styles_nameCellImage_oiDkW img');
+                    const imageUrl = imgElement?.src || '';
+                    
+                    // 获取品牌和卖家信息
+                    const brandDivs = nameCell?.querySelectorAll('.styles_brand_3WOGM');
+                    const brand = brandDivs?.[0]?.querySelector('span')?.getAttribute('title')?.trim() || '';
+                    const seller = brandDivs?.[1]?.querySelector('span')?.getAttribute('title')?.trim() || '';
+                    const skuNumber = brandDivs?.[2]?.textContent?.replace('货号:', '')?.trim() || '';
 
-                        // 获取类别信息 - 兼容多种可能的类名
-                        const categoryCell = row.querySelector('.styles_categoryCellContent_2bvg3, .styles_categoryCellContent_F4-Hx');
-                        const category1 = categoryCell?.querySelector('.styles_category1_1rCWs, .styles_category1_dyX7k')?.textContent?.trim() || '';
-                        const category3 = categoryCell?.querySelector('.styles_category3_36tVL, .styles_category3_gAkdH')?.textContent?.trim() || '';
+                    // 获取类别信息
+                    const categoryCell = row.querySelector('.styles_categoryCellContent_2bvg3');
+                    const category1 = categoryCell?.querySelector('.styles_category1_1rCWs')?.textContent?.trim() || '';
+                    const category3 = categoryCell?.querySelector('.styles_category3_36tVL')?.textContent?.trim() || '';
 
-                        // 获取其他数据列 - 兼容多种可能的类名
-                        const cells = Array.from(row.querySelectorAll('.table-cell-module_td_p43QB, .table-cell-module_td__Gx82'));
-                        
-                        // 更稳健的数据获取方法
-                        const getData = (index) => {
-                            const cell = cells[index];
-                            if (!cell) return '';
-                            
-                            // 优先使用具有特定类的元素
-                            const sortableContent = cell.querySelector('.styles_sortableCellContent_2WeWK, .styles_sortableCellContent_gIxEQ');
-                            if (sortableContent) {
-                                return sortableContent.textContent.trim();
-                            }
-                            
-                            // 备用：直接获取单元格文本
-                            return cell.textContent.trim();
-                        };
+                    // 获取其他数据列
+                    const cells = Array.from(row.querySelectorAll('.table-cell-module_td_p43QB'));
+                    const getData = (index) => cells[index]?.querySelector('.styles_sortableCellContent_2WeWK')?.textContent?.trim() || '';
 
-                        return {
-                            name,
-                            productUrl,
-                            productId,
-                            imageUrl,
-                            brand,
-                            seller,
-                            skuNumber,
-                            category1,
-                            category3,
-                            orderAmount: getData(3),
-                            turnoverDynamics: getData(4),
-                            salesVolume: getData(5),
-                            averagePrice: getData(6),
-                            availability: getData(7),
-                            workingMode: getData(11),
-                            deliveryDays: getData(12),
-                            volume: getData(13),
-                            searchViews: getData(14),
-                            cardViews: getData(15),
-                            searchToCartRate: getData(16),
-                            cardToCartRate: getData(17),
-                            adShare: getData(18),
-                            createDate: getData(19)
-                        };
-                    } catch (error) {
-                        console.error('处理行数据时出错:', error);
-                        return {
-                            name: '数据提取失败',
-                            error: error.message
-                        };
-                    }
+                    return {
+                        name,
+                        productUrl,
+                        productId,
+                        imageUrl,
+                        brand,
+                        seller,
+                        skuNumber,
+                        category1,
+                        category3,
+                        orderAmount: getData(3),
+                        turnoverDynamics: getData(4),
+                        salesVolume: getData(5),
+                        averagePrice: getData(6),
+                        availability: getData(7),
+                        workingMode: getData(11),
+                        deliveryDays: getData(12),
+                        volume: getData(13),
+                        searchViews: getData(14),
+                        cardViews: getData(15),
+                        searchToCartRate: getData(16),
+                        cardToCartRate: getData(17),
+                        adShare: getData(18),
+                        createDate: getData(19)
+                    };
                 });
             });
 
@@ -207,7 +174,7 @@ async function waitForTableData(page, task_name, cityname) {
             console.log(`第 ${currentPage} 页数据提取完成，当前总数据条数: ${allData.length}`);
             
             // 每页处理完后稍作等待
-            await page.waitForTimeout(10000);
+            await page.waitForTimeout(1000);
         }
 
         // 保存所有数据
@@ -486,227 +453,92 @@ export class ClickTask extends Task {
 
                     // 执行点击类别按钮
                     const clickResult = await page.evaluate(async () => {
-                        try {
-                            // 等待页面完全加载
-                            await new Promise(resolve => setTimeout(resolve, 3000));
-                            
-                            // 使用更通用的选择器，包含部分匹配
-                            let filterButtons = Array.from(document.querySelectorAll('button[class*="filter-chip-module_filterChip"]'));
-                            window.logToConsole('(第一次尝试)找到的按钮数量:', filterButtons.length);
-                            
-                            // 如果没找到，尝试其他可能的选择器
-                            if (filterButtons.length === 0) {
-                                filterButtons = Array.from(document.querySelectorAll('button[class*="filterChip"]'));
-                                window.logToConsole('(第二次尝试)找到的按钮数量:', filterButtons.length);
-                            }
-                            
-                            // 更广泛的匹配
-                            if (filterButtons.length === 0) {
-                                filterButtons = Array.from(document.querySelectorAll('button[class*="filter"'));
-                                window.logToConsole('(第三次尝试)找到的按钮数量:', filterButtons.length);
-                            }
-                            
-                            // 记录所有按钮的文本，帮助调试
-                            if (filterButtons.length > 0) {
-                                window.logToConsole('所有筛选按钮文本:');
-                                filterButtons.forEach((btn, index) => {
-                                    window.logToConsole(`按钮 ${index + 1}: ${btn.textContent.trim()}`);
-                                });
-                            }
-                            
-                            let categoryButton = filterButtons.find(button => {
-                                const text = button.textContent.trim();
-                                window.logToConsole('检查按钮文本:', text);
-                                return text && (
-                                    text.includes('类别') ||
-                                    text.includes('分类') ||
-                                    text.includes('品类') ||
-                                    text.includes('Category') ||
-                                    /^类别[:：].*$/.test(text)
-                                );
-                            });
-
-                            // 如果没找到，尝试获取所有按钮并查找含有"类别"的按钮
-                            if (!categoryButton) {
-                                window.logToConsole('未找到类别按钮，尝试查找所有按钮');
-                                const allButtons = Array.from(document.querySelectorAll('button'));
-                                window.logToConsole('找到所有按钮数量:', allButtons.length);
-                                
-                                if (allButtons.length > 0) {
-                                    window.logToConsole('所有按钮文本:');
-                                    allButtons.forEach((btn, index) => {
-                                        window.logToConsole(`按钮 ${index + 1}: ${btn.textContent.trim()}`);
-                                    });
-                                }
-                                
-                                categoryButton = allButtons.find(btn => {
-                                    const text = btn.textContent.trim().toLowerCase();
-                                    return text.includes('类别') || 
-                                           text.includes('分类') || 
-                                           text.includes('品类') ||
-                                           text.includes('category');
-                                });
-                            }
-                            
-                            // 截图记录当前页面状态
+                        function clickCategoryFilter() {
                             try {
-                                const canvas = document.createElement('canvas');
-                                const ctx = canvas.getContext('2d');
-                                const width = window.innerWidth;
-                                const height = window.innerHeight;
-                                canvas.width = width;
-                                canvas.height = height;
+                                const filterButtons = Array.from(document.querySelectorAll('button.filter-chip-module_filterChip_8-rKX'));
+                                window.logToConsole('找到的按钮数量:', filterButtons.length);
                                 
-                                // 如果找到了类别按钮，给它添加红框标记
-                                if (categoryButton) {
-                                    const rect = categoryButton.getBoundingClientRect();
-                                    categoryButton.style.border = '3px solid red';
-                                    window.logToConsole(`找到类别按钮位置: x=${rect.left}, y=${rect.top}, w=${rect.width}, h=${rect.height}`);
+                                const categoryButton = filterButtons.find(button => {
+                                    const label = button.querySelector('.filter-chip-module_label_jaeXd');
+                                    const text = label?.textContent.trim();
+                                    window.logToConsole('按钮文本:', text);
+                                    return text && (
+                                        text.startsWith('类别') ||
+                                        text.startsWith('类别:') ||
+                                        text.startsWith('类别：') ||
+                                        text.startsWith('类别: ') ||
+                                        /^类别[:：]\s*\d+$/.test(text)
+                                    );
+                                });
+
+                                if (!categoryButton) {
+                                    window.logToConsole('未找到类别按钮');
+                                    return false;
                                 }
-                                
-                                window.logToConsole('已记录当前页面状态');
-                            } catch (e) {
-                                window.logToConsole('截图失败:', e.toString());
-                            }
 
-                            // 如果真的找不到按钮，尝试检查是否已经在筛选界面
-                            if (!categoryButton) {
-                                window.logToConsole('未找到任何类别相关按钮，检查是否已在筛选界面');
-                                
-                                // 检查是否有清空和应用按钮，这表明可能已经在筛选界面
-                                const hasFilterPanel = !!document.querySelector('div[role="dialog"]') || 
-                                                 Array.from(document.querySelectorAll('button')).some(btn => 
-                                                    btn.textContent.trim() === '应用' || btn.textContent.trim() === '清空');
-                                
-                                if (hasFilterPanel) {
-                                    window.logToConsole('检测到可能已在筛选界面，继续执行后续流程');
-                                    return true; // 允许流程继续
-                                }
-                                
-                                window.logToConsole('无法找到类别按钮，也未检测到筛选界面');
-                                            return false;
-                                    }
+                                window.logToConsole('找到类别按钮，准备点击');
 
-                                    window.logToConsole('找到类别按钮，准备点击');
-                                    
-                                        // 添加高亮效果帮助调试
-                            const originalBorder = categoryButton.style.border;
-                            const originalBackground = categoryButton.style.background;
-                            categoryButton.style.border = '3px solid red';
-                            categoryButton.style.background = 'rgba(255, 0, 0, 0.2)';
-                            
-                            try {
-                                // 创建并分发所有鼠标事件
-                                            const events = [
-                                                new MouseEvent('mousedown', {
-                                                    bubbles: true,
-                                                    cancelable: true,
-                                                    view: window,
-                                                    buttons: 1
-                                                }),
-                                                new MouseEvent('mouseup', {
-                                                    bubbles: true,
-                                                    cancelable: true,
-                                                    view: window,
-                                                    buttons: 1
-                                                }),
-                                                new MouseEvent('click', {
-                                                    bubbles: true,
-                                                    cancelable: true,
-                                                    view: window,
-                                                    buttons: 1
-                                                })
-                                            ];
+                                // 创建鼠标事件
+                                const mouseDown = new MouseEvent('mousedown', {
+                                    bubbles: true,
+                                    cancelable: true,
+                                    view: window,
+                                    buttons: 1
+                                });
+                                
+                                const mouseUp = new MouseEvent('mouseup', {
+                                    bubbles: true,
+                                    cancelable: true,
+                                    view: window,
+                                    buttons: 1
+                                });
+                                
+                                const click = new MouseEvent('click', {
+                                    bubbles: true,
+                                    cancelable: true,
+                                    view: window,
+                                    buttons: 1
+                                });
 
-                                            for (const event of events) {
-                                    categoryButton.dispatchEvent(event);
-                                                await new Promise(r => setTimeout(r, 100));
-                                            }
-                                            
-                                            // 尝试原生点击
+                                // 触发一系列事件
+                                categoryButton.dispatchEvent(mouseDown);
+                                categoryButton.dispatchEvent(mouseUp);
+                                categoryButton.dispatchEvent(click);
+                                
+                                // 尝试触发原生点击
                                 categoryButton.click();
-                                            
-                                            // 等待弹窗出现
-                                            return await new Promise(resolve => {
-                                    // 先给一个短暂延迟确保点击事件处理完成
-                                    setTimeout(async () => {
-                                        try {
-                                            // 检查是否有筛选面板出现
-                                            const filterPanel = document.querySelector('div[role="dialog"]') || 
-                                                              document.querySelector('[class*="dropdown-module_wrapper"]');
-                                            
-                                            if (filterPanel) {
-                                                window.logToConsole('检测到筛选面板已打开');
-                                                resolve(true);
-                                                return;
-                                            }
-                                            
-                                            // 查找清空按钮 - 使用更通用的选择器
-                                            const clearButton = Array.from(document.querySelectorAll('button')).find(button => {
-                                                return button.textContent.trim().includes('清空');
-                                                    });
 
-                                                    if (clearButton) {
-                                                window.logToConsole('找到清空按钮，点击面板已打开');
-                                                // 可选择点击清空按钮
-                                                        clearButton.click();
-                                                        window.logToConsole('清空按钮点击完成');
-                                                        resolve(true);
-                                                    } else {
-                                                // 再次尝试点击按钮
-                                                window.logToConsole('未检测到筛选面板，尝试再次点击');
-                                                categoryButton.click();
-                                                
-                                                // 给更长的等待时间让面板显示
-                                                setTimeout(() => {
-                                                    window.logToConsole('二次检查筛选面板');
-                                                    const panelExists = !!document.querySelector('div[role="dialog"]') || 
-                                                                   Array.from(document.querySelectorAll('button')).some(btn => 
-                                                                     btn.textContent.trim() === '应用' || btn.textContent.trim() === '清空');
-                                                    
-                                                    if (panelExists) {
-                                                        window.logToConsole('二次检查发现筛选面板已打开');
-                                                        resolve(true);
-                                                    } else {
-                                                        // 即使面板未打开，也返回成功，让后续步骤检查
-                                                        window.logToConsole('未发现筛选面板，但继续执行流程');
-                                                        resolve(true);
-                                                    }
-                                                }, 3000);
-                                            }
-                                        } catch (error) {
-                                            window.logToConsole('检查筛选面板时出错:', error.toString());
-                                            // 即使有错误也尝试继续流程
+                                // 等待弹窗出现
+                                return new Promise(resolve => {
+                                    setTimeout(() => {
+                                        // 查找并点击清空按钮
+                                        const clearButton = Array.from(document.querySelectorAll('button[type="submit"]')).find(button => {
+                                            const textSpan = button.querySelector('.button-module_text_Sj3v5');
+                                            return textSpan && textSpan.textContent.trim().startsWith('清空');
+                                        });
+
+                                        if (clearButton) {
+                                            window.logToConsole('找到清空按钮，准备点击');
+                                            clearButton.click();
+                                            window.logToConsole('清空按钮点击完成');
                                             resolve(true);
+                                        } else {
+                                            window.logToConsole('未找到清空按钮');
+                                            resolve(false);
                                         }
-                                    }, 1000);
-                                            });
-                                        } catch (error) {
-                                            window.logToConsole('点击失败:', error.toString());
-                                window.logToConsole('错误堆栈:', error.stack);
-                                            // 恢复原始样式
-                                categoryButton.style.border = originalBorder;
-                                categoryButton.style.background = originalBackground;
-                                            return false;
-                                        } finally {
-                                            // 确保延迟后恢复原始样式
-                                            setTimeout(() => {
-                                    categoryButton.style.border = originalBorder;
-                                    categoryButton.style.background = originalBackground;
-                                            }, 5000);
-                                    }
-                                } catch (error) {
-                            window.logToConsole('整体执行失败:', error.toString());
-                                    window.logToConsole('错误堆栈:', error.stack);
-                            // 即使出错，也尝试继续流程
-                            return true;
-                                }
-                            });
+                                    }, 1000); // 等待1秒确保弹窗出现
+                                });
+                            } catch (error) {
+                                window.logToConsole('点击失败:', error.toString());
+                                return false;
+                            }
+                        }
 
-                    // 即使点击结果失败，也尝试继续执行，增加容错性
-                            if (!clickResult) {
-                        console.log('类别按钮点击可能失败，尝试继续执行');
-                        // throw new Error('类别按钮点击失败'); // 注释掉这行，不中断流程
+                        return await clickCategoryFilter();
+                    }, cliclValue);
+
+                    if (!clickResult) {
+                        throw new Error('类别按钮点击失败');
                     }
 
                     // 等待弹窗出现并获取子类别
@@ -722,44 +554,44 @@ export class ClickTask extends Task {
                             await new Promise(resolve => setTimeout(resolve, 5000));
                             
                             // 查找目标类别按钮
-                                    let targetButton = null;
+                            let targetButton = null;
                             let targetItem = null;  // 添加变量存储整个类别项
                             let categoryName = '';
                             let parentId = '';
                             let treeContainer = null;
-                                    let lastScrollTop = 0;
+                            let lastScrollTop = 0;
 
                             // 获取树形容器的函数 - 更新选择器列表
                             async function getTreeContainer() {
                                 // 更新选择器列表，添加新的选择器
-                                        const selectors = [
-                                            '.dropdown-module_scrollContainer_3wIcU', // 新增
-                                            '.dropdown-module_wrapper_3ZnAD',         // 新增
-                                            '.tree-module_tree_3gXxM',                // 新增
-                                            '[class*="tree-module_tree"]',            // 新增 - 部分匹配
-                                            '.semi-tree-virtual-list',                // 原有
-                                            '.semi-tree-body',                        // 原有
-                                            '.semi-tree',                             // 原有
-                                            '[role="tree"]',                          // 原有
-                                            '.index_busyBoxContent_DXoM8'             // 新增
-                                        ];
-                                        
-                                        for (const selector of selectors) {
-                                            const container = document.querySelector(selector);
-                                            if (container) {
-                                                window.logToConsole(`找到树形容器，使用选择器: ${selector}`);
-                                                return container;
-                                            }
-                                        }
-                                        
+                                const selectors = [
+                                    '.dropdown-module_scrollContainer_3wIcU', // 新增
+                                    '.dropdown-module_wrapper_3ZnAD',         // 新增
+                                    '.tree-module_tree_3gXxM',                // 新增
+                                    '[class*="tree-module_tree"]',            // 新增 - 部分匹配
+                                    '.semi-tree-virtual-list',                // 原有
+                                    '.semi-tree-body',                        // 原有
+                                    '.semi-tree',                             // 原有
+                                    '[role="tree"]',                          // 原有
+                                    '.index_busyBoxContent_DXoM8'             // 新增
+                                ];
+
+                                for (const selector of selectors) {
+                                    const container = document.querySelector(selector);
+                                    if (container) {
+                                        window.logToConsole(`找到树形容器，使用选择器: ${selector}`);
+                                        return container;
+                                    }
+                                }
+
                                 // 如果还是找不到，尝试找到任何可滚动的父容器
                                 // 更新类选择器为通用方式
-                                        const firstTreeItem = document.querySelector('[class*="tree-item-module_treeItem"]');
-                                        if (firstTreeItem) {
-                                            let parent = firstTreeItem.parentElement;
-                                            while (parent) {
-                                                const style = window.getComputedStyle(parent);
-                                                if (style.overflow === 'auto' || style.overflow === 'scroll' ||
+                                const firstTreeItem = document.querySelector('[class*="tree-item-module_treeItem"]');
+                                if (firstTreeItem) {
+                                    let parent = firstTreeItem.parentElement;
+                                    while (parent) {
+                                        const style = window.getComputedStyle(parent);
+                                        if (style.overflow === 'auto' || style.overflow === 'scroll' ||
                                             style.overflowY === 'auto' || style.overflowY === 'scroll') {
                                             window.logToConsole('找到可滚动的父容器');
                                             return parent;
@@ -1362,269 +1194,177 @@ export class ClickTask extends Task {
                             // 4. 点击子类目
                             await page.evaluate(async (subcategoryName) => {
                                 try {
-                                    // 添加调试辅助函数
-                                    function addDebugLog(message, level = 'info') {
-                                        const colors = {
-                                            info: 'color: #0066cc; font-weight: normal;',
-                                            success: 'color: #00cc66; font-weight: bold;',
-                                            warning: 'color: #ff9900; font-weight: bold;',
-                                            error: 'color: #ff3300; font-weight: bold;'
-                                        };
-                                        console.log(`%c【子类目点击】${message}`, colors[level]);
-                                        window.logToConsole(`【子类目点击】${message}`);
-                                    }
-
-                                    addDebugLog(`开始查找子类目: ${subcategoryName}`, 'info');
                                     await new Promise(resolve => setTimeout(resolve, 2000));
-                                    
-                                    // 获取所有树项目的文本，帮助调试
-                                    function getAllTreeItems() {
-                                        const allItems = [];
-                                        const treeItems = document.querySelectorAll('[class*="tree-item-module_treeItem"]');
-                                        addDebugLog(`找到 ${treeItems.length} 个树项目`, 'info');
-                                        
-                                        treeItems.forEach(item => {
-                                            const label = item.querySelector('[class*="data-content-module_label"]');
-                                            if (label) {
-                                                const text = label.textContent.trim();
-                                                // 获取复选框
-                                                const checkbox = item.querySelector('[class*="checkbox-module_checkbox"]') ||
-                                                              item.querySelector('input[type="checkbox"]');
-                                                const hasCheckbox = !!checkbox;
-                                                
-                                                allItems.push({
-                                                    text: text,
-                                                    hasCheckbox: hasCheckbox,
-                                                    element: item,
-                                                    checkbox: checkbox
-                                                });
-                                            }
-                                        });
-                                        return allItems;
-                                    }
-                                    
-                                    // 记录所有项目
-                                    const allTreeItems = getAllTreeItems();
-                                    addDebugLog(`所有树项目: ${allTreeItems.map(item => item.text).join(', ')}`, 'info');
-                                    
-                                    // 验证子类目是否在列表中
-                                    const exactMatch = allTreeItems.find(item => item.text === subcategoryName);
-                                    
-                                    if (exactMatch) {
-                                        addDebugLog(`找到完全匹配的子类目: ${subcategoryName}`, 'success');
-                                        
-                                        // 检查是否有复选框
-                                        if (!exactMatch.hasCheckbox) {
-                                            addDebugLog(`注意：该类目没有复选框，可能是父类目`, 'warning');
-                                            // 尝试查找是否有展开按钮
-                                            const expandButton = exactMatch.element.querySelector('[class*="tree-item-module_buttonMarker"] button') || 
-                                                              exactMatch.element.querySelector('[class*="subtreeMarker"] button');
-                                            
-                                            if (expandButton) {
-                                                addDebugLog(`尝试点击展开按钮`, 'info');
-                                                // 高亮显示
-                                                expandButton.style.border = '2px solid red';
-                                                expandButton.click();
-                                                await new Promise(resolve => setTimeout(resolve, 1500));
-                                                
-                                                // 重新获取所有项目
-                                                const updatedItems = getAllTreeItems();
-                                                addDebugLog(`展开后的树项目: ${updatedItems.map(item => item.text).join(', ')}`, 'info');
-                                            }
-                                        } else {
-                                            addDebugLog(`目标复选框存在，准备点击`, 'success');
-                                            
-                                            // 执行点击
-                                            const checkbox = exactMatch.checkbox;
-                                            
-                                            // 确保元素在视图中
-                                            exactMatch.element.scrollIntoView({ block: 'center', behavior: 'smooth' });
-                                            await new Promise(resolve => setTimeout(resolve, 500));
-                                            
-                                            // 增加高亮效果
-                                            exactMatch.element.style.background = 'rgba(255, 255, 0, 0.3)';
-                                            checkbox.style.outline = '2px solid red';
-                                            
-                                            addDebugLog(`即将点击复选框，当前状态: ${checkbox.checked}`, 'info');
-                                            
-                                            // 多种方式触发点击
-                                            try {
-                                                // 1. 原生点击
-                                                checkbox.click();
-                                                addDebugLog('执行原生点击', 'info');
-                                                
-                                                // 2. 事件分发
-                                    const clickEvent = new MouseEvent('click', {
-                                        bubbles: true,
-                                        cancelable: true,
-                                                    view: window
-                                                });
-                                                checkbox.dispatchEvent(clickEvent);
-                                                addDebugLog('执行事件分发', 'info');
-                                                
-                                                // 3. 直接修改选中状态
-                                                checkbox.checked = true;
-                                                addDebugLog('直接设置选中状态', 'info');
-                                                
-                                                // 4. 触发change事件
-                                                const changeEvent = new Event('change', { bubbles: true });
-                                                checkbox.dispatchEvent(changeEvent);
-                                                addDebugLog('触发change事件', 'info');
-                                                
-                                                // 检查点击后的状态
-                                                await new Promise(resolve => setTimeout(resolve, 500));
-                                                addDebugLog(`点击后复选框状态: ${checkbox.checked}`, checkbox.checked ? 'success' : 'warning');
-                                                
-                                    return true;
-                                            } catch (clickError) {
-                                                addDebugLog(`点击操作失败: ${clickError.toString()}`, 'error');
-                                                // 即使失败也继续尝试其他方法
-                                            }
-                                        }
-                } else {
-                                        // 查找最接近的匹配
-                                        addDebugLog(`未找到完全匹配的子类目，尝试模糊匹配`, 'warning');
-                                        
-                                        // 尝试不同的变体
-                                        const variants = [
-                                            subcategoryName,
-                                            subcategoryName.toLowerCase(),
-                                            subcategoryName.replace(/\s+/g, ' ').trim(), // 标准化空格
-                                            subcategoryName.replace(/[-—–]/g, '-'), // 统一破折号
-                                            subcategoryName.replace(/[,，]/g, ',') // 统一逗号
+                                    let targetCheckbox = null;
+                                    let scrollAttempts = 0;
+                                    const maxScrollAttempts = 15;
+                                    let lastScrollTop = 0;
+
+                                    // 获取树形容器 - 使用更多通用选择器
+                                    const getTreeContainer = () => {
+                                        const selectors = [
+                                            '.dropdown-module_scrollContainer_3wIcU', // 新增
+                                            '.dropdown-module_wrapper_3ZnAD',         // 新增
+                                            '.tree-module_tree_3gXxM',                // 新增
+                                            '[class*="tree-module_tree"]',            // 新增 - 部分匹配
+                                            '.semi-tree-virtual-list',                // 原有
+                                            '.semi-tree-body',                        // 原有
+                                            '.semi-tree',                             // 原有
+                                            '[role="tree"]',                          // 原有
+                                            '.index_busyBoxContent_DXoM8'             // 新增
                                         ];
                                         
-                                        let bestMatch = null;
-                                        let bestScore = 0;
-                                        
-                                        // 根据包含词的数量找最佳匹配
-                                        for (const item of allTreeItems) {
-                                            if (!item.hasCheckbox) continue; // 跳过没有复选框的项
-                                            
-                                            // 计算匹配度
-                                            let maxScore = 0;
-                                            for (const variant of variants) {
-                                                // 直接包含关系
-                                                if (item.text.includes(variant) || variant.includes(item.text)) {
-                                                    const score = 0.8;
-                                                    if (score > maxScore) maxScore = score;
-                                                }
-                                                
-                                                // 词语匹配
-                                                const itemWords = item.text.toLowerCase().split(/\s+/);
-                                                const targetWords = variant.toLowerCase().split(/\s+/);
-                                                
-                                                let matchCount = 0;
-                                                for (const word of targetWords) {
-                                                    if (word.length > 2 && itemWords.some(w => w.includes(word) || word.includes(w))) {
-                                                        matchCount++;
-                                                    }
-                                                }
-                                                
-                                                const wordScore = targetWords.length > 0 ? matchCount / targetWords.length : 0;
-                                                if (wordScore > maxScore) maxScore = wordScore;
-                                            }
-                                            
-                                            if (maxScore > bestScore) {
-                                                bestScore = maxScore;
-                                                bestMatch = item;
+                                        for (const selector of selectors) {
+                                            const container = document.querySelector(selector);
+                                            if (container) {
+                                                window.logToConsole(`找到树形容器，使用选择器: ${selector}`);
+                                                return container;
                                             }
                                         }
                                         
-                                        // 如果找到合理的匹配
-                                        if (bestMatch && bestScore > 0.5) {
-                                            addDebugLog(`找到最佳匹配: "${bestMatch.text}"，相似度: ${bestScore.toFixed(2)}`, 'success');
-                                            
-                                            // 确保元素在视图中
-                                            bestMatch.element.scrollIntoView({ block: 'center', behavior: 'smooth' });
-                                            await new Promise(resolve => setTimeout(resolve, 500));
-                                            
-                                            // 增加高亮效果
-                                            bestMatch.element.style.background = 'rgba(255, 255, 0, 0.3)';
-                                            bestMatch.checkbox.style.outline = '2px solid red';
-                                            
-                                            addDebugLog(`即将点击最佳匹配的复选框`, 'info');
-                                            
-                                            // 执行点击
-                                            try {
-                                                bestMatch.checkbox.click();
-                                                bestMatch.checkbox.checked = true;
-                                                const changeEvent = new Event('change', { bubbles: true });
-                                                bestMatch.checkbox.dispatchEvent(changeEvent);
-                                                
-                                                await new Promise(resolve => setTimeout(resolve, 500));
-                                                addDebugLog(`点击后复选框状态: ${bestMatch.checkbox.checked}`, 
-                                                         bestMatch.checkbox.checked ? 'success' : 'warning');
-                                                
-                                                return true;
-                                            } catch (clickError) {
-                                                addDebugLog(`点击操作失败: ${clickError.toString()}`, 'error');
+                                        // 尝试找到可滚动的父容器
+                                        // 更新为部分匹配选择器
+                                        const firstTreeItem = document.querySelector('[class*="tree-item-module_treeItem"]');
+                                        if (firstTreeItem) {
+                                            let parent = firstTreeItem.parentElement;
+                                            while (parent) {
+                                                const style = window.getComputedStyle(parent);
+                                                if (style.overflow === 'auto' || style.overflow === 'scroll' ||
+                                                    style.overflowY === 'auto' || style.overflowY === 'scroll') {
+                                                    window.logToConsole('找到可滚动的父容器');
+                                                    return parent;
+                                                }
+                                                parent = parent.parentElement;
                                             }
-                                        } else {
-                                            addDebugLog(`未找到合适的匹配选项，所有可用选项: ${allTreeItems.filter(i => i.hasCheckbox).map(i => `"${i.text}"`).join(', ')}`, 'error');
                                         }
+                                        window.logToConsole('未找到树形容器元素');
+                                        return null;
+                                    };
+
+                                    // 查找目标复选框 - 使用更通用的选择器
+                                    const findCheckbox = () => {
+                                        // 更新为部分匹配选择器
+                                        const treeItems = document.querySelectorAll('[class*="tree-item-module_treeItem"]');
+                                        window.logToConsole(`查找子类目 ${subcategoryName} 的复选框，找到树项目: ${treeItems.length}个`);
+                                        
+                                        for (const item of treeItems) {
+                                            // 更新为部分匹配选择器
+                                            const label = item.querySelector('[class*="data-content-module_label"]');
+                                            if (label && label.textContent && label.textContent.trim() === subcategoryName) {
+                                                // 更新为部分匹配选择器
+                                                const checkbox = item.querySelector('[class*="checkbox-module_checkbox"]') ||
+                                                              item.querySelector('input[type="checkbox"]');
+                                                if (checkbox) {
+                                                    window.logToConsole(`找到子类目 ${subcategoryName} 的复选框`);
+                                                    return checkbox;
+                                                }
+                                            }
+                                        }
+                                        return null;
+                                    };
+
+                                    const treeContainer = getTreeContainer();
+                                    if (!treeContainer) {
+                                        window.logToConsole('未找到树形容器');
+                                        return false;
                                     }
-                                    
-                                    // 如果以上方法都失败，尝试基于文本内容查找并点击
-                                    addDebugLog('尝试使用文本内容查找', 'info');
-                                    
-                                    // 查找任何包含目标文本的元素
-                                    const allTreeTexts = Array.from(document.querySelectorAll('*'))
-                                      .filter(el => el.textContent.trim() === subcategoryName)
-                                      .filter(el => el.offsetWidth > 0 && el.offsetHeight > 0); // 确保元素可见
-                                    
-                                    if (allTreeTexts.length > 0) {
-                                        addDebugLog(`找到 ${allTreeTexts.length} 个匹配文本的元素`, 'success');
-                                        
-                                        for (const textEl of allTreeTexts) {
-                                            // 查找附近的复选框
-                                            let currentEl = textEl;
-                                            let checkboxFound = null;
-                                            
-                                            // 向上查找5层父元素
-                                            for (let i = 0; i < 5; i++) {
-                                                if (!currentEl) break;
+
+                                    while (scrollAttempts < maxScrollAttempts) {
+                                        // 尝试查找复选框
+                                        targetCheckbox = findCheckbox();
+                                        if (targetCheckbox) break;
+
+                                        // 如果没找到，尝试滚动
+                                        try {
+                                            // 更新为部分匹配选择器
+                                            const skeletonElements = document.querySelectorAll('[class*="skeleton-common-base-module_skeleton"]');
+                                            if (skeletonElements.length > 0) {
+                                                window.logToConsole('发现骨架屏，滚动到骨架屏元素');
+                                                skeletonElements[0].scrollIntoView({ block: 'center', behavior: 'smooth' });
+                                            } else {
+                                                const currentScrollTop = treeContainer.scrollTop;
+                                                treeContainer.scrollTop += 300;
                                                 
-                                                // 查找当前元素中的复选框
-                                                checkboxFound = currentEl.querySelector('input[type="checkbox"]');
-                                                if (checkboxFound) break;
-                                                
-                                                currentEl = currentEl.parentElement;
+                                                if (Math.abs(currentScrollTop - lastScrollTop) < 10) {
+                                                    window.logToConsole('检测到滚动无效，可能已到达底部');
+                                                    break;
+                                                }
+                                                lastScrollTop = currentScrollTop;
                                             }
                                             
-                                            if (checkboxFound) {
-                                                addDebugLog('找到文本附近的复选框', 'success');
-                                                
-                                                // 高亮显示
-                                                textEl.style.background = 'rgba(0, 255, 0, 0.3)';
-                                                checkboxFound.style.outline = '3px solid red';
-                                                
-                                                // 确保元素在视图中
-                                                textEl.scrollIntoView({ block: 'center', behavior: 'smooth' });
-                                                await new Promise(resolve => setTimeout(resolve, 500));
-                                                
-                                                // 点击复选框
-                                                try {
-                                                    checkboxFound.click();
-                                                    checkboxFound.checked = true;
-                                                    const changeEvent = new Event('change', { bubbles: true });
-                                                    checkboxFound.dispatchEvent(changeEvent);
-                                                    
-                                                    await new Promise(resolve => setTimeout(resolve, 500));
-                                                    addDebugLog(`点击后复选框状态: ${checkboxFound.checked}`, 'info');
-                                                    
-                                                    return true;
-                                                } catch (clickError) {
-                                                    addDebugLog(`点击操作失败: ${clickError.toString()}`, 'error');
-                                                }
+                                            window.logToConsole(`滚动状态 - 位置: ${treeContainer.scrollTop}`);
+                                            await new Promise(resolve => setTimeout(resolve, 1000));
+                                        } catch (error) {
+                                            window.logToConsole('滚动操作失败:', error.toString());
+                                            break;
+                                        }
+                                        
+                                        scrollAttempts++;
+                                        window.logToConsole(`滚动尝试次数: ${scrollAttempts}`);
+                                    }
+
+                                    if (targetCheckbox) {
+                                        // 确保复选框在视图中
+                                        targetCheckbox.scrollIntoView({ block: 'center', behavior: 'smooth' });
+                                        await new Promise(resolve => setTimeout(resolve, 500));
+                                        
+                                        // 添加高亮效果帮助调试
+                                        const parentElement = targetCheckbox.closest('[class*="tree-item-module_treeItem"]');
+                                        if (parentElement) {
+                                            const originalBackground = parentElement.style.background;
+                                            parentElement.style.background = 'rgba(255, 255, 0, 0.3)';
+                                            
+                                            // 5秒后恢复原样
+                                            setTimeout(() => {
+                                                parentElement.style.background = originalBackground;
+                                            }, 5000);
+                                        }
+                                        
+                                        // 获取父级label元素
+                                        const labelElement = targetCheckbox.closest('label');
+                                        
+                                        // 创建鼠标事件
+                                        const mouseEvents = ['mousedown', 'mouseup', 'click'];
+                                        const eventOptions = {
+                                            view: window,
+                                            bubbles: true,
+                                            cancelable: true,
+                                            buttons: 1,
+                                            detail: 1
+                                        };
+
+                                        // 对input元素触发事件
+                                        for (const eventType of mouseEvents) {
+                                            const event = new MouseEvent(eventType, eventOptions);
+                                            targetCheckbox.dispatchEvent(event);
+                                            await new Promise(resolve => setTimeout(resolve, 100));
+                                        }
+
+                                        // 对label元素触发事件
+                                        if (labelElement) {
+                                            for (const eventType of mouseEvents) {
+                                                const event = new MouseEvent(eventType, eventOptions);
+                                                labelElement.dispatchEvent(event);
+                                                await new Promise(resolve => setTimeout(resolve, 100));
                                             }
                                         }
+
+                                        // 直接设置checked属性
+                                        targetCheckbox.checked = !targetCheckbox.checked;
+                                        
+                                        // 触发change事件
+                                        const changeEvent = new Event('change', { bubbles: true });
+                                        targetCheckbox.dispatchEvent(changeEvent);
+                                        
+                                        window.logToConsole(`点击子类目 ${subcategoryName} 的复选框成功`);
+                                        await new Promise(resolve => setTimeout(resolve, 1500));
+                                        return true;
+                                    } else {
+                                        window.logToConsole(`未找到子类目 ${subcategoryName} 的复选框`);
+                                        return false;
                                     }
-                                    
-                                    addDebugLog(`所有点击尝试失败`, 'error');
-                                    return false;
                                 } catch (error) {
-                                    window.logToConsole('点击子类目复选框总体失败:', error.toString());
+                                    window.logToConsole('点击子类目复选框失败:', error.toString());
                                     window.logToConsole('错误堆栈:', error.stack);
                                     return false;
                                 }

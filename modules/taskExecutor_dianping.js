@@ -181,7 +181,7 @@ export class ClickTask extends Task {
         if (!this.element.leixing) {
             if (isXPath_click) {
                 if (this.element.innerText.includes('确定')) {
-                    console.log('点击“确定”按钮');
+                    console.log('点击"确定"按钮');
                     await page.evaluate((selector) => {
                         const xpathResult = document.evaluate(selector, document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
                         console.log('xpathResult:', xpathResult);
@@ -189,7 +189,7 @@ export class ClickTask extends Task {
                         console.log('element:', element);
                         element.click();
                     }, clickSelector);
-                    console.log('点击“确定”按钮_2');
+                    console.log('点击"确定"按钮_2');
                 }
                 else {
                     await page.evaluate((selector) => {
@@ -209,7 +209,7 @@ export class ClickTask extends Task {
                 await page.click(clickSelector);
             }
         } else if (this.element.leixing === '自定义1') {
-            console.log('点击“刊登管理”菜单项以展开子菜单');
+            console.log('点击"刊登管理"菜单项以展开子菜单');
 
             await page.evaluate(async () => {
                 const menuTitle = document.querySelector('.ivu-menu-submenu-title');
@@ -218,7 +218,7 @@ export class ClickTask extends Task {
                     console.log('Found the menu title, clicking to expand...');
                     menuTitle.click();
                     console.log('menuTitle_1');
-                    // 等待子菜单加载完毕并点击“产品列表”菜单项
+                    // 等待子菜单加载完毕并点击"产品列表"菜单项
                     await new Promise(resolve => setTimeout(resolve, 1000));
                     const productListItem = document.evaluate("//li[contains(@class, 'ivu-menu-item') and .//span[text()='产品列表']]", document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
                     // console.log('productListItem', productListItem);
@@ -267,7 +267,7 @@ export class ClickTask extends Task {
                             // 设置适当的延时，确保下拉菜单有时间加载
                             await new Promise(resolve => setTimeout(resolve, 3000));
 
-                            // 使用XPath选择包含“Sadong”文本的下拉项
+                            // 使用XPath选择包含"Sadong"文本的下拉项
                             console.log("cliclValue_check2", cliclValue)
                             const item = document.evaluate(`//li[contains(@class, 'ivu-select-item') and text()="${cliclValue}"]`, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
 
@@ -579,26 +579,80 @@ export class OutputTask extends Task {
                         const area = areaElement ? areaElement.innerText.trim() : '';
 
                         shopList.forEach(shop => {
+                            // 更精确的元素定位
                             const nameElement = shop.querySelector('.tit h4');
-                            const linkElement = shop.querySelector('.tit a');
+                            // 使用更精确的选择器获取链接
+                            const linkElement = shop.querySelector('.tit a[data-hippo-type="shop"]') || shop.querySelector('.tit a');
                             const imgElement = shop.querySelector('.pic img');
+                            const imgSrc = imgElement ? (imgElement.src || imgElement.getAttribute('data-src')) : '';
                             const reviewElement = shop.querySelector('.review-num b');
                             const priceElement = shop.querySelector('.mean-price b');
+                            
+                            // 标签选择器优化 - 分类和地区标签
                             const tagElements = shop.querySelectorAll('.tag-addr .tag');
-                            const dealElements = shop.querySelectorAll('.si-deal a');
+                            const categoryTag = tagElements.length > 0 ? tagElements[0] : null;
+                            const regionTag = tagElements.length > 1 ? tagElements[1] : null;
+                            
+                            // 团购信息优化
+                            const groupBuyElement = shop.querySelector('.promo-icon .igroup');
+                            const hasGroupBuy = !!groupBuyElement;
+                            const groupBuyInfo = groupBuyElement ? {
+                                title: groupBuyElement.getAttribute('title'),
+                                link: groupBuyElement.getAttribute('href'),
+                                id: groupBuyElement.getAttribute('data-hippo-dealgrp_id')
+                            } : null;
+                            
+                            // 获取星级评分 - 支持半星
+                            const starContainer = shop.querySelector('.nebula_star .star_icon');
+                            let starRating = 0;
+                            if (starContainer) {
+                                const stars = starContainer.querySelectorAll('.star');
+                                if (stars.length > 0) {
+                                    // 从第一个星星的类名中提取星级
+                                    const firstStar = stars[0];
+                                    const className = firstStar.className;
+                                    
+                                    // 提取星级数值
+                                    if (className.includes('star_50')) {
+                                        starRating = 5.0;
+                                    } else if (className.includes('star_45')) {
+                                        starRating = 4.5;
+                                    } else if (className.includes('star_40')) {
+                                        starRating = 4.0;
+                                    } else if (className.includes('star_35')) {
+                                        starRating = 3.5;
+                                    } else if (className.includes('star_30')) {
+                                        starRating = 3.0;
+                                    } else if (className.includes('star_25')) {
+                                        starRating = 2.5;
+                                    } else if (className.includes('star_20')) {
+                                        starRating = 2.0;
+                                    } else if (className.includes('star_15')) {
+                                        starRating = 1.5;
+                                    } else if (className.includes('star_10')) {
+                                        starRating = 1.0;
+                                    } else if (className.includes('star_05')) {
+                                        starRating = 0.5;
+                                    }
+                                }
+                            }
 
                             const name = nameElement ? nameElement.innerText.trim() : '';
                             const link = linkElement ? linkElement.href : '';
-                            const image = imgElement ? imgElement.src : '';
+                            const shopId = linkElement ? linkElement.getAttribute('data-shopid') : '';
                             const reviewCount = reviewElement ? reviewElement.innerText.trim() : '';
                             const price = priceElement ? priceElement.innerText.trim() : '';
+                            const category = categoryTag ? categoryTag.innerText.trim() : '';
+                            const region = regionTag ? regionTag.innerText.trim() : '';
 
+                            // 处理原有的标签和团购信息
                             const tags = [];
                             tagElements.forEach(tagElement => {
                                 tags.push(tagElement.innerText.trim());
                             });
 
                             const deals = [];
+                            const dealElements = shop.querySelectorAll('.si-deal a');
                             dealElements.forEach(dealElement => {
                                 deals.push({
                                     title: dealElement.title,
@@ -608,12 +662,18 @@ export class OutputTask extends Task {
 
                             shops.push({
                                 name,
+                                shop_id: shopId,
                                 link,
-                                image,
+                                image: imgSrc,
                                 review_count: reviewCount,
                                 price,
                                 area,
+                                category,
+                                region,
+                                star_rating: starRating,
                                 tags,
+                                has_group_buy: hasGroupBuy,
+                                group_buy_info: groupBuyInfo,
                                 deals
                             });
                         });
@@ -622,15 +682,6 @@ export class OutputTask extends Task {
                     }, 5000);
                 });
             });
-
-            // 将数据转换为 JSON 格式
-            // this.data = await Promise.all(this.data.map(async (row) => {
-            //     return {
-            //         ...row,
-            //     };
-            // }));
-
-            // console.log('Updated data:', this.data);
 
             outputHandler.handle(this.data, 'output', this.task_name, this.cityname);
         }

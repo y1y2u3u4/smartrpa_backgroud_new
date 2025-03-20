@@ -667,7 +667,7 @@ export async function setupPage_adsPower(browser, cookies) {
             console.error('创建新页面失败:', e);
             throw e;
         });
-        await page.setCookie(...cookies);
+        // await page.setCookie(...cookies);
         
 
         // 设置页面视口
@@ -686,6 +686,56 @@ export async function setupPage_adsPower(browser, cookies) {
     }
 }
 
+
+export async function setupPage_adsPower_base(browser) {
+    try {
+        // 获取所有页面
+        
+        const pages = await browser.pages();
+        console.log(`当前打开的页面数量: ${pages.length}`);
+
+        // 如果页面数量超过限制
+        if (pages.length > 25) {
+            console.log('当前页面数量超过20，正在关闭多余页面');
+            
+            // 保留最后20个页面，关闭其他页面
+            for (let i = 0; i < pages.length - 5; i++) {
+                try {
+                    const page = pages[i];
+                    if (page && !page.isClosed()) {  // 检查页面是否存在且未关闭
+                        await page.close().catch(e => {
+                            console.log(`关闭页面 ${i} 时出错:`, e.message);
+                        });
+                    }
+                } catch (err) {
+                    console.log(`处理页面 ${i} 时出错:`, err.message);
+                    continue;  // 继续处理下一个页面
+                }
+            }
+        }
+
+        // 创建新页面
+        
+        const page = await browser.newPage().catch(e => {
+            console.error('创建新页面失败:', e);
+            throw e;
+        });
+
+        // 设置页面视口
+        // await page.setViewport({
+        //     width: 1920,
+        //     height: 1080
+        // }).catch(e => {
+        //     console.log('设置视口大小失败:', e.message);
+        // });
+
+        return page;
+
+    } catch (error) {
+        console.error('setupPage_adsPower 执行失败:', error);
+        throw error;
+    }
+}
 
 
 export async function closePage_adsPower(page) {
