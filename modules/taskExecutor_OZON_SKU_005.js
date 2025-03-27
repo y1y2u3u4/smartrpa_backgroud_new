@@ -39,6 +39,7 @@ export class Task {
 async function waitForTableData(page, task_name, cityname) {
     try {
         console.log('等待表格数据加载...');
+        await page.waitForTimeout(10000);
         
         // 等待表格和分页器出现
         await Promise.all([
@@ -110,7 +111,7 @@ async function waitForTableData(page, task_name, cityname) {
                 }, { timeout: 30000 });
                 
                 // 确保新数据已加载
-                await page.waitForTimeout(10000);
+                await page.waitForTimeout(5000);
             }
 
             // 提取当前页数据
@@ -207,7 +208,7 @@ async function waitForTableData(page, task_name, cityname) {
             console.log(`第 ${currentPage} 页数据提取完成，当前总数据条数: ${allData.length}`);
             
             // 每页处理完后稍作等待
-            await page.waitForTimeout(10000);
+            await page.waitForTimeout(5000);
         }
 
         // 保存所有数据
@@ -1360,7 +1361,7 @@ export class ClickTask extends Task {
                             }, cliclValue);
 
                             // 4. 点击子类目
-                            await page.evaluate(async (subcategoryName) => {
+                            await page.evaluate(async (subcategoryName, clickValue) => {
                                 try {
                                     // 添加调试辅助函数
                                     function addDebugLog(message, level = 'info') {
@@ -1371,265 +1372,526 @@ export class ClickTask extends Task {
                                             error: 'color: #ff3300; font-weight: bold;'
                                         };
                                         console.log(`%c【子类目点击】${message}`, colors[level]);
-                                        window.logToConsole(`【子类目点击】${message}`);
+                                        if (window.logToConsole) {
+                                            window.logToConsole(`【子类目点击】${message}`);
+                                        }
                                     }
 
                                     addDebugLog(`开始查找子类目: ${subcategoryName}`, 'info');
-                                    await new Promise(resolve => setTimeout(resolve, 2000));
                                     
-                                    // 获取所有树项目的文本，帮助调试
-                                    function getAllTreeItems() {
-                                        const allItems = [];
-                                        const treeItems = document.querySelectorAll('[class*="tree-item-module_treeItem"]');
-                                        addDebugLog(`找到 ${treeItems.length} 个树项目`, 'info');
+                                    // 等待页面加载
+                                    await new Promise(resolve => setTimeout(resolve, 5000));
+                                    
+                                    // 1. 查找汽车用品主类目 - 复用获取子类别的代码结构
+                                    let targetButton = null;
+                                    let targetItem = null;
+                                    let categoryName = '';
+                                    let parentId = '';
+                                    let treeContainer = null;
+                                    let lastScrollTop = 0;
+                                    
+                                    // 获取树形容器
+                                    async function getTreeContainer() {
+                                        const selectors = [
+                                            '.dropdown-module_scrollContainer_3wIcU',
+                                            '.dropdown-module_wrapper_3ZnAD',
+                                            '.tree-module_tree_3gXxM',
+                                            '[class*="tree-module_tree"]',
+                                            '.semi-tree-virtual-list',
+                                            '.semi-tree-body',
+                                            '.semi-tree',
+                                            '[role="tree"]',
+                                            '.index_busyBoxContent_DXoM8'
+                                        ];
                                         
-                                        treeItems.forEach(item => {
+                                        for (const selector of selectors) {
+                                            const container = document.querySelector(selector);
+                                            if (container) {
+                                                addDebugLog(`找到树形容器，使用选择器: ${selector}`, 'success');
+                                                return container;
+                                            }
+                                        }
+                                        
+                                        // 找不到时的备用方法
+                                        const firstTreeItem = document.querySelector('[class*="tree-item-module_treeItem"]');
+                                        if (firstTreeItem) {
+                                            let parent = firstTreeItem.parentElement;
+                                            while (parent) {
+                                                const style = window.getComputedStyle(parent);
+                                                if (style.overflow === 'auto' || style.overflow === 'scroll' ||
+                                                    style.overflowY === 'auto' || style.overflowY === 'scroll') {
+                                                    addDebugLog('找到可滚动的父容器', 'success');
+                                                    return parent;
+                                                }
+                                                parent = parent.parentElement;
+                                            }
+                                        }
+
+                                        addDebugLog('未找到树形容器元素', 'error');
+                                        return null;
+                                    }
+                                    
+                                    // 滚动处理函数
+                                    async function handleScroll(container) {
+                                        if (!container) {
+                                            addDebugLog('容器不存在，无法执行滚动', 'error');
+                                            return false;
+                                        }
+
+                                        try {
+                                            const skeletonElements = document.querySelectorAll('[class*="skeleton-common-base-module_skeleton"]');
+                                            if (skeletonElements.length > 0) {
+                                                addDebugLog('发现骨架屏，滚动到骨架屏元素', 'info');
+                                                skeletonElements[0].scrollIntoView({ block: 'center', behavior: 'smooth' });
+                                                await new Promise(resolve => setTimeout(resolve, 1000));
+                                                return true;
+                                            }
+
+                                            const currentScrollTop = container.scrollTop;
+                                            container.scrollTop += 300;
+                                            
+                                            if (Math.abs(currentScrollTop - lastScrollTop) < 10) {
+                                                addDebugLog('检测到滚动无效，可能已到达底部', 'warning');
+                                                return false;
+                                            }
+                                            lastScrollTop = currentScrollTop;
+                                            
+                                            addDebugLog(`滚动状态 - 位置: ${container.scrollTop}`, 'info');
+                                        return true;
+                                        } catch (error) {
+                                            addDebugLog('滚动操作失败: ' + error.toString(), 'error');
+                                            return false;
+                                        }
+                                    }
+
+                                    // 查找汽车用品主类目
+                                    async function findAutoCategory(clickValue) {
+                                        const treeItems = document.querySelectorAll('[class*="tree-item-module_treeItem"]');
+                                        addDebugLog(`找到 ${treeItems.length} 个树形项目`, 'info');
+                                        
+                                        // 记录所有可见类目项文本，便于调试
+                                        const itemTexts = [];
+                                        
+                                        for (const item of treeItems) {
                                             const label = item.querySelector('[class*="data-content-module_label"]');
                                             if (label) {
                                                 const text = label.textContent.trim();
-                                                // 获取复选框
-                                                const checkbox = item.querySelector('[class*="checkbox-module_checkbox"]') ||
-                                                              item.querySelector('input[type="checkbox"]');
-                                                const hasCheckbox = !!checkbox;
+                                                itemTexts.push(text);
                                                 
-                                                allItems.push({
-                                                    text: text,
-                                                    hasCheckbox: hasCheckbox,
-                                                    element: item,
-                                                    checkbox: checkbox
-                                                });
-                                            }
-                                        });
-                                        return allItems;
-                                    }
-                                    
-                                    // 记录所有项目
-                                    const allTreeItems = getAllTreeItems();
-                                    addDebugLog(`所有树项目: ${allTreeItems.map(item => item.text).join(', ')}`, 'info');
-                                    
-                                    // 验证子类目是否在列表中
-                                    const exactMatch = allTreeItems.find(item => item.text === subcategoryName);
-                                    
-                                    if (exactMatch) {
-                                        addDebugLog(`找到完全匹配的子类目: ${subcategoryName}`, 'success');
-                                        
-                                        // 检查是否有复选框
-                                        if (!exactMatch.hasCheckbox) {
-                                            addDebugLog(`注意：该类目没有复选框，可能是父类目`, 'warning');
-                                            // 尝试查找是否有展开按钮
-                                            const expandButton = exactMatch.element.querySelector('[class*="tree-item-module_buttonMarker"] button') || 
-                                                              exactMatch.element.querySelector('[class*="subtreeMarker"] button');
-                                            
-                                            if (expandButton) {
-                                                addDebugLog(`尝试点击展开按钮`, 'info');
-                                                // 高亮显示
-                                                expandButton.style.border = '2px solid red';
-                                                expandButton.click();
-                                                await new Promise(resolve => setTimeout(resolve, 1500));
-                                                
-                                                // 重新获取所有项目
-                                                const updatedItems = getAllTreeItems();
-                                                addDebugLog(`展开后的树项目: ${updatedItems.map(item => item.text).join(', ')}`, 'info');
-                                            }
-                                        } else {
-                                            addDebugLog(`目标复选框存在，准备点击`, 'success');
-                                            
-                                            // 执行点击
-                                            const checkbox = exactMatch.checkbox;
-                                            
-                                            // 确保元素在视图中
-                                            exactMatch.element.scrollIntoView({ block: 'center', behavior: 'smooth' });
-                                            await new Promise(resolve => setTimeout(resolve, 500));
-                                            
-                                            // 增加高亮效果
-                                            exactMatch.element.style.background = 'rgba(255, 255, 0, 0.3)';
-                                            checkbox.style.outline = '2px solid red';
-                                            
-                                            addDebugLog(`即将点击复选框，当前状态: ${checkbox.checked}`, 'info');
-                                            
-                                            // 多种方式触发点击
-                                            try {
-                                                // 1. 原生点击
-                                                checkbox.click();
-                                                addDebugLog('执行原生点击', 'info');
-                                                
-                                                // 2. 事件分发
-                                    const clickEvent = new MouseEvent('click', {
-                                        bubbles: true,
-                                        cancelable: true,
-                                                    view: window
-                                                });
-                                                checkbox.dispatchEvent(clickEvent);
-                                                addDebugLog('执行事件分发', 'info');
-                                                
-                                                // 3. 直接修改选中状态
-                                                checkbox.checked = true;
-                                                addDebugLog('直接设置选中状态', 'info');
-                                                
-                                                // 4. 触发change事件
-                                                const changeEvent = new Event('change', { bubbles: true });
-                                                checkbox.dispatchEvent(changeEvent);
-                                                addDebugLog('触发change事件', 'info');
-                                                
-                                                // 检查点击后的状态
-                                                await new Promise(resolve => setTimeout(resolve, 500));
-                                                addDebugLog(`点击后复选框状态: ${checkbox.checked}`, checkbox.checked ? 'success' : 'warning');
-                                                
-                                    return true;
-                                            } catch (clickError) {
-                                                addDebugLog(`点击操作失败: ${clickError.toString()}`, 'error');
-                                                // 即使失败也继续尝试其他方法
-                                            }
-                                        }
-                } else {
-                                        // 查找最接近的匹配
-                                        addDebugLog(`未找到完全匹配的子类目，尝试模糊匹配`, 'warning');
-                                        
-                                        // 尝试不同的变体
-                                        const variants = [
-                                            subcategoryName,
-                                            subcategoryName.toLowerCase(),
-                                            subcategoryName.replace(/\s+/g, ' ').trim(), // 标准化空格
-                                            subcategoryName.replace(/[-—–]/g, '-'), // 统一破折号
-                                            subcategoryName.replace(/[,，]/g, ',') // 统一逗号
-                                        ];
-                                        
-                                        let bestMatch = null;
-                                        let bestScore = 0;
-                                        
-                                        // 根据包含词的数量找最佳匹配
-                                        for (const item of allTreeItems) {
-                                            if (!item.hasCheckbox) continue; // 跳过没有复选框的项
-                                            
-                                            // 计算匹配度
-                                            let maxScore = 0;
-                                            for (const variant of variants) {
-                                                // 直接包含关系
-                                                if (item.text.includes(variant) || variant.includes(item.text)) {
-                                                    const score = 0.8;
-                                                    if (score > maxScore) maxScore = score;
-                                                }
-                                                
-                                                // 词语匹配
-                                                const itemWords = item.text.toLowerCase().split(/\s+/);
-                                                const targetWords = variant.toLowerCase().split(/\s+/);
-                                                
-                                                let matchCount = 0;
-                                                for (const word of targetWords) {
-                                                    if (word.length > 2 && itemWords.some(w => w.includes(word) || word.includes(w))) {
-                                                        matchCount++;
-                                                    }
-                                                }
-                                                
-                                                const wordScore = targetWords.length > 0 ? matchCount / targetWords.length : 0;
-                                                if (wordScore > maxScore) maxScore = wordScore;
-                                            }
-                                            
-                                            if (maxScore > bestScore) {
-                                                bestScore = maxScore;
-                                                bestMatch = item;
-                                            }
-                                        }
-                                        
-                                        // 如果找到合理的匹配
-                                        if (bestMatch && bestScore > 0.5) {
-                                            addDebugLog(`找到最佳匹配: "${bestMatch.text}"，相似度: ${bestScore.toFixed(2)}`, 'success');
-                                            
-                                            // 确保元素在视图中
-                                            bestMatch.element.scrollIntoView({ block: 'center', behavior: 'smooth' });
-                                            await new Promise(resolve => setTimeout(resolve, 500));
-                                            
-                                            // 增加高亮效果
-                                            bestMatch.element.style.background = 'rgba(255, 255, 0, 0.3)';
-                                            bestMatch.checkbox.style.outline = '2px solid red';
-                                            
-                                            addDebugLog(`即将点击最佳匹配的复选框`, 'info');
-                                            
-                                            // 执行点击
-                                            try {
-                                                bestMatch.checkbox.click();
-                                                bestMatch.checkbox.checked = true;
-                                                const changeEvent = new Event('change', { bubbles: true });
-                                                bestMatch.checkbox.dispatchEvent(changeEvent);
-                                                
-                                                await new Promise(resolve => setTimeout(resolve, 500));
-                                                addDebugLog(`点击后复选框状态: ${bestMatch.checkbox.checked}`, 
-                                                         bestMatch.checkbox.checked ? 'success' : 'warning');
-                                                
-                                                return true;
-                                            } catch (clickError) {
-                                                addDebugLog(`点击操作失败: ${clickError.toString()}`, 'error');
-                                            }
-                                        } else {
-                                            addDebugLog(`未找到合适的匹配选项，所有可用选项: ${allTreeItems.filter(i => i.hasCheckbox).map(i => `"${i.text}"`).join(', ')}`, 'error');
-                                        }
-                                    }
-                                    
-                                    // 如果以上方法都失败，尝试基于文本内容查找并点击
-                                    addDebugLog('尝试使用文本内容查找', 'info');
-                                    
-                                    // 查找任何包含目标文本的元素
-                                    const allTreeTexts = Array.from(document.querySelectorAll('*'))
-                                      .filter(el => el.textContent.trim() === subcategoryName)
-                                      .filter(el => el.offsetWidth > 0 && el.offsetHeight > 0); // 确保元素可见
-                                    
-                                    if (allTreeTexts.length > 0) {
-                                        addDebugLog(`找到 ${allTreeTexts.length} 个匹配文本的元素`, 'success');
-                                        
-                                        for (const textEl of allTreeTexts) {
-                                            // 查找附近的复选框
-                                            let currentEl = textEl;
-                                            let checkboxFound = null;
-                                            
-                                            // 向上查找5层父元素
-                                            for (let i = 0; i < 5; i++) {
-                                                if (!currentEl) break;
-                                                
-                                                // 查找当前元素中的复选框
-                                                checkboxFound = currentEl.querySelector('input[type="checkbox"]');
-                                                if (checkboxFound) break;
-                                                
-                                                currentEl = currentEl.parentElement;
-                                            }
-                                            
-                                            if (checkboxFound) {
-                                                addDebugLog('找到文本附近的复选框', 'success');
-                                                
-                                                // 高亮显示
-                                                textEl.style.background = 'rgba(0, 255, 0, 0.3)';
-                                                checkboxFound.style.outline = '3px solid red';
-                                                
-                                                // 确保元素在视图中
-                                                textEl.scrollIntoView({ block: 'center', behavior: 'smooth' });
-                                                await new Promise(resolve => setTimeout(resolve, 500));
-                                                
-                                                // 点击复选框
-                                                try {
-                                                    checkboxFound.click();
-                                                    checkboxFound.checked = true;
-                                                    const changeEvent = new Event('change', { bubbles: true });
-                                                    checkboxFound.dispatchEvent(changeEvent);
+                                                // 使用clickValue进行匹配，而不是固定的"汽车用品"
+                                                if (text === clickValue) {
+                                                    targetButton = label;
+                                                    targetItem = item;
+                                                    categoryName = text;
+                                                    parentId = item.id;
+                                                    addDebugLog(`找到目标类目: "${text}"`, 'success');
                                                     
-                                                    await new Promise(resolve => setTimeout(resolve, 500));
-                                                    addDebugLog(`点击后复选框状态: ${checkboxFound.checked}`, 'info');
+                                                    // 高亮显示
+                                                    targetItem.style.background = 'rgba(255, 255, 0, 0.3)';
+                                                    targetButton.style.outline = '2px solid red';
                                                     
                                                     return true;
-                                                } catch (clickError) {
-                                                    addDebugLog(`点击操作失败: ${clickError.toString()}`, 'error');
                                                 }
                                             }
                                         }
+                                        
+                                        // 如果没找到，记录所有已发现的类目，便于调试
+                                        if (itemTexts.length > 0) {
+                                            addDebugLog(`当前可见类目: ${itemTexts.slice(0, 15).join(', ')}${itemTexts.length > 15 ? '...' : ''}`, 'info');
+                                        }
+                                        
+                                        return false;
                                     }
-                                    
-                                    addDebugLog(`所有点击尝试失败`, 'error');
-                                    return false;
-                                } catch (error) {
-                                    window.logToConsole('点击子类目复选框总体失败:', error.toString());
-                                    window.logToConsole('错误堆栈:', error.stack);
+                                        
+                                    // 2. 主要的查找和滚动逻辑 - 复用获取子类别的代码
+                                    let scrollAttempts = 0;
+                                    const maxScrollAttempts = 15;
+
+                                    treeContainer = await getTreeContainer();
+                                    if (!treeContainer) {
+                                        addDebugLog('初始化时未找到树形容器', 'error');
+                                            return false;
+                                    }
+
+                                    // 查找汽车用品主类目
+                                    while (scrollAttempts < maxScrollAttempts) {
+                                        if (await findAutoCategory(clickValue)) {
+                                            break;
+                                        }
+
+                                        const scrollSuccess = await handleScroll(treeContainer);
+                                        if (!scrollSuccess) {
+                                            treeContainer = await getTreeContainer();
+                                            if (!treeContainer) {
+                                                addDebugLog('重新获取树形容器失败', 'error');
+                                                break;
+                                            }
+                                        }
+
+                                        await new Promise(resolve => setTimeout(resolve, 1500));
+                                        scrollAttempts++;
+                                    }
+
+                                    if (!targetButton) {
+                                        addDebugLog('未找到汽车用品类目', 'error');
                                     return false;
                                 }
-                            }, subcategory.name);
 
+                                    // 3. 点击汽车用品主类目 - 复用获取子类别的点击逻辑
+                                    addDebugLog(`准备点击汽车用品类目: ${categoryName}`, 'info');
+                                    
+                                    // 确保元素在视图中
+                                    targetItem.scrollIntoView({ block: 'center', behavior: 'smooth' });
+                                    await new Promise(resolve => setTimeout(resolve, 1000));
+                                    
+                                    // 尝试找到箭头按钮
+                                    const arrowButton = targetItem.querySelector('[class*="tree-item-module_buttonMarker"] button') || 
+                                                     targetItem.querySelector('[class*="subtreeMarker"] button');
+                                    
+                                    let clickSuccess = false;
+                                    if (arrowButton) {
+                                        addDebugLog('找到箭头按钮，优先点击', 'success');
+                                        arrowButton.style.outline = '2px solid blue';
+                                        
+                                        // 防止事件冒泡导致点击后折叠
+                                        const preventPropagation = function(e) {
+                                            e.stopPropagation();
+                                        };
+                                        
+                                        try {
+                                            // 添加事件拦截
+                                            document.body.addEventListener('click', preventPropagation, true);
+                                            
+                                            // 尝试多种点击方式
+                                            arrowButton.click();
+                                            
+                                            // 如果原生点击可能不起作用，尝试创建事件
+                                            const clickEvent = new MouseEvent('click', {
+                                                view: window,
+                                                bubbles: true,
+                                                cancelable: true,
+                                                buttons: 1
+                                            });
+                                            arrowButton.dispatchEvent(clickEvent);
+                                            
+                                            addDebugLog('箭头按钮点击完成', 'success');
+                                            clickSuccess = true;
+                                        } catch (clickError) {
+                                            addDebugLog('箭头按钮点击失败: ' + clickError.toString(), 'error');
+                                        } finally {
+                                            // 移除事件拦截
+                                            document.body.removeEventListener('click', preventPropagation, true);
+                                        }
+                                    }
+                                    
+                                    // 如果箭头按钮点击失败，回退到原来的点击方式
+                                    if (!clickSuccess) {
+                                        addDebugLog('箭头按钮点击失败或未找到，尝试点击标签', 'warning');
+                                        const clickEvent = new MouseEvent('click', {
+                                            view: window,
+                                            bubbles: true,
+                                            cancelable: true,
+                                            buttons: 1
+                                        });
+                                        targetButton.dispatchEvent(clickEvent);
+                                        // 尝试原生点击作为备份
+                                        targetButton.click();
+                                    }
+                                    
+                                    addDebugLog(`汽车用品类目点击完成`, 'success');
+
+                                    // 等待子类目加载
+                                    await new Promise(resolve => setTimeout(resolve, 3000));
+                                    
+                                    // 检查子类目是否成功加载
+                                    const initialChildItems = document.querySelectorAll(`[id^="${parentId}_"]`);
+                                    addDebugLog(`初始子类目数量: ${initialChildItems.length}`, 'info');
+                                    
+                                    // 如果点击后没有加载子类目，重试一次点击
+                                    if (initialChildItems.length === 0) {
+                                        addDebugLog('未检测到子类目，尝试再次点击', 'warning');
+                                        
+                                        // 尝试整行按钮点击
+                                        const rowButton = targetItem.querySelector('button');
+                                        if (rowButton) {
+                                            rowButton.click();
+                                            await new Promise(resolve => setTimeout(resolve, 2000));
+                                            
+                                            // 再次检查
+                                            const retryChildItems = document.querySelectorAll(`[id^="${parentId}_"]`);
+                                            addDebugLog(`重试后子类目数量: ${retryChildItems.length}`, 'info');
+                                        }
+                                    }
+                                    
+                                    // 关键改进：持续滚动加载更多子类目，直到找到目标子类目
+                                    async function findSubcategoryWithScrolling() {
+                                        // 重新获取树形容器，因为展开后DOM可能已改变
+                                        treeContainer = await getTreeContainer();
+                                        if (!treeContainer) {
+                                            addDebugLog('获取子类目容器失败', 'error');
+                                            return false;
+                                        }
+                                        
+                                        let allFoundSubcategories = new Set(); // 使用Set避免重复
+                                        let maxScrollingAttempts = 30; // 增加滚动尝试次数
+                                        let scrollingAttempts = 0;
+                                        let consecutiveNoNewItems = 0;
+                                        const maxConsecutiveNoNewItems = 5;
+                                        
+                                        // 记录当前找到的子类目
+                                        function collectCurrentSubcategories() {
+                                            const subItems = document.querySelectorAll(`[id^="${parentId}_"]`);
+                                            const currentSubcategories = new Set();
+                                            
+                                            subItems.forEach(item => {
+                                                const label = item.querySelector('[class*="data-content-module_label"]');
+                                                if (label) {
+                                                    currentSubcategories.add(label.textContent.trim());
+                                                }
+                                            });
+                                            
+                                            return currentSubcategories;
+                                        }
+                                        
+                                        // 检查是否找到目标子类目
+                                        function checkForTargetSubcategory() {
+                                            const subItems = document.querySelectorAll(`[id^="${parentId}_"]`);
+                                            
+                                            for (const item of subItems) {
+                                                const label = item.querySelector('[class*="data-content-module_label"]');
+                                                if (!label) continue;
+                                                
+                                                const text = label.textContent.trim();
+                                                
+                                                // 检查是否是目标子类目
+                                                if (text === subcategoryName) {
+                                                    addDebugLog(`找到精确匹配的目标子类目: "${text}"`, 'success');
+                                                    
+                                                    // 高亮显示
+                                                    item.style.background = 'rgba(255, 255, 0, 0.3)';
+                                                    label.style.outline = '2px solid red';
+                                                    
+                                                    // 点击子类目
+                                                    item.scrollIntoView({ block: 'center', behavior: 'smooth' });
+                                                    
+                                                    // 使用异步IIFE立即执行点击
+                                                    (async () => {
+                                                        try {
+                                                            await new Promise(resolve => setTimeout(resolve, 1000));
+                                                            
+                                                            // 尝试点击复选框
+                                                            const checkbox = item.querySelector('input[type="checkbox"], [role="checkbox"]');
+                                                            if (checkbox) {
+                                                                addDebugLog('找到复选框，点击复选框', 'info');
+                                                                checkbox.click();
+                                                                if (checkbox.type === 'checkbox') {
+                                                                    checkbox.checked = true;
+                                                                    const changeEvent = new Event('change', { bubbles: true });
+                                                                    checkbox.dispatchEvent(changeEvent);
+                                                                }
+                                                            } else {
+                                                                // 点击标签
+                                                                addDebugLog('未找到复选框，点击标签', 'info');
+                                                                label.click();
+                                                                
+                                                                // 使用MouseEvent
+                                                                const clickEvent = new MouseEvent('click', {
+                                                                    view: window,
+                                                                    bubbles: true,
+                                                                    cancelable: true,
+                                                                    buttons: 1
+                                                                });
+                                                                label.dispatchEvent(clickEvent);
+                                                            }
+                                                        } catch (error) {
+                                                            addDebugLog(`点击操作失败: ${error.toString()}`, 'error');
+                                                        }
+                                                    })();
+                                                    
+                                                    return true;
+                                                }
+                                            }
+                                            
+                                            return false;
+                                        }
+                                        
+                                        // 先检查当前是否已有目标子类目
+                                        if (checkForTargetSubcategory()) {
+                                            return true;
+                                        }
+                                        
+                                        // 开始滚动加载更多子类目
+                                        while (scrollingAttempts < maxScrollingAttempts) {
+                                            addDebugLog(`滚动加载尝试 ${scrollingAttempts + 1}/${maxScrollingAttempts}`, 'info');
+                                            
+                                            // 获取当前子类目
+                                            const currentSubcategories = collectCurrentSubcategories();
+                                            
+                                            // 计算新增子类目
+                                            const newSubcategories = new Set(
+                                                [...currentSubcategories].filter(x => !allFoundSubcategories.has(x))
+                                            );
+                                            
+                                            // 更新所有已找到的子类目
+                                            for (const category of currentSubcategories) {
+                                                allFoundSubcategories.add(category);
+                                            }
+                                            
+                                            // 输出子类目信息
+                                            if (scrollingAttempts === 0 || newSubcategories.size > 0) {
+                                                addDebugLog(`当前已发现 ${allFoundSubcategories.size} 个子类目`, 'info');
+                                                addDebugLog(`子类目列表: ${[...allFoundSubcategories].join(', ')}`, 'info');
+                                            }
+                                            
+                                            // 检查是否找到新子类目
+                                            if (newSubcategories.size > 0) {
+                                                addDebugLog(`本次发现 ${newSubcategories.size} 个新子类目`, 'success');
+                                                addDebugLog(`新子类目: ${[...newSubcategories].join(', ')}`, 'info');
+                                                consecutiveNoNewItems = 0;
+                                                
+                                                // 检查新加载的子类目中是否有目标子类目
+                                                if (checkForTargetSubcategory()) {
+                                                    return true;
+                                                }
+                                            } else {
+                                                consecutiveNoNewItems++;
+                                                addDebugLog(`连续 ${consecutiveNoNewItems} 次未发现新子类目`, 'warning');
+                                            }
+                                            
+                                            // 执行滚动
+                                            // 1. 找到最后一个子类目项，滚动到它
+                                            const subItems = document.querySelectorAll(`[id^="${parentId}_"]`);
+                                            if (subItems.length > 0) {
+                                                const lastItem = subItems[subItems.length - 1];
+                                                
+                                                // 查找骨架屏元素
+                                                const skeletonElements = document.querySelectorAll('[class*="skeleton-common-base-module_skeleton"]');
+                                                
+                                                if (skeletonElements.length > 0) {
+                                                    addDebugLog('发现骨架屏，滚动到骨架屏元素', 'info');
+                                                    skeletonElements[0].scrollIntoView({ block: 'center' });
+                                                } else {
+                                                    addDebugLog('滚动到最后一个子类目项', 'info');
+                                                    lastItem.scrollIntoView({ block: 'end' });
+                                                }
+                                                
+                                                // 2. 额外滚动一段距离以确保加载更多
+                                                await new Promise(resolve => setTimeout(resolve, 500));
+                                                const currentScrollTop = treeContainer.scrollTop;
+                                                treeContainer.scrollTop += 300 + (scrollingAttempts * 20); // 逐渐增加滚动距离
+                                                
+                                                // 检查滚动是否有效
+                                                if (Math.abs(currentScrollTop - treeContainer.scrollTop) < 10) {
+                                                    addDebugLog('滚动无效，可能已到达底部', 'warning');
+                                                    consecutiveNoNewItems++;
+                                                }
+                                            }
+                                            
+                                            // 等待新内容加载
+                                            await new Promise(resolve => setTimeout(resolve, 2000));
+                                            
+                                            // 检查是否已经找到目标子类目
+                                            if (checkForTargetSubcategory()) {
+                                                return true;
+                                            }
+                                            
+                                            // 终止条件：连续多次没有新子类目
+                                            if (consecutiveNoNewItems >= maxConsecutiveNoNewItems) {
+                                                addDebugLog(`连续 ${consecutiveNoNewItems} 次未找到新子类目，停止滚动`, 'warning');
+                                                break;
+                                            }
+                                            
+                                            scrollingAttempts++;
+                                        }
+                                        
+                                        // 如果滚动完成后仍未找到，记录所有已发现的子类目
+                                        addDebugLog(`滚动完成，共发现 ${allFoundSubcategories.size} 个子类目`, 'info');
+                                        addDebugLog(`完整子类目列表: ${[...allFoundSubcategories].join(', ')}`, 'info');
+                                        
+                                        // 再次尝试最佳匹配
+                                        addDebugLog('尝试查找最佳匹配', 'warning');
+                                        
+                                        // 查找包含关键词的项目
+                                        const keywordMatches = ['脚垫', '座套', '汽车脚垫', '车座套'];
+                                        const subItems = document.querySelectorAll(`[id^="${parentId}_"]`);
+                                        
+                                        for (const keyword of keywordMatches) {
+                                            for (const item of subItems) {
+                                                const label = item.querySelector('[class*="data-content-module_label"]');
+                                                if (!label) continue;
+                                                
+                                                const text = label.textContent.trim();
+                                                
+                                                if (text.includes(keyword)) {
+                                                    addDebugLog(`找到关键词匹配 "${keyword}" 的子类目: "${text}"`, 'success');
+                                                    
+                                                    // 高亮显示
+                                                    item.style.background = 'rgba(255, 255, 0, 0.3)';
+                                                    label.style.outline = '2px solid red';
+                                                    
+                                                    // 点击子类目
+                                                    item.scrollIntoView({ block: 'center', behavior: 'smooth' });
+                                                    
+                                                    try {
+                                                        await new Promise(resolve => setTimeout(resolve, 1000));
+                                                        
+                                                        // 尝试点击复选框
+                                                        const checkbox = item.querySelector('input[type="checkbox"], [role="checkbox"]');
+                                                        if (checkbox) {
+                                                            addDebugLog('找到复选框，点击复选框', 'info');
+                                                            checkbox.click();
+                                                            if (checkbox.type === 'checkbox') {
+                                                                checkbox.checked = true;
+                                                                const changeEvent = new Event('change', { bubbles: true });
+                                                                checkbox.dispatchEvent(changeEvent);
+                                                            }
+                                                        } else {
+                                                            // 点击标签
+                                                            addDebugLog('未找到复选框，点击标签', 'info');
+                                                            label.click();
+                                                            
+                                                            // 使用MouseEvent
+                                                            const clickEvent = new MouseEvent('click', {
+                                                                view: window,
+                                                                bubbles: true,
+                                                                cancelable: true,
+                                                                buttons: 1
+                                                            });
+                                                            label.dispatchEvent(clickEvent);
+                                                        }
+                                                        
+                                                        return true;
+                                                    } catch (error) {
+                                                        addDebugLog(`点击操作失败: ${error.toString()}`, 'error');
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        
+                                        addDebugLog(`未找到目标子类目 "${subcategoryName}"`, 'error');
+                                        return false;
+                                    }
+                                    
+                                    // 执行子类目查找和点击
+                                    return await findSubcategoryWithScrolling();
+                                } catch (error) {
+                                    const errorMessage = `点击子类目总体失败: ${error.toString()}`;
+                                    console.error(errorMessage);
+                                    console.error('错误堆栈:', error.stack);
+                                    
+                                    if (window.logToConsole) {
+                                        window.logToConsole(errorMessage);
+                                        window.logToConsole('错误堆栈: ' + error.stack);
+                                    }
+                                    
+                                    return false;
+                                }
+                            }, subcategory.name,cliclValue);
+
+                            // 修改顺序：先等待子类目点击完成，再执行应用按钮点击
+                            // 添加短暂延迟确保复选框点击操作完成
+                            await new Promise(resolve => setTimeout(resolve, 2000));
+                            
                             // 5. 点击应用按钮
                             await page.evaluate(async () => {
                                 try {
