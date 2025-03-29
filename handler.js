@@ -1021,7 +1021,7 @@ export async function handler_run_internal(reqBody, taskId) {
 
         console.log('task_name:', task_name);
         const leixing = reqBody.leixing;
-        const adsPowerUserId = reqBody.row[0].浏览器id || 'kn8o287';
+        const adsPowerUserId = (reqBody.row && reqBody.row[0] && reqBody.row[0].浏览器id) || 'kn8o287';
         console.log('adsPowerUserId_check:', adsPowerUserId);
         const BASE_URL = reqBody.BASE_URL;
         const adsPowerId = reqBody.adsPowerId || '10.128.0.3';
@@ -1308,7 +1308,3 @@ export async function handler_run_internal(reqBody, taskId) {
         }
     }
 }
-
-
-
-

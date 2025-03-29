@@ -56,7 +56,7 @@ const API_ENDPOINTS = [
   //   status: 'active'
   // }
   {
-    url: 'https://kdw16tm655k3s1-8082.proxy.runpod.net/scrape',
+    url: 'https://q0ef501poz4pko-8082.proxy.runpod.net/scrape',
     maxConcurrent: 3,  // 将这里改为实际需要的并发数
     running: 0,
     status: 'active',
@@ -64,7 +64,15 @@ const API_ENDPOINTS = [
     disableInternalForwarding: true
   },
   {
-    url: 'https://os8tm9eu20m77i-8082.proxy.runpod.net/scrape',
+    url: 'https://hz8ilxh2tyav03-8082.proxy.runpod.net/scrape',
+    maxConcurrent: 3,  // 将这里改为实际需要的并发数
+    running: 0,
+    status: 'active',
+    lastSubmitTime: 0,  // 新添加的字段
+    disableInternalForwarding: true
+  },
+  {
+    url: 'https://c2ugte3lsg5nol-8082.proxy.runpod.net/scrape',
     maxConcurrent: 3,  // 将这里改为实际需要的并发数
     running: 0,
     status: 'active',
