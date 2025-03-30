@@ -1,338 +1,504 @@
-else if (this.element.leixing === '自定义6') {
-    console.log('自定义6_start - 京东外卖商品获取');
-    try {
-        // 等待页面加载完成
-        await new Promise(resolve => setTimeout(resolve, 3000));
-        
-        // 1. 处理新手引导弹窗 - 点击"跳过"按钮
-        try {
-            console.log('正在检查并处理新手引导弹窗...');
-            await page.evaluate(() => {
-                const skipButton = document.querySelector('.driver-popover-footer .close-guide');
-                if (skipButton) {
-                    console.log('找到新手引导弹窗，点击跳过按钮');
-                    skipButton.click();
-                    return true;
-                }
-                console.log('未找到新手引导弹窗');
-                return false;
-            });
-            
-            // 等待弹窗关闭
-            await new Promise(resolve => setTimeout(resolve, 1000));
-        } catch (error) {
-            console.log('处理新手引导弹窗时出错:', error.message);
-        }
-        
-        // 2. 点击商品管理菜单（如果未展开）
-        console.log('正在查找并点击商品管理菜单...');
-        await page.evaluate(() => {
-            // 检查商品管理菜单是否已经展开
-            const productManageMenu = document.querySelector('.dj-submenu.dj-submenu-top-level[data-code="489"]');
-            const isExpanded = productManageMenu && productManageMenu.querySelector('.dj-submenu-content.opened');
-            
-            if (productManageMenu && !isExpanded) {
-                // 找到菜单标题并点击它
-                const menuLabel = productManageMenu.querySelector('.dj-submenu-label');
-                if (menuLabel) {
-                    console.log('找到商品管理菜单，点击它以展开');
-                    menuLabel.click();
-                    return true;
-                }
-            } else if (isExpanded) {
-                console.log('商品管理菜单已经展开');
-                return true;
-            }
-            console.log('未找到商品管理菜单');
-            return false;
-        });
-        
-        // 等待子菜单加载
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        
-        // 3. 点击商家商品管理子菜单
-        console.log('正在查找并点击商家商品管理...');
-        await page.evaluate(() => {
-            // 直接通过data-path属性找到商家商品管理菜单项
-            const merchantProductItem = document.querySelector('.dj-menu-item[data-path="489,674"]');
-            
-            if (merchantProductItem) {
-                // 查找可点击的标签元素
-                const clickableElement = merchantProductItem.querySelector('.dj-menu-item-label') || merchantProductItem;
-                console.log('找到商家商品管理菜单，点击它');
-                clickableElement.click();
-                return true;
-            }
-            console.log('未找到商家商品管理菜单');
-            return false;
-        });
-        
-        // 等待页面加载
-        await new Promise(resolve => setTimeout(resolve, 10000));
-        
-        // 4. 处理可能出现的第二个新手引导弹窗 - 点击"跳过"按钮
-        try {
-            console.log('正在检查并处理商品管理新手引导弹窗...');
-            await page.evaluate(() => {
-                const skipButton = document.querySelector('.driver-popover-footer .close-guide');
-                if (skipButton) {
-                    console.log('找到商品管理新手引导弹窗，点击跳过按钮');
-                    skipButton.click();
-                    return true;
-                }
-                console.log('未找到商品管理新手引导弹窗');
-                return false;
-            });
-            
-            // 等待弹窗关闭
-            await new Promise(resolve => setTimeout(resolve, 1000));
-        } catch (error) {
-            console.log('处理商品管理新手引导弹窗时出错:', error.message);
-        }
-        
-        // 等待批量创建页面加载
-        await new Promise(resolve => setTimeout(resolve, 3000));
-        // 6. 点击批量传图按钮
-        console.log('正在查找并点击批量传图按钮...');
-        await page.evaluate(() => {
-            const batchImgButtons = Array.from(document.querySelectorAll('.rightOperationPanelItem'));
-            const batchImgButton = batchImgButtons.find(btn => {
-                const titleElement = btn.querySelector('.rightOperationPanelTitle');
-                return titleElement && titleElement.textContent.includes('批量传图');
-            });
-            
-            if (batchImgButton) {
-                console.log('找到批量传图按钮，点击它');
-                batchImgButton.click();
-                return true;
-            }
-            console.log('未找到批量传图按钮');
-            return false;
-        });
+else if (this.element.leixing === '自定义4') {
+    // 等待表格元素出现
+    await page.waitForFunction(() => {
+        return document.querySelector('.vxe-table--header') !== null;
+    }, { timeout: 30000 }).catch(error => {
+        console.log('等待表格元素超时:', error);
+    });
 
-        // 等待批量传图页面加载
-        await new Promise(resolve => setTimeout(resolve, 3000));
+    // 先获取表格数据
+    const tableData = await page.evaluate(() => {
+        const results = [];
         
-        // 获取所有要上传的文件
-        const __filename = fileURLToPath(import.meta.url);
-        const __dirname = path.dirname(__filename);
-        const basePath = process.cwd();
+        // 获取表头信息
+        const headers = [];
+        const headerCells = document.querySelectorAll('.vxe-header--column .vxe-cell--title');
+        headerCells.forEach(cell => {
+            // 去除表头中的提示图标和弹窗内容
+            const headerText = cell.textContent.replace(/\s+/g, ' ').trim();
+            // 使用正则表达式移除图标后的文本
+            const cleanHeader = headerText.replace(/\s+[\s\S]*$/, '').trim();
+            headers.push(cleanHeader);
+        });
         
-        // 定义上传函数，处理SPU和SKU上传
-        const uploadZipFiles = async (filePrefix, isSpuUpload) => {
-            // 判断有多少个分卷ZIP文件需要上传
-            let zipFiles = [];
-            let partIndex = 1;
-            let partZipPath;
+        // 获取表格内容
+        const rows = document.querySelectorAll('.vxe-body--row');
+        rows.forEach(row => {
+            const rowData = {};
+            const cells = row.querySelectorAll('.vxe-body--column');
             
-            do {
-                partZipPath = path.join(basePath, `${filePrefix}_${this.user_id}_part${partIndex}.zip`);
-                if (fs.existsSync(partZipPath)) {
-                    zipFiles.push(partZipPath);
-                    partIndex++;
-                } else {
-                    break;
+            cells.forEach((cell, index) => {
+                if (index < headers.length) {
+                    // 跳过复选框和序号列
+                    if (index > 1) {
+                        const header = headers[index];
+                        
+                        // 处理不同类型的单元格内容
+                        if (header === '商品图') {
+                            const img = cell.querySelector('img');
+                            rowData[header] = img ? img.src : '';
+                        } else if (header === '尺寸 （长*宽*高 CM）') {
+                            const text = cell.textContent.trim();
+                            // 尝试解析尺寸格式 (长x宽x高)
+                            const dimensions = text.split('*').map(dim => parseFloat(dim) || 0);
+                            if (dimensions.length === 3) {
+                                rowData['长'] = dimensions[0];
+                                rowData['宽'] = dimensions[1];
+                                rowData['高'] = dimensions[2];
+                            }
+                            rowData[header] = text;
+                        } else if (header === '重量') {
+                            const text = cell.textContent.trim();
+                            // 提取数字部分
+                            const weightMatch = text.match(/(\d+\.?\d*)/);
+                            rowData[header] = weightMatch ? parseFloat(weightMatch[1]) : 0;
+                        } else if (header === '商品费/包邮价') {
+                            const text = cell.textContent.trim();
+                            // 提取价格数字
+                            const priceMatch = text.match(/(\d+\.?\d*)/);
+                            rowData[header] = priceMatch ? parseFloat(priceMatch[1]) : 0;
+                        } else {
+                            rowData[header] = cell.textContent.trim();
+                        }
+                    }
                 }
-            } while (true);
-            
-            console.log(`发现 ${zipFiles.length} 个${isSpuUpload ? 'SPU' : 'SKU'}图片ZIP文件需要上传`);
-            
-            // 如果没有文件可上传，返回
-            if (zipFiles.length === 0) {
-                console.log(`未找到任何可上传的${isSpuUpload ? 'SPU' : 'SKU'}图片ZIP文件`);
-                return;
-            }
-            
-            // 选择上传类型
-            console.log(`正在选择${isSpuUpload ? 'SPU' : 'SKU'}上传类型...`);
-            await page.evaluate((isSpu) => {
-                // 选择SPU或SKU上传类型
-                const uploadTypeLabels = Array.from(document.querySelectorAll('.dj-radio-label'));
-                const targetLabel = uploadTypeLabels.find(label => 
-                    isSpu 
-                    ? label.textContent.includes('使用商品编码批量上传，适用于SPU图片上传')
-                    : label.textContent.includes('使用SKU编码批量上传，适用于SKU或SPU-SKU图片上传')
-                );
-                
-                if (targetLabel) {
-                    console.log(`找到${isSpu ? 'SPU' : 'SKU'}上传类型选项，点击它`);
-                    targetLabel.click();
-                    return true;
-                }
-                console.log(`未找到${isSpu ? 'SPU' : 'SKU'}上传类型选项`);
-                return false;
-            }, isSpuUpload);
-            
-            // 等待选择反应
-            await new Promise(resolve => setTimeout(resolve, 2000));
-            
-            // 选择编码类型
-            console.log(`正在选择${isSpuUpload ? '商家SPU' : '商家SKU'}编码...`);
-            await page.evaluate((isSpu) => {
-                const codeTypeLabels = Array.from(document.querySelectorAll('.dj-radio-label'));
-                const targetLabel = codeTypeLabels.find(label => 
-                    isSpu 
-                    ? label.textContent.includes('商家SPU编码')
-                    : label.textContent.includes('商家SKU编码')
-                );
-                
-                if (targetLabel) {
-                    console.log(`找到${isSpu ? '商家SPU' : '商家SKU'}编码选项，点击它`);
-                    targetLabel.click();
-                    return true;
-                }
-                console.log(`未找到${isSpu ? '商家SPU' : '商家SKU'}编码选项`);
-                return false;
-            }, isSpuUpload);
-            
-            // 等待选择反应
-            await new Promise(resolve => setTimeout(resolve, 2000));
-            
-            // 选择替换方式
-            console.log('正在选择替换方式...');
-            await page.evaluate(() => {
-                const replaceLabels = Array.from(document.querySelectorAll('.dj-radio-label'));
-                const targetLabel = replaceLabels.find(label => 
-                    label.textContent.includes('根据编号替换对应位置的图片')
-                );
-                
-                if (targetLabel) {
-                    console.log('找到替换方式选项，点击它');
-                    targetLabel.click();
-                    return true;
-                }
-                console.log('未找到替换方式选项');
-                return false;
             });
             
-            // 等待选择反应
-            await new Promise(resolve => setTimeout(resolve, 2000));
+            // 只添加非空对象
+            if (Object.keys(rowData).length > 0) {
+                results.push(rowData);
+            }
+        });
+        
+        // 如果没有找到行数据，尝试获取表格的其他信息
+        if (results.length === 0) {
+            // 获取表格的基本信息
+            const tableInfo = {
+                tableFound: true,
+                headerCount: headers.length,
+                headers: headers.filter(h => h !== ''),
+                tableWidth: document.querySelector('.vxe-table--header')?.style.width || '',
+                message: '找到表格但没有数据行'
+            };
+            results.push(tableInfo);
+        }
+        
+        return results;
+    });
+
+    console.log('提取的表格数据:', tableData);
+
+    // 点击"查看详情"按钮
+    try {
+        // 等待"查看详情"按钮出现
+        await page.waitForSelector('button.el-button--text span', { timeout: 10000 });
+        
+        // 查找包含"查看详情"文本的按钮
+        const detailButtons = await page.$$('button.el-button--text span');
+        let clicked = false;
+        
+        for (const button of detailButtons) {
+            const text = await page.evaluate(el => el.textContent.trim(), button);
+            if (text === '查看详情') {
+                console.log('找到"查看详情"按钮，点击中...');
+                await button.click();
+                clicked = true;
+                break;
+            }
+        }
+        
+        if (!clicked) {
+            console.log('未找到"查看详情"按钮');
+        } else {
+            // 等待弹窗出现
+            await page.waitForSelector('.el-dialog', { timeout: 10000 });
+            console.log('弹窗已出现，正在提取信息...');
             
-            // 为每个文件执行上传流程
-            for (let zipIndex = 0; zipIndex < zipFiles.length; zipIndex++) {
-                const currentZipFile = zipFiles[zipIndex];
-                console.log(`开始处理第 ${zipIndex+1}/${zipFiles.length} 个文件: ${currentZipFile}`);
+            // 等待内容加载完成
+            console.log('等待5秒让内容初步加载...');
+            await page.waitForTimeout(5000);
+            
+            // 检查DOM是否稳定
+            console.log('检查DOM是否稳定...');
+            let lastDOMSize = 0;
+            let stableCount = 0;
+            const maxStabilityChecks = 5;
+            
+            for (let i = 0; i < maxStabilityChecks; i++) {
+                const currentSize = await page.evaluate(() => document.body.innerHTML.length);
+                console.log(`DOM大小检查 ${i+1}/${maxStabilityChecks}: ${currentSize} (上次: ${lastDOMSize})`);
                 
-                // 点击上传按钮
-                await page.evaluate(() => {
-                    const uploadButtons = Array.from(document.querySelectorAll('.dj-upload-demo .dj-upload__text a'));
-                    if (uploadButtons.length > 0) {
-                        console.log('找到上传按钮，点击它');
-                        uploadButtons[0].click();
-                        return true;
+                if (currentSize === lastDOMSize) {
+                    stableCount++;
+                    if (stableCount >= 3) {
+                        console.log('DOM已稳定，继续处理');
+                        break;
                     }
-                    console.log('未找到上传按钮');
-                    return false;
+                } else {
+                    stableCount = 0;
+                }
+                
+                lastDOMSize = currentSize;
+                await page.waitForTimeout(1000);
+            }
+            
+            // 检查图片加载状态
+            const imagesLoaded = await page.evaluate(() => {
+                const allImages = document.querySelectorAll('.el-dialog__body .el-image img');
+                console.log(`找到 ${allImages.length} 张图片`);
+                
+                let loadedImages = 0;
+                allImages.forEach(img => {
+                    if (img.complete) {
+                        loadedImages++;
+                    }
                 });
+                console.log(`已加载完成 ${loadedImages}/${allImages.length} 张图片`);
                 
-                // 等待上传按钮点击后的反应
-                await new Promise(resolve => setTimeout(resolve, 2000));
+                return {
+                    total: allImages.length,
+                    loaded: loadedImages
+                };
+            });
+            
+            // 如果图片未全部加载完成，额外等待
+            if (imagesLoaded.loaded < imagesLoaded.total && imagesLoaded.total > 0) {
+                const waitTime = Math.min(10000, imagesLoaded.total * 1000);
+                console.log(`部分图片尚未加载完成 (${imagesLoaded.loaded}/${imagesLoaded.total})，额外等待${waitTime/1000}秒...`);
+                await page.waitForTimeout(waitTime);
+            }
+            
+            // 再次检查图片加载状态
+            const finalImagesLoaded = await page.evaluate(() => {
+                const allImages = document.querySelectorAll('.el-dialog__body .el-image img');
+                let loadedImages = 0;
+                allImages.forEach(img => {
+                    if (img.complete) {
+                        loadedImages++;
+                    }
+                });
+                console.log(`最终加载完成 ${loadedImages}/${allImages.length} 张图片`);
+                return {
+                    total: allImages.length,
+                    loaded: loadedImages
+                };
+            });
+            
+            console.log(`图片加载状态: ${finalImagesLoaded.loaded}/${finalImagesLoaded.total} 已加载`);
+            
+            // 额外等待确保所有内容加载完成
+            const extraWaitTime = finalImagesLoaded.total > 0 ? 3000 : 1000;
+            console.log(`额外等待${extraWaitTime/1000}秒确保所有内容加载完成...`);
+            await page.waitForTimeout(extraWaitTime);
+            
+            // 提取弹窗信息
+            const detailData = await page.evaluate(() => {
+                const dialogInfo = {};
                 
-                try {
-                    // 精确定位接受.zip文件的上传组件
-                    const targetComponent = await page.evaluate(() => {
-                        // 查找所有上传组件
-                        const uploadComponents = document.querySelectorAll('.dj-upload');
-                        // 遍历寻找接受.zip文件的组件
-                        for (let i = 0; i < uploadComponents.length; i++) {
-                            const component = uploadComponents[i];
-                            const fileInput = component.querySelector('input[type="file"]');
-                            const acceptAttr = fileInput ? fileInput.getAttribute('accept') : '';
+                // 获取弹窗标题
+                const dialogTitle = document.querySelector('.el-dialog__title');
+                if (dialogTitle) {
+                    dialogInfo.title = dialogTitle.textContent.trim();
+                }
+                
+                // 获取基本信息表格数据
+                const infoTable = document.querySelector('.el-dialog__body table');
+                if (infoTable) {
+                    const tableData = {};
+                    const rows = infoTable.querySelectorAll('tr');
+                    
+                    rows.forEach(row => {
+                        const cells = row.querySelectorAll('td');
+                        if (cells.length >= 2) {
+                            const key = cells[0].textContent.trim();
                             
-                            if (fileInput && acceptAttr === '.zip') {
-                                console.log(`找到目标ZIP上传组件 #${i+1}`);
-                                // 确保输入框可见
-                                if (fileInput.classList.contains('hide')) {
-                                    fileInput.classList.remove('hide');
-                                }
-                                fileInput.style.display = 'block';
-                                fileInput.style.opacity = '1';
-                                fileInput.style.visibility = 'visible';
-                                fileInput.style.zIndex = '9999';
+                            // 特殊处理尺寸信息
+                            if (key === '尺寸(cm)') {
+                                const dimensionSpans = cells[1].querySelectorAll('span');
+                                const dimensions = {};
                                 
-                                return {
-                                    index: i,
-                                    hasZipInput: true
-                                };
+                                dimensionSpans.forEach(span => {
+                                    const text = span.textContent.trim();
+                                    const match = text.match(/(长|宽|高)：(\d+\.?\d*)/);
+                                    if (match) {
+                                        dimensions[match[1]] = parseFloat(match[2]);
+                                    }
+                                });
+                                
+                                tableData[key] = dimensions;
+                            } 
+                            // 特殊处理重量信息
+                            else if (key === '重量(g)') {
+                                const weightSpans = cells[1].querySelectorAll('span');
+                                const weights = {};
+                                
+                                weightSpans.forEach(span => {
+                                    const text = span.textContent.trim();
+                                    if (text.includes('毛重')) {
+                                        const match = text.match(/毛重：(\d+\.?\d*)/);
+                                        if (match) {
+                                            weights.grossWeight = parseFloat(match[1]);
+                                        }
+                                    } else if (text.includes('出库平均重量')) {
+                                        const match = text.match(/出库平均重量：(\d+\.?\d*)/);
+                                        if (match) {
+                                            weights.averageWeight = parseFloat(match[1]);
+                                        }
+                                    }
+                                });
+                                
+                                tableData[key] = weights;
+                            }
+                            // 特殊处理关键词
+                            else if (key === 'Key Words') {
+                                const keywordButtons = cells[1].querySelectorAll('button.el-button--mini span');
+                                const keywords = [];
+                                
+                                keywordButtons.forEach(button => {
+                                    const keyword = button.textContent.trim();
+                                    if (keyword && !keyword.includes('复制')) {
+                                        keywords.push(keyword);
+                                    }
+                                });
+                                
+                                tableData[key] = keywords;
+                            }
+                            // 特殊处理商品属性
+                            else if (key === '商品属性') {
+                                const attributeDivs = cells[1].querySelectorAll('div div');
+                                const attributes = [];
+                                
+                                attributeDivs.forEach(div => {
+                                    const attribute = div.textContent.trim();
+                                    if (attribute) {
+                                        attributes.push(attribute);
+                                    }
+                                });
+                                
+                                tableData[key] = attributes;
+                            }
+                            // 特殊处理规格和包装清单
+                            else if (key === 'Specification' || key === 'Package List') {
+                                const contentDiv = cells[1].querySelector('div');
+                                if (contentDiv) {
+                                    tableData[key] = contentDiv.innerHTML.trim();
+                                } else {
+                                    tableData[key] = cells[1].textContent.trim();
+                                }
+                            }
+                            // 处理其他普通字段
+                            else {
+                                tableData[key] = cells[1].textContent.trim();
                             }
                         }
-                        
-                        return { index: -1, hasZipInput: false };
                     });
                     
-                    if (!targetComponent.hasZipInput) {
-                        console.log('未找到接受ZIP文件的上传组件');
-                        continue;
-                    }
-                    
-                    console.log(`成功定位到第 ${targetComponent.index + 1} 个上传组件（支持ZIP文件）`);
-                    
-                    // 找到并上传文件 - 直接操作文件输入框
-                    const fileInput = await page.$('input[type="file"][accept=".zip"]');
-                    if (fileInput) {
-                        console.log('找到ZIP文件输入框，准备上传文件');
-                        // 上传当前文件
-                        await fileInput.uploadFile(currentZipFile);
-                        
-                        // 手动触发多种事件
-                        await page.evaluate(() => {
-                            const fileInputs = document.querySelectorAll('input[type="file"][accept=".zip"]');
-                            for (const input of fileInputs) {
-                                // 按先后顺序触发多个事件
-                                ['click', 'focus', 'input', 'change'].forEach(eventType => {
-                                    const event = new Event(eventType, { bubbles: true });
-                                    input.dispatchEvent(event);
-                                });
-                            }
-                        });
-                        
-                        console.log(`文件已成功上传: ${currentZipFile}`);
-                        
-                        // 等待文件处理 - 30秒
-                        console.log('等待30秒让文件处理完成...');
-                        await new Promise(resolve => setTimeout(resolve, 30000));
-                        
-                        // 查看是否有确认按钮需要点击
-                        const hasConfirmButton = await page.evaluate(() => {
-                            const confirmButtons = Array.from(document.querySelectorAll('button')).filter(btn => 
-                                btn.textContent.includes('确认') || 
-                                btn.textContent.includes('提交') || 
-                                btn.textContent.includes('确定'));
-                            
-                            if (confirmButtons.length > 0) {
-                                console.log('找到确认按钮，自动点击');
-                                confirmButtons[0].click();
-                                return true;
-                            }
-                            return false;
-                        });
-                        
-                        console.log(`确认按钮状态: ${hasConfirmButton ? '已点击' : '未找到'}`);
-                        
-                        // 等待确认按钮操作完成
-                        await new Promise(resolve => setTimeout(resolve, 3000));
-                    } else {
-                        console.log('未找到ZIP文件输入框');
-                    }
-                } catch (error) {
-                    console.error('文件上传过程出错:', error.message);
+                    dialogInfo.basicInfo = tableData;
                 }
+                
+                // 获取图片信息
+                const imageGroups = {};
+                
+                // 通用函数：提取指定类型的图片
+                function extractImagesByType(typeText) {
+                    const images = [];
+                    // 查找所有h5标题元素
+                    const allH5Elements = document.querySelectorAll('.el-dialog__body h5[style="margin-right: 10px;"]');
+                    
+                    // 遍历所有h5元素，寻找包含指定类型文本的元素
+                    for (const h5 of allH5Elements) {
+                        if (h5.textContent.includes(typeText)) {
+                            // 找到父元素下的所有图片
+                            const imgElements = h5.parentElement.querySelectorAll('.el-image img');
+                            
+                            imgElements.forEach(img => {
+                                if (img.src) {
+                                    images.push(img.src);
+                                }
+                            });
+                            
+                            break;
+                        }
+                    }
+                    
+                    return images;
+                }
+                
+                // 提取所有图片类型
+                const imageTypes = ['主图', '细节图', '全家福', '场景图', '尺寸图', '其它图'];
+                
+                // 遍历所有图片类型并提取
+                imageTypes.forEach(type => {
+                    const images = extractImagesByType(type);
+                    if (images.length > 0) {
+                        // 将类型名称转换为camelCase作为键名
+                        const key = type === '主图' ? 'mainImages' :
+                                   type === '细节图' ? 'detailImages' :
+                                   type === '全家福' ? 'familyImages' :
+                                   type === '场景图' ? 'sceneImages' :
+                                   type === '尺寸图' ? 'dimensionImages' : 
+                                   type === '其它图' ? 'otherImages' :
+                                   type.replace(/[\u4e00-\u9fa5]+/g, match => match.charAt(0).toLowerCase() + match.slice(1)) + 'Images';
+                        
+                        imageGroups[key] = images;
+                    }
+                });
+                
+                // 尝试使用data-v属性查找其它图
+                if (!imageGroups['otherImages']) {
+                    const otherImages = [];
+                    const otherImageElements = document.querySelectorAll('div[data-v-15c51896] h5[data-v-15c51896][style="margin-right: 10px;"]');
+                    
+                    otherImageElements.forEach(h5 => {
+                        if (h5.textContent.includes('其它图')) {
+                            // 找到父元素下的所有图片
+                            const imgElements = h5.parentElement.querySelectorAll('.el-image img');
+                            
+                            imgElements.forEach(img => {
+                                if (img.src) {
+                                    otherImages.push(img.src);
+                                }
+                            });
+                        }
+                    });
+                    
+                    if (otherImages.length > 0) {
+                        imageGroups['otherImages'] = otherImages;
+                    }
+                }
+                
+                dialogInfo.images = imageGroups;
+                
+                return dialogInfo;
+            });
+            
+            console.log('提取的弹窗详情数据:', detailData);
+            
+            // 合并表格数据和弹窗数据
+            this.data = {
+                tableData: tableData,
+                detailData: detailData
+            };
+            
+            // 关闭弹窗
+            console.log('数据提取完成，准备关闭弹窗...');
+            
+            // 根据图片数量决定等待时间
+            const hasImages = detailData.images && Object.keys(detailData.images).length > 0;
+            const totalImages = hasImages ? Object.values(detailData.images).flat().length : 0;
+            const waitTime = totalImages > 0 ? Math.min(10000, totalImages * 500) : 2000;
+            
+            console.log(`等待${waitTime/1000}秒后关闭弹窗...`);
+            await page.waitForTimeout(waitTime);
+            
+            // 尝试多种方法关闭弹窗
+            const closeSuccess = await page.evaluate(() => {
+                try {
+                    console.log('尝试关闭弹窗...');
+                    
+                    // 方法1：使用更精确的选择器 - 通过footer中的关闭按钮
+                    const footerCloseButton = document.querySelector('div.footer button.el-button.el-button--default.el-button--small span');
+                    if (footerCloseButton && footerCloseButton.textContent.trim() === '关闭') {
+                        console.log('找到footer中的关闭按钮，点击中...');
+                        footerCloseButton.click();
+                        console.log('通过footer中的关闭按钮关闭弹窗');
+                        return true;
+                    }
+                    
+                    // 方法2：使用data-v属性的选择器
+                    const dataVCloseButton = document.querySelector('button[data-v-15c51896].el-button.el-button--default.el-button--small span');
+                    if (dataVCloseButton && dataVCloseButton.textContent.trim() === '关闭') {
+                        console.log('找到带data-v属性的关闭按钮，点击中...');
+                        dataVCloseButton.click();
+                        console.log('通过带data-v属性的关闭按钮关闭弹窗');
+                        return true;
+                    }
+                    
+                    // 方法3：使用一般的选择器
+                    const closeButton = document.querySelector('button.el-button.el-button--default.el-button--small span');
+                    if (closeButton && closeButton.textContent.trim() === '关闭') {
+                        console.log('找到关闭按钮，点击中...');
+                        closeButton.click();
+                        console.log('通过关闭按钮关闭弹窗');
+                        return true;
+                    }
+                    
+                    // 方法4：使用更精确的选择器点击关闭按钮
+                    const closeButtons = document.querySelectorAll('button.el-dialog__headerbtn');
+                    if (closeButtons && closeButtons.length > 0) {
+                        closeButtons[closeButtons.length - 1].click();
+                        console.log('通过点击关闭按钮关闭弹窗');
+                        return true;
+                    }
+                    
+                    // 方法5：尝试点击图标
+                    const closeIcons = document.querySelectorAll('i.el-dialog__close.el-icon.el-icon-close');
+                    if (closeIcons && closeIcons.length > 0) {
+                        closeIcons[closeIcons.length - 1].click();
+                        console.log('通过点击关闭图标关闭弹窗');
+                        return true;
+                    }
+                    
+                    // 方法6：直接修改DOM
+                    const dialog = document.querySelector('.el-dialog__wrapper');
+                    if (dialog) {
+                        // 直接修改样式使其隐藏
+                        dialog.style.display = 'none';
+                        
+                        // 移除body上的相关类
+                        document.body.classList.remove('el-popup-parent--hidden');
+                        document.body.style.overflow = 'auto';
+                        document.body.style.paddingRight = '0px';
+                        
+                        // 移除遮罩
+                        const modal = document.querySelector('.v-modal');
+                        if (modal) {
+                            modal.style.display = 'none';
+                        }
+                        
+                        console.log('通过修改DOM关闭弹窗');
+                        return true;
+                    }
+                    
+                    // 方法7：模拟ESC键
+                    const escEvent = new KeyboardEvent('keydown', {
+                        key: 'Escape',
+                        code: 'Escape',
+                        keyCode: 27,
+                        which: 27,
+                        bubbles: true,
+                        cancelable: true
+                    });
+                    document.dispatchEvent(escEvent);
+                    console.log('通过ESC键关闭弹窗');
+                    
+                    return true;
+                } catch (error) {
+                    console.error('关闭弹窗时出错:', error);
+                    return false;
+                }
+            });
+            
+            if (closeSuccess) {
+                console.log('弹窗已关闭');
+            } else {
+                console.log('关闭弹窗失败，尝试使用Puppeteer的keyboard.press方法');
+                await page.keyboard.press('Escape');
             }
-        };
-        
-        // 先上传SPU图片
-        console.log('开始上传SPU图片...');
-        await uploadZipFiles('product_images_spu_id', true);
-        
-        // 再上传SKU图片
-        console.log('开始上传SKU图片...');
-        await uploadZipFiles('product_images_sku_id', false);
-        
-        console.log('所有图片上传完成');
-        return true;
-       
+            
+            // 等待弹窗消失
+            await page.waitForTimeout(1000);
+        }
     } catch (error) {
-        console.error('京东外卖商品获取失败:', error.message);
-        throw error;
+        console.log('处理"查看详情"按钮或提取弹窗信息时出错:', error);
+        // 如果获取弹窗信息失败，至少返回表格数据
+        this.data = tableData;
+    }
+
+    if (this.data) {
+        console.log(`处理数据，准备输出`);
+        outputHandler.handle(this.data, 'output', this.task_name, this.cityname);
+    } else {
+        console.log('未找到任何数据');
     }
 }
