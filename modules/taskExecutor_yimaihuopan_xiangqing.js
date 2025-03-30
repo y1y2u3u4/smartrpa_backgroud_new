@@ -799,8 +799,12 @@ export class OutputTask extends Task {
             // 点击"查看详情"按钮
             try {
                 // 等待"查看详情"按钮出现
-                await page.waitForSelector('button.el-button--text span', { timeout: 10000 });
-                await page.waitForTimeout(10000);
+                await page.waitForSelector('button.el-button--text span', { timeout: 20000 });
+                await page.waitForTimeout(5000); // 减少等待时间，避免过长超时
+                
+                // 设置页面默认超时
+                await page.setDefaultTimeout(60000); // 设置更长的默认超时时间
+                
                 // 查找包含"查看详情"文本的按钮
                 const detailButtons = await page.$$('button.el-button--text span');
                 let clicked = false;
@@ -1199,8 +1203,28 @@ export class OutputTask extends Task {
                 }
             } catch (error) {
                 console.log('处理"查看详情"按钮或提取弹窗信息时出错:', error);
+                console.log('错误详情:', error.stack);
+                console.log('尝试继续执行其他操作...');
+                
                 // 如果获取弹窗信息失败，至少返回表格数据
                 this.data = tableData;
+                
+                // 尝试关闭可能存在的弹窗
+                try {
+                    await page.evaluate(() => {
+                        const dialogs = document.querySelectorAll('.el-dialog__wrapper');
+                        dialogs.forEach(dialog => {
+                            dialog.style.display = 'none';
+                        });
+                        const masks = document.querySelectorAll('.v-modal');
+                        masks.forEach(mask => {
+                            mask.style.display = 'none';
+                        });
+                    });
+                    console.log('已尝试通过DOM操作关闭可能存在的弹窗');
+                } catch (closeError) {
+                    console.log('尝试关闭弹窗时出错:', closeError);
+                }
             }
         
             if (this.data) {
