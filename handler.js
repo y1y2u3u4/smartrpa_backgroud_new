@@ -1121,7 +1121,7 @@ export async function handler_run_internal(reqBody, taskId) {
         updateTaskProgress('browser_initializing', '正在初始化浏览器');
         
         checkTimeout();
-        browser = await launchBrowser_adsPower_lianjie_local(adsPowerUserId, BASE_URL);
+        browser = await launchBrowser_adsPower_lianjie_local_api(adsPowerUserId, BASE_URL);
         
         checkTimeout();
         page = await setupPage_adsPower_base(browser);
