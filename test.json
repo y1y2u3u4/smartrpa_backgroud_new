@@ -1,415 +1,338 @@
-{
-  "categories": [
-    {
-      "name": "🧧本店五大免费🧧",
-      "count": "5"
-    },
-    {
-      "name": "🏵️精品汤面类🍜",
-      "count": "7"
-    },
-    {
-      "name": "🥟饺子类🔥",
-      "count": "2"
-    },
-    {
-      "name": "🏅精品炒面类🔥",
-      "count": "4"
-    },
-    {
-      "name": "🏅精品炒饭类🔥",
-      "count": "2"
-    },
-    {
-      "name": "🏅精品拌面类🔥",
-      "count": "8"
-    },
-    {
-      "name": "🏅精品盖饭类🔥",
-      "count": "8"
-    },
-    {
-      "name": "🏅精选套餐类🍱",
-      "count": "3"
-    },
-    {
-      "name": "🏅精品炒菜类🥬",
-      "count": "9"
-    },
-    {
-      "name": "🍸饮品类🔥",
-      "count": "8"
-    },
-    {
-      "name": "🏅精品小吃类🔥",
-      "count": "4"
-    }
-  ],
-  "products": [
-    {
-      "category": "🧧本店五大免费🧧",
-      "name": "宠粉福利丨免费加面  加到主食里",
-      "price": "¥ 0",
-      "image": "http://p1.meituan.net/wmproduct/af46ce1e0ae658b41ceef3401d04de67250400.jpg@200w_150h_1e_1c.webp"
-    },
-    {
-      "category": "🧧本店五大免费🧧",
-      "name": "牛骨汤",
-      "price": "¥ 0",
-      "image": "http://p0.meituan.net/wmproduct/e8fa19f15ffac747e18d0d6d8f19e7ff614972.jpg@200w_150h_1e_1c.webp"
-    },
-    {
-      "category": "🧧本店五大免费🧧",
-      "name": "大蒜（吃面不吃蒜、味道减一半、限购一份）",
-      "price": "¥ 0",
-      "image": "https://img.meituan.net/waimaidpoipicmining/b2bb1cb650a9882c08863eea7a26d30c764423.png@200w_150h_1e_1c.webp"
-    },
-    {
-      "category": "🧧本店五大免费🧧",
-      "name": "辣椒油——提香提味",
-      "price": "¥ 0",
-      "image": "http://p1.meituan.net/wmproduct/845ec586b4ecd9dd2ff8e3320a9bcb04320493.jpg@200w_150h_1e_1c.webp"
-    },
-    {
-      "category": "🧧本店五大免费🧧",
-      "name": "山西老陈醋——解腻提香",
-      "price": "¥ 0",
-      "image": "http://p0.meituan.net/xianfu/2b7ffa7d8265a6d377c81fc3c1aafcda164738.jpg@200w_150h_1e_1c.webp"
-    },
-    {
-      "category": "🏵️精品汤面类🍜",
-      "name": "🍜牛肉刀削面｛汤面分离，铝热包装#",
-      "price": "¥ 14.99",
-      "image": "http://p1.meituan.net/wmproduct/e81332d4c6a68129136cf522f5726c9f930117.jpg@200w_150h_1e_1c.webp"
-    },
-    {
-      "category": "🏵️精品汤面类🍜",
-      "name": "🍳鸡蛋拉面｛冬日必荐，热气腾腾｝",
-      "price": "¥ 13.99",
-      "image": "http://p1.meituan.net/wmproduct/3aef24bfa0707b067113c2c76b23ec1d1027747.jpg@200w_150h_1e_1c.webp"
-    },
-    {
-      "category": "🏵️精品汤面类🍜",
-      "name": "🍜传统牛肉拉面🏆汤面分离",
-      "price": "¥ 13.99",
-      "image": "http://p1.meituan.net/wmproduct/9c05cb2545825be20237aac789461cf3897863.jpg@200w_150h_1e_1c.webp"
-    },
-    {
-      "category": "🏵️精品汤面类🍜",
-      "name": "🍜酸菜牛肉面｛汤面分离，铝热包装👍｝",
-      "price": "¥ 16.99",
-      "image": "http://p0.meituan.net/wmproduct/1f4dfbe55a8a2c9bbffee8590e241b0e921719.jpg@200w_150h_1e_1c.webp"
-    },
-    {
-      "category": "🏵️精品汤面类🍜",
-      "name": "🍜红烧牛肉面｛浓浓牛肉汤、香气扑鼻｝",
-      "price": "¥ 19.99",
-      "image": "http://p0.meituan.net/wmproduct/d3b821dd84ed4f00f5a1d3243321340c923655.jpg@200w_150h_1e_1c.webp"
-    },
-    {
-      "category": "🏵️精品汤面类🍜",
-      "name": "🍜番茄鸡蛋面｛新鲜的番茄、美味翻倍｝",
-      "price": "¥ 17.99",
-      "image": "http://p1.meituan.net/wmproduct/3f439f43ada0198961138b77ee0809d41005175.jpg@200w_150h_1e_1c.webp"
-    },
-    {
-      "category": "🏵️精品汤面类🍜",
-      "name": "🍜招牌牛肉拉面｛牛肉多肉片大｝👍",
-      "price": "¥ 22.9",
-      "image": "http://p0.meituan.net/wmproduct/de43db4460188951da7d812d472e19d3243700.jpg@200w_150h_1e_1c.webp"
-    },
-    {
-      "category": "🥟饺子类🔥",
-      "name": "酸汤水饺🔥",
-      "price": "¥ 16.99",
-      "image": "https://img.meituan.net/waimaidpoipicmining/d730f3d48921cdb01b1e3011003e9b1c817564.png@200w_150h_1e_1c.webp"
-    },
-    {
-      "category": "🥟饺子类🔥",
-      "name": "牛肉干饺 （约30个）",
-      "price": "¥ 16.99",
-      "image": "http://p0.meituan.net/wmproduct/37f827aafd3dc145f17553340ebb1d41336648.jpg@200w_150h_1e_1c.webp"
-    },
-    {
-      "category": "🏅精品炒面类🔥",
-      "name": "🍳鸡蛋炒刀削面｛宽宽的面条，浓郁的汤汁｝",
-      "price": "¥ 19.99",
-      "image": "http://p1.meituan.net/wmproduct/78448d9264eb1bae8fb3d6c50069011b929589.jpg@200w_150h_1e_1c.webp"
-    },
-    {
-      "category": "🏅精品炒面类🔥",
-      "name": "🍝牛肉炒拉条｛店面销量高、强烈推荐👍｝",
-      "price": "¥ 19.99",
-      "image": "http://p0.meituan.net/wmproduct/9875f72063739db831b9abe5d2064b9c934059.jpg@200w_150h_1e_1c.webp"
-    },
-    {
-      "category": "🏅精品炒面类🔥",
-      "name": "鸡蛋炒拉条",
-      "price": "¥ 19.99",
-      "image": "http://p0.meituan.net/wmproduct/abbda50592696d678b74cdf6cdc9c61a964154.jpg@200w_150h_1e_1c.webp"
-    },
-    {
-      "category": "🏅精品炒面类🔥",
-      "name": "🍝牛肉炒刀削面｛不吃不知道、一吃忘不了｝",
-      "price": "¥ 19.99",
-      "image": "http://p1.meituan.net/wmproduct/f6a23b72620ad4805e7aec831e9ba78a926855.jpg@200w_150h_1e_1c.webp"
-    },
-    {
-      "category": "🏅精品炒饭类🔥",
-      "name": "🥚蛋炒饭｛炒饭需狂野、饭香更浓郁｝",
-      "price": "¥ 14.99",
-      "image": "http://p0.meituan.net/wmproduct/75e0e50a5fbfe997392c88fcb400c1de394631.jpg@200w_150h_1e_1c.webp"
-    },
-    {
-      "category": "🏅精品炒饭类🔥",
-      "name": "牛肉鸡蛋炒饭🍚｛炒饭更狂野，饭香更浓郁｝",
-      "price": "¥ 16.99",
-      "image": "http://p0.meituan.net/xianfu/ddfca8de1616122291657947ce9a7313629613.png@200w_150h_1e_1c.webp"
-    },
-    {
-      "category": "🏅精品拌面类🔥",
-      "name": "孜然牛肉拌面",
-      "price": "¥ 21.99",
-      "image": "http://p0.meituan.net/wmproduct/74cdf55cb1a7e841522af2fe776ae257928817.jpg@200w_150h_1e_1c.webp"
-    },
-    {
-      "category": "🏅精品拌面类🔥",
-      "name": "🌶🌶酸辣白菜拌面🍝",
-      "price": "¥ 17.99",
-      "image": "http://p0.meituan.net/wmproduct/f522e8ad414c7f6924510b3a43bec900930700.jpg@200w_150h_1e_1c.webp"
-    },
-    {
-      "category": "🏅精品拌面类🔥",
-      "name": "✨（老少🍅皆宜）番茄炒蛋拌面",
-      "price": "¥ 17.99",
-      "image": "http://p0.meituan.net/wmproduct/603fbf3827d2c70c4e2d6e15013d0e43918856.jpg@200w_150h_1e_1c.webp"
-    },
-    {
-      "category": "🏅精品拌面类🔥",
-      "name": "🫑青椒土豆丝拌面🍝",
-      "price": "¥ 17.99",
-      "image": "http://p0.meituan.net/wmproduct/5eee17b3b0902ef9ff640fc32a8b8652923035.jpg@200w_150h_1e_1c.webp"
-    },
-    {
-      "category": "🏅精品拌面类🔥",
-      "name": "🍃（葱香💥十足）葱爆牛肉拌面",
-      "price": "¥ 21.99",
-      "image": "http://p0.meituan.net/wmproduct/21dc2d06e7f7c1d2cdddf8d6c4b5139e921871.jpg@200w_150h_1e_1c.webp"
-    },
-    {
-      "category": "🏅精品拌面类🔥",
-      "name": "🔥（进店🏅必点）红烧牛肉拌面",
-      "price": "¥ 21.99",
-      "image": "http://p0.meituan.net/wmproduct/4b9fec636ad0d20dc4277d86487c51ae920454.jpg@200w_150h_1e_1c.webp"
-    },
-    {
-      "category": "🏅精品拌面类🔥",
-      "name": "🫑青椒牛肉拌面🍝",
-      "price": "¥ 21.99",
-      "image": "http://p0.meituan.net/wmproduct/731b4da7f113b602dcc02d64471b2828558568.jpg@200w_150h_1e_1c.webp"
-    },
-    {
-      "category": "🏅精品拌面类🔥",
-      "name": "🌈（每日👍特推）土豆牛肉拌面",
-      "price": "¥ 21.99",
-      "image": "http://p0.meituan.net/wmproduct/6177f1a5577a54a8cb03f638777c16031047022.jpg@200w_150h_1e_1c.webp"
-    },
-    {
-      "category": "🏅精品盖饭类🔥",
-      "name": "🍳🍳番茄炒蛋盖浇饭",
-      "price": "¥ 17.99",
-      "image": "http://p0.meituan.net/wmproduct/e4060076f6a90d75b81c9154c5bb7e5d930703.jpg@200w_150h_1e_1c.webp"
-    },
-    {
-      "category": "🏅精品盖饭类🔥",
-      "name": "🍋｛酸辣开胃｝🌶酸辣白菜盖浇饭",
-      "price": "¥ 17.99",
-      "image": "http://p0.meituan.net/wmproduct/f414b7238b9efd17a852bbaf1ac37900897482.jpg@200w_150h_1e_1c.webp"
-    },
-    {
-      "category": "🏅精品盖饭类🔥",
-      "name": "🎊｛素食主义｝🫑青椒土豆丝盖浇饭",
-      "price": "¥ 17.99",
-      "image": "http://p0.meituan.net/wmproduct/7ce58429bee95a93050bcdb14babc16b1046531.jpg@200w_150h_1e_1c.webp"
-    },
-    {
-      "category": "🏅精品盖饭类🔥",
-      "name": "💫｛下饭神器｝🫑青椒牛肉盖饭送清汤",
-      "price": "¥ 21.99",
-      "image": "http://p1.meituan.net/wmproduct/a7db67bb2f386a2ca709bc05b8ffd92a999835.jpg@200w_150h_1e_1c.webp"
-    },
-    {
-      "category": "🏅精品盖饭类🔥",
-      "name": "💯｛明星单品｝🌟红烧牛肉盖浇饭",
-      "price": "¥ 21.99",
-      "image": "http://p0.meituan.net/wmproduct/66a9c9667c746be2a5d674dac7c01f7d927096.jpg@200w_150h_1e_1c.webp"
-    },
-    {
-      "category": "🏅精品盖饭类🔥",
-      "name": "💖｛葱香十足｝🍃葱爆牛肉盖浇饭",
-      "price": "¥ 21.99",
-      "image": "http://p0.meituan.net/wmproduct/0c6412dadeeb00d0a2c6768ab71310fd1020918.jpg@200w_150h_1e_1c.webp"
-    },
-    {
-      "category": "🏅精品盖饭类🔥",
-      "name": "🌈｛主打爆款｝💥土豆牛肉盖浇饭送清汤",
-      "price": "¥ 21.99",
-      "image": "http://p0.meituan.net/wmproduct/6d005be0210b93e6d107749d417c401f1043125.jpg@200w_150h_1e_1c.webp"
-    },
-    {
-      "category": "🏅精品盖饭类🔥",
-      "name": "🌈｛灵魂搭配｝✨孜然牛肉盖浇饭",
-      "price": "¥ 21.99",
-      "image": "http://p1.meituan.net/wmproduct/b997efec8e94a33b17351151dbf002fd918368.jpg@200w_150h_1e_1c.webp"
-    },
-    {
-      "category": "🏅精选套餐类🍱",
-      "name": "🪇双人幸福套餐🍱",
-      "price": "¥ 60",
-      "image": "http://p0.meituan.net/wmproduct/7c11c65cbfaad1f4638425d67f5ef943587140.png@200w_150h_1e_1c.webp"
-    },
-    {
-      "category": "🏅精选套餐类🍱",
-      "name": "🔥牛肉拉面套餐🍱",
-      "price": "¥ 16.39",
-      "image": "http://p0.meituan.net/wmproduct/0b36fbb06ae18b002d9b2d5ddb7fb1a1562087.png@200w_150h_1e_1c.webp"
-    },
-    {
-      "category": "🏅精选套餐类🍱",
-      "name": "🔥招牌大片牛肉面套餐🍱",
-      "price": "¥ 38.99",
-      "image": "http://p0.meituan.net/wmproduct/5717fd6f1ef4b3e84c1bb45b10ffe40e595213.png@200w_150h_1e_1c.webp"
-    },
-    {
-      "category": "🏅精品炒菜类🥬",
-      "name": "新疆大盘鸡〖送一份宽面〗",
-      "price": "¥ 89.99",
-      "image": "http://p1.meituan.net/wmproduct/c1d33adff8ca0465868982f5a1ee1444555870.jpg@200w_150h_1e_1c.webp"
-    },
-    {
-      "category": "🏅精品炒菜类🥬",
-      "name": "青椒炒肉〖送一碗米〗",
-      "price": "¥ 46",
-      "image": "http://p1.meituan.net/wmproduct/9c19c9ec09639dab459161d7d097f563527501.jpg@200w_150h_1e_1c.webp"
-    },
-    {
-      "category": "🏅精品炒菜类🥬",
-      "name": "木耳炒肉〖送一碗米〗",
-      "price": "¥ 48",
-      "image": "http://p0.meituan.net/wmproduct/f33d0d05d012b7b99134d534ac158002511085.jpg@200w_150h_1e_1c.webp"
-    },
-    {
-      "category": "🏅精品炒菜类🥬",
-      "name": "洋葱炒牛肉〖送一碗米〗",
-      "price": "¥ 46.6",
-      "image": "http://p1.meituan.net/wmproduct/1566184e4ce3a70ad256cb3eb85e0eb4492941.jpg@200w_150h_1e_1c.webp"
-    },
-    {
-      "category": "🏅精品炒菜类🥬",
-      "name": "酸辣土豆丝〖送一碗米〗",
-      "price": "¥ 22.6",
-      "image": "http://p0.meituan.net/wmproduct/af6bd50c73f2b8ac2da02080be664ce2193957.jpg@200w_150h_1e_1c.webp"
-    },
-    {
-      "category": "🏅精品炒菜类🥬",
-      "name": "西红柿炒鸡蛋〖送一碗米〗",
-      "price": "¥ 22.6",
-      "image": "http://p0.meituan.net/wmproduct/78151d799344919e8e61d74599f05a15610110.jpg@200w_150h_1e_1c.webp"
-    },
-    {
-      "category": "🏅精品炒菜类🥬",
-      "name": "土豆烧牛肉〖送一碗米〗",
-      "price": "¥ 48.5",
-      "image": "http://p0.meituan.net/wmproduct/3e5b9d2d1e861cf7e5a2e7f8d06c69d0462459.jpg@200w_150h_1e_1c.webp"
-    },
-    {
-      "category": "🏅精品炒菜类🥬",
-      "name": "孜然牛肉〖送一碗米〗",
-      "price": "¥ 45",
-      "image": "http://p0.meituan.net/wmproduct/929c6226b776d74cd0cacbb91812f538434952.jpg@200w_150h_1e_1c.webp"
-    },
-    {
-      "category": "🏅精品炒菜类🥬",
-      "name": "葱爆牛肉〖送一碗米〗",
-      "price": "¥ 46.6",
-      "image": "http://p0.meituan.net/wmproduct/0747d89f5fdd9ca0dddd049269a1cdf6415528.jpg@200w_150h_1e_1c.webp"
-    },
-    {
-      "category": "🍸饮品类🔥",
-      "name": "青梅绿茶",
-      "price": "¥ 5",
-      "image": "http://p0.meituan.net/xianfu/aa2672d554a709f1c2b5d2822a748d1c229369.jpg@200w_150h_1e_1c.webp"
-    },
-    {
-      "category": "🍸饮品类🔥",
-      "name": "冰红茶",
-      "price": "¥ 5",
-      "image": "http://p0.meituan.net/wmproduct/4ba91e6235d711fc157d0902127df6a8862192.jpg@200w_150h_1e_1c.webp"
-    },
-    {
-      "category": "🍸饮品类🔥",
-      "name": "茉莉蜜茶",
-      "price": "¥ 4",
-      "image": "http://p1.meituan.net/wmproduct/57e2208d481ac90d77a85837593265801034216.jpg@200w_150h_1e_1c.webp"
-    },
-    {
-      "category": "🍸饮品类🔥",
-      "name": "可口可乐",
-      "price": "¥ 5",
-      "image": "http://p1.meituan.net/wmproduct/74c91d267cf94f2cb7176b7aa1d1e63a955782.jpg@200w_150h_1e_1c.webp"
-    },
-    {
-      "category": "🍸饮品类🔥",
-      "name": "芬达",
-      "price": "¥ 5",
-      "image": "http://p0.meituan.net/wmproduct/a2d4c13f764812fa036f79252b8c1cdb969182.jpg@200w_150h_1e_1c.webp"
-    },
-    {
-      "category": "🍸饮品类🔥",
-      "name": "雪碧",
-      "price": "¥ 5",
-      "image": "http://p1.meituan.net/wmproduct/3627a47e71c0300decaca7e12e192aeb154151.jpg@200w_150h_1e_1c.webp"
-    },
-    {
-      "category": "🍸饮品类🔥",
-      "name": "怡宝",
-      "price": "¥ 3",
-      "image": "http://p0.meituan.net/wmproduct/cce549260ba4b04b59d0a2322bcf3351782556.jpg@200w_150h_1e_1c.webp"
-    },
-    {
-      "category": "🍸饮品类🔥",
-      "name": "酸梅汤",
-      "price": "¥ 3",
-      "image": "http://p1.meituan.net/wmproduct/5ee6969c10c825896fff6d6673150170210396.jpg@200w_150h_1e_1c.webp"
-    },
-    {
-      "category": "🏅精品小吃类🔥",
-      "name": "烤馕",
-      "price": "¥ 9.99",
-      "image": "https://img.meituan.net/waimaidpoipicmining/41f381b7839630d3d3557ff1d208ccae908793.png@200w_150h_1e_1c.webp"
-    },
-    {
-      "category": "🏅精品小吃类🔥",
-      "name": "香喷喷的白米饭",
-      "price": "¥ 3",
-      "image": "http://p0.meituan.net/wmproduct/5117b98e5b2b1da85706b7adce00314e362909.jpg@200w_150h_1e_1c.webp"
-    },
-    {
-      "category": "🏅精品小吃类🔥",
-      "name": "肉夹馍🎊享受生活",
-      "price": "¥ 11.99",
-      "image": "http://p0.meituan.net/wmproduct/8936d43647eefa1380c1b141553041e3925106.jpg@200w_150h_1e_1c.webp"
-    },
-    {
-      "category": "🏅精品小吃类🔥",
-      "name": "煎鸡蛋🏅亏本尝鲜",
-      "price": "¥ 2.66",
-      "image": "http://p0.meituan.net/xianfu/eeee4e007230de62f4376beff6a0012c365503.jpg@200w_150h_1e_1c.webp"
-    }
-  ],
-  "totalProductCount": 60,
-  "shopInfo": {
-    "timestamp": "2025-03-08T05:34:16.171Z",
-    "platform": "美团外卖"
+[
+  {
+    "link": "https://www.ozon.ru/product/bigudi-1-sht-1773059259/?_bctx=CAQQ2KwV&at=ywtAOJ2k6uy27PrNFXn0PqZU5nAQ7oi2my0zBI95nBxG&hs=1",
+    "id": "bigudi-1-sht-1773059259",
+    "imageUrl": "https://ir.ozone.ru/s3/multimedia-8/wc500/6722348804.jpg",
+    "currentPrice": "158 ₽",
+    "oldPrice": "263 ₽",
+    "discount": "−39%",
+    "title": "Бигуди, 1 шт",
+    "rating": "5.0",
+    "reviewCount": "0",
+    "deliveryDate": "29 апреля",
+    "hasPromotion": false,
+    "cartButtonText": "29 апреля"
+  },
+  {
+    "link": "https://www.ozon.ru/product/kostyum-karnavalnyy-1634693206/?_bctx=CAQQ2KwV&at=jYtZoAGPls7q1QRPsX0EwRpTGqpJ37hD8mVX9sEjmRzX&hs=1",
+    "id": "kostyum-karnavalnyy-1634693206",
+    "imageUrl": "https://ir.ozone.ru/s3/multimedia-4/wc500/6904617844.jpg",
+    "currentPrice": "814 ₽",
+    "oldPrice": "2 677 ₽",
+    "discount": "−69%",
+    "title": "Костюм карнавальный",
+    "rating": "5.0",
+    "reviewCount": "0",
+    "deliveryDate": "19 апреля",
+    "hasPromotion": false,
+    "cartButtonText": "19 апреля"
+  },
+  {
+    "link": "https://www.ozon.ru/product/nozhnitsy-dlya-vyshivaniya-1705304540/?_bctx=CAQQ2KwV&at=lRt6RkPpOfW6LoADI7NLWyQSoA39ZzI5zPQzHgOXp7O&hs=1",
+    "id": "nozhnitsy-dlya-vyshivaniya-1705304540",
+    "imageUrl": "https://ir.ozone.ru/s3/multimedia-1-1/wc500/7140978901.jpg",
+    "currentPrice": "244 ₽",
+    "oldPrice": "408 ₽",
+    "discount": "−40%",
+    "title": "Ножницы для вышивания",
+    "rating": "5.0",
+    "reviewCount": "0",
+    "deliveryDate": "20 апреля",
+    "hasPromotion": false,
+    "cartButtonText": "20 апреля"
+  },
+  {
+    "link": "https://www.ozon.ru/product/debsekper-ruchka-dvernaya-avtomobilnaya-art-7164a0-987710461/?_bctx=CAQQ2KwV&at=vQtrw4LKOtQBGW6jcKWZ5oWT1xnwlWsPz2Z27fzjl6nr&hs=1",
+    "id": "debsekper-ruchka-dvernaya-avtomobilnaya-art-7164a0-987710461",
+    "imageUrl": "https://ir.ozone.ru/s3/multimedia-7/wc500/6655665895.jpg",
+    "currentPrice": "1 867 ₽",
+    "oldPrice": "2 830 ₽",
+    "discount": "−34%",
+    "title": "DEBSEKPER Ручка дверная автомобильная, арт. 7164A0",
+    "rating": "5.0",
+    "reviewCount": "0",
+    "deliveryDate": "30 апреля",
+    "hasPromotion": false,
+    "cartButtonText": "30 апреля"
+  },
+  {
+    "link": "https://www.ozon.ru/product/indikator-potoka-vody-1473392560/?_bctx=CAQQ2KwV&at=08tYN4gZJcRzXn6xfZ2w4jmfZDjx7Xim9WNlVSvxzZy9&hs=1",
+    "id": "indikator-potoka-vody-1473392560",
+    "imageUrl": "https://ir.ozone.ru/s3/multimedia-9/wc500/6838459749.jpg",
+    "currentPrice": "520 ₽",
+    "oldPrice": "867 ₽",
+    "discount": "−40%",
+    "title": "Индикатор потока воды",
+    "rating": "5.0",
+    "reviewCount": "0",
+    "deliveryDate": "29 апреля",
+    "hasPromotion": false,
+    "cartButtonText": "29 апреля"
+  },
+  {
+    "link": "https://www.ozon.ru/product/statuya-shef-povara-figurka-shef-povara-1621076868/?_bctx=CAQQ2KwV&at=nRtr9x3jltpK3En0un1ELvZC8KA5BycAK38XwIppVRmX&hs=1",
+    "id": "statuya-shef-povara-figurka-shef-povara-1621076868",
+    "imageUrl": "https://ir.ozone.ru/s3/multimedia-l/wc500/6517216593.jpg",
+    "currentPrice": "817 ₽",
+    "oldPrice": "1 368 ₽",
+    "discount": "−40%",
+    "title": "Статуя шеф повара фигурка шеф повара",
+    "rating": "5.0",
+    "reviewCount": "0",
+    "deliveryDate": "30 апреля",
+    "hasPromotion": false,
+    "cartButtonText": "30 апреля"
+  },
+  {
+    "link": "https://www.ozon.ru/product/klaviatura-2612230034111-wazu-l1a0b9-1748253635/?_bctx=CAQQ2KwV&at=jYtZoAGPlsqGnNYqu72jG4SWkVLmXiw32Ej7Izqp9Ew&hs=1",
+    "id": "klaviatura-2612230034111-wazu-l1a0b9-1748253635",
+    "imageUrl": "https://ir.ozone.ru/s3/multimedia-y/wc500/6749417950.jpg",
+    "currentPrice": "573 ₽",
+    "oldPrice": "960 ₽",
+    "discount": "−40%",
+    "title": "Клавиатура 2612230034111_WAZU_L1A0B9",
+    "rating": "4.9",
+    "reviewCount": "0",
+    "deliveryDate": "29 апреля",
+    "hasPromotion": false,
+    "cartButtonText": "29 апреля"
+  },
+  {
+    "link": "https://www.ozon.ru/product/rolikovyy-massazher-dlya-meridianov-24kruga-zelenyy-1706634620/?_bctx=CAQQ2KwV&at=jYtZoAGPlsEY4Xr8HEv7DVrCwQJ8DEi7ApBkVCNQ1DGl&hs=1",
+    "id": "rolikovyy-massazher-dlya-meridianov-24kruga-zelenyy-1706634620",
+    "imageUrl": "https://ir.ozone.ru/s3/multimedia-r/wc500/6683323599.jpg",
+    "currentPrice": "187 ₽",
+    "oldPrice": "246 ₽",
+    "discount": "−23%",
+    "title": "Роликовый массажер для меридианов 24круга зеленый",
+    "rating": "4.8",
+    "reviewCount": "0",
+    "deliveryDate": "29 апреля",
+    "hasPromotion": false,
+    "cartButtonText": "29 апреля"
+  },
+  {
+    "link": "https://www.ozon.ru/product/yashchik-dlya-hraneniya-detskogo-suhogo-moloka-1649692669/?_bctx=CAQQ2KwV&at=VvtzqXk90s5gVQDmuzMZXOYTgVDkwDcGX5vyYuAg63E3&hs=1",
+    "id": "yashchik-dlya-hraneniya-detskogo-suhogo-moloka-1649692669",
+    "imageUrl": "https://ir.ozone.ru/s3/multimedia-x/wc500/6881620821.jpg",
+    "currentPrice": "257 ₽",
+    "oldPrice": "731 ₽",
+    "discount": "−64%",
+    "title": "Ящик для хранения детского сухого молока",
+    "rating": "4.9",
+    "reviewCount": "0",
+    "deliveryDate": "29 апреля",
+    "hasPromotion": false,
+    "cartButtonText": "29 апреля"
+  },
+  {
+    "link": "https://www.ozon.ru/product/yashchik-dlya-hraneniya-detskogo-suhogo-moloka-1649692961/?_bctx=CAQQ2KwV&at=LZtlBXw4NTg7OkxVIPEJDzAU5wY6KcBL096kfXoQ6GZ&hs=1",
+    "id": "yashchik-dlya-hraneniya-detskogo-suhogo-moloka-1649692961",
+    "imageUrl": "https://ir.ozone.ru/s3/multimedia-1/wc500/6881620825.jpg",
+    "currentPrice": "257 ₽",
+    "oldPrice": "731 ₽",
+    "discount": "−64%",
+    "title": "Ящик для хранения детского сухого молока",
+    "rating": "4.9",
+    "reviewCount": "0",
+    "deliveryDate": "29 апреля",
+    "hasPromotion": false,
+    "cartButtonText": "29 апреля"
+  },
+  {
+    "link": "https://www.ozon.ru/product/aksessuary-dlya-kukolnogo-doma-umyvalnik-1633560130/?_bctx=CAQQ2KwV&at=x6tPEBRwmhPyPDXxfDg5OjKfQEEgECrV1y0vtmg2AwE&hs=1",
+    "id": "aksessuary-dlya-kukolnogo-doma-umyvalnik-1633560130",
+    "imageUrl": "https://ir.ozone.ru/s3/multimedia-8/wc500/6725393360.jpg",
+    "currentPrice": "646 ₽",
+    "oldPrice": "1 835 ₽",
+    "discount": "−64%",
+    "title": "Аксессуары для кукольного дома умывальник",
+    "rating": "5.0",
+    "reviewCount": "0",
+    "deliveryDate": "29 апреля",
+    "hasPromotion": false,
+    "cartButtonText": "29 апреля"
+  },
+  {
+    "link": "https://www.ozon.ru/product/tsifrovaya-ultrazvukovaya-stiralnaya-mashina-1677540082/?_bctx=CAQQ2KwV&at=08tYN4gZJcVLxB6nUOwZ91JuYWKPEEikJAWZLtYz6KQ&hs=1",
+    "id": "tsifrovaya-ultrazvukovaya-stiralnaya-mashina-1677540082",
+    "imageUrl": "https://ir.ozone.ru/s3/multimedia-1-1/wc500/7078900285.jpg",
+    "currentPrice": "5 006 ₽",
+    "oldPrice": "7 614 ₽",
+    "discount": "−34%",
+    "title": "Цифровая ультразвуковая стиральная машина",
+    "rating": "5.0",
+    "reviewCount": "0",
+    "deliveryDate": "20 апреля",
+    "hasPromotion": false,
+    "cartButtonText": "20 апреля"
+  },
+  {
+    "link": "https://www.ozon.ru/product/bronzovyy-kubok-dlya-vina-1722569520/?_bctx=CAQQ2KwV&at=BrtzWARBPsrvqqvXhy1Q557h4wLQ76C59mEJYSwlrR1&hs=1",
+    "id": "bronzovyy-kubok-dlya-vina-1722569520",
+    "imageUrl": "https://ir.ozone.ru/s3/multimedia-5/wc500/6615382613.jpg",
+    "currentPrice": "191 ₽",
+    "oldPrice": "323 ₽",
+    "discount": "−40%",
+    "title": "Бронзовый Кубок для Вина",
+    "rating": "5.0",
+    "reviewCount": "0",
+    "deliveryDate": "29 апреля",
+    "hasPromotion": false,
+    "cartButtonText": "29 апреля"
+  },
+  {
+    "link": "https://www.ozon.ru/product/detskiy-planshet-26132300707-wazu-h3g4c82-gb-temno-siniy-1560570446/?_bctx=CAQQ2KwV&at=x6tPEBRwmhYgMWyPHolNOD0cwMkX2BCM1AY73S5o2Ao9&hs=1",
+    "id": "detskiy-planshet-26132300707-wazu-h3g4c82-gb-temno-siniy-1560570446",
+    "imageUrl": "https://ir.ozone.ru/s3/multimedia-1-7/wc500/6929703079.jpg",
+    "currentPrice": "297 ₽",
+    "oldPrice": "501 ₽",
+    "discount": "−40%",
+    "title": "Детский планшет 26132300707_WAZU_H3G4C82 ГБ, темно-синий",
+    "rating": "5.0",
+    "reviewCount": "0",
+    "deliveryDate": "29 апреля",
+    "hasPromotion": false,
+    "cartButtonText": "29 апреля"
+  },
+  {
+    "link": "https://www.ozon.ru/product/nabor-samoletov-1642363066/?_bctx=CAQQ2KwV&at=VvtzqXk90s5EGyokiJQxxp2h88VM3XIoM9wZ3IDVlmLK&hs=1",
+    "id": "nabor-samoletov-1642363066",
+    "imageUrl": "https://ir.ozone.ru/s3/multimedia-g/wc500/6751916512.jpg",
+    "currentPrice": "448 ₽",
+    "oldPrice": "1 275 ₽",
+    "discount": "−64%",
+    "title": "Набор самолетов",
+    "rating": "5.0",
+    "reviewCount": "0",
+    "deliveryDate": "29 апреля",
+    "hasPromotion": false,
+    "cartButtonText": "29 апреля"
+  },
+  {
+    "link": "https://www.ozon.ru/product/maski-dlya-karnavalnoy-vecherinki-1706652635/?_bctx=CAQQ2KwV&at=OgtE1wZ45sjO3OMluXz1mnDf6RBwZnH5J04L5i220kgD&hs=1",
+    "id": "maski-dlya-karnavalnoy-vecherinki-1706652635",
+    "imageUrl": "https://ir.ozone.ru/s3/multimedia-6/wc500/6779205258.jpg",
+    "currentPrice": "178 ₽",
+    "oldPrice": "229 ₽",
+    "discount": "−22%",
+    "title": "Маски для карнавальной вечеринки",
+    "rating": "5.0",
+    "reviewCount": "0",
+    "deliveryDate": "29 апреля",
+    "hasPromotion": false,
+    "cartButtonText": "29 апреля"
+  },
+  {
+    "link": "https://www.ozon.ru/product/kryshka-radiatora-dlya-1704194992/?_bctx=CAQQ2KwV&at=vQtrw4LKOtvgZqrGUVE0DjMcL79WwZC0D9qnWhMmMBME&hs=1",
+    "id": "kryshka-radiatora-dlya-1704194992",
+    "imageUrl": "https://ir.ozone.ru/s3/multimedia-1-y/wc500/7139863402.jpg",
+    "currentPrice": "257 ₽",
+    "oldPrice": "433 ₽",
+    "discount": "−40%",
+    "title": "Крышка радиатора для",
+    "rating": "5.0",
+    "reviewCount": "0",
+    "deliveryDate": "29 апреля",
+    "hasPromotion": false,
+    "cartButtonText": "29 апреля"
+  },
+  {
+    "link": "https://www.ozon.ru/product/nakladki-na-ruchku-kpp-935990502/?_bctx=CAQQ2KwV&at=MZtvB9kWxs2WK9LkI15AElBfmONWnpUX0NVDmurlxR0z&hs=1",
+    "id": "nakladki-na-ruchku-kpp-935990502",
+    "imageUrl": "https://ir.ozone.ru/s3/multimedia-k/wc500/6622098032.jpg",
+    "currentPrice": "435 ₽",
+    "oldPrice": "722 ₽",
+    "discount": "−39%",
+    "title": "Накладки на ручку КПП",
+    "rating": "5.0",
+    "reviewCount": "0",
+    "deliveryDate": "29 апреля",
+    "hasPromotion": false,
+    "cartButtonText": "29 апреля"
+  },
+  {
+    "link": "https://www.ozon.ru/product/kryshka-radiatora-dlya-1708948247/?_bctx=CAQQ2KwV&at=QktJv9lrBc1wD3lXsG999XSVK0DZ2C7nnDmytrE3J34&hs=1",
+    "id": "kryshka-radiatora-dlya-1708948247",
+    "imageUrl": "https://ir.ozone.ru/s3/multimedia-1-t/wc500/7144646105.jpg",
+    "currentPrice": "257 ₽",
+    "oldPrice": "433 ₽",
+    "discount": "−40%",
+    "title": "Крышка радиатора для",
+    "rating": "5.0",
+    "reviewCount": "0",
+    "deliveryDate": "29 апреля",
+    "hasPromotion": false,
+    "cartButtonText": "29 апреля"
+  },
+  {
+    "link": "https://www.ozon.ru/product/tiski-dlya-sverlilnyh-stankov-1705548573/?_bctx=CAQQ2KwV&at=ywtAOJ2k6uRzQKpZfkWGjZZHDV2nnipo7QMJcg7r4gJ&hs=1",
+    "id": "tiski-dlya-sverlilnyh-stankov-1705548573",
+    "imageUrl": "https://ir.ozone.ru/s3/multimedia-u/wc500/6711977190.jpg",
+    "currentPrice": "738 ₽",
+    "oldPrice": "1 241 ₽",
+    "discount": "−40%",
+    "title": "Тиски для сверлильных станков",
+    "rating": "5.0",
+    "reviewCount": "0",
+    "deliveryDate": "30 апреля",
+    "hasPromotion": false,
+    "cartButtonText": "30 апреля"
+  },
+  {
+    "link": "https://www.ozon.ru/product/detskiy-planshet-26132300707-wazu-h3g4c82-gb-siniy-1560570405/?_bctx=CAQQ2KwV&at=08tYN4gZJcwA9Q8JT53x820u84EgpvfywNpoNSqxAANQ&hs=1",
+    "id": "detskiy-planshet-26132300707-wazu-h3g4c82-gb-siniy-1560570405",
+    "imageUrl": "https://ir.ozone.ru/s3/multimedia-1-4/wc500/7401091144.jpg",
+    "currentPrice": "297 ₽",
+    "oldPrice": "501 ₽",
+    "discount": "−40%",
+    "title": "Детский планшет 26132300707_WAZU_H3G4C82 ГБ, синий",
+    "rating": "5.0",
+    "reviewCount": "0",
+    "deliveryDate": "29 апреля",
+    "hasPromotion": false,
+    "cartButtonText": "29 апреля"
+  },
+  {
+    "link": "https://www.ozon.ru/product/igrushka-dlya-sobak-svinya-pishchalka-1640283090/?_bctx=CAQQ2KwV&at=lRt6RkPpOfkpjE2QSKBOzvDsL1ml5YS0OO7YLcAy4DXE&hs=1",
+    "id": "igrushka-dlya-sobak-svinya-pishchalka-1640283090",
+    "imageUrl": "https://ir.ozone.ru/s3/multimedia-z/wc500/6726438539.jpg",
+    "currentPrice": "336 ₽",
+    "oldPrice": "952 ₽",
+    "discount": "−64%",
+    "title": "Игрушка для собак Свинья пищалка",
+    "rating": "5.0",
+    "reviewCount": "0",
+    "deliveryDate": "29 апреля",
+    "hasPromotion": false,
+    "cartButtonText": "29 апреля"
+  },
+  {
+    "link": "https://www.ozon.ru/product/derzhatel-kuhonnyy-1-sht-1766057769/?_bctx=CAQQ2KwV&at=57twkRp4gcWX1ojjFp9A7pyUllpYXvh5ENExkFKXMoDQ&hs=1",
+    "id": "derzhatel-kuhonnyy-1-sht-1766057769",
+    "imageUrl": "https://ir.ozone.ru/s3/multimedia-s/wc500/6619517092.jpg",
+    "currentPrice": "395 ₽",
+    "oldPrice": "663 ₽",
+    "discount": "−40%",
+    "title": "Держатель кухонный, 1 шт",
+    "rating": "5.0",
+    "reviewCount": "0",
+    "deliveryDate": "29 апреля",
+    "hasPromotion": false,
+    "cartButtonText": "29 апреля"
+  },
+  {
+    "link": "https://www.ozon.ru/product/detskiy-planshet-26132300707-wazu-h3g4c82-gb-belyy-1560570369/?_bctx=CAQQ2KwV&at=QktJv9lrBckVPWlGf0YRzP6sAgjvrJSY2vk4xTrx2YwD&hs=1",
+    "id": "detskiy-planshet-26132300707-wazu-h3g4c82-gb-belyy-1560570369",
+    "imageUrl": "https://ir.ozone.ru/s3/multimedia-1-z/wc500/7401089807.jpg",
+    "currentPrice": "297 ₽",
+    "oldPrice": "501 ₽",
+    "discount": "−40%",
+    "title": "Детский планшет 26132300707_WAZU_H3G4C82 ГБ, белый",
+    "rating": "5.0",
+    "reviewCount": "0",
+    "deliveryDate": "29 апреля",
+    "hasPromotion": false,
+    "cartButtonText": "29 апреля"
   }
-}
+]

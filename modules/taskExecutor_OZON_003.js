@@ -15,9 +15,6 @@ function isUniqueAttribute(attribute, event, events) {
     return count === 1;
 }
 
-
-
-
 export class Task {
     constructor(type, element, value, sortedData_new, task_name, cityname) {
         this.type = type;
@@ -37,8 +34,6 @@ export class Task {
         throw new Error("Method 'execute()' must clickbe implemented.");
     }
 }
-
-
 
 export class ClickTask extends Task {
     constructor(element, browser) {
@@ -93,7 +88,6 @@ export class ClickTask extends Task {
         console.log('isXPath_click:', isXPath_click);
         console.log('leixing:', this.element.leixing);
         const cliclValue = this.value;
-
 
         try {
             if (!this.element.leixing) {
@@ -581,7 +575,7 @@ export class OutputTask extends Task {
                         const videoCards = document.querySelectorAll('.video-card-zQ02ng');
                         const videos = [];
                         if (videoCards.length === 0) {
-                            // 如果没有视频卡片,返回只包含channelName的对象
+                            // 如果没有视频卡片，返回只包含channelName的对象
                             resolve([{
                                 channelName: channelName,
                                 title: '',
@@ -791,6 +785,8 @@ export class NavigationTask extends Task {
 
     async execute(page) {
         // await this.save();
+        const config = loadConfig('config/config.json');
+        const outputHandler = OutputFactory.createOutputHandler(config.outputFormat);
         try {
             await Promise.all([
                 page.goto(this.url),
@@ -828,48 +824,259 @@ export class NavigationTask extends Task {
 
 
 export class ScrollTask extends Task {
-    constructor(distance, direction) {
+    constructor(distance, direction, task_name, cityname) {
         super('scroll', null);
         this.distance = distance;
         this.direction = direction;
+        this.allCollectedData = []; // 用于存储所有采集的数据
+        this.task_name = task_name;
+        this.cityname = cityname;
     }
 
     async execute(page) {
         try {
+            const config = loadConfig('config/config.json');
+            const outputHandler = OutputFactory.createOutputHandler(config.outputFormat);
+            
             let previousCount = 0;
             let currentCount = 0;
-            let noChangeCount = 0;
+            let noRatedProductsCount = 0; // 计数器：记录连续没有评分的新商品的次数
 
-            while (noChangeCount < 6) { // 连续3次数量没变化时停止
+            while (noRatedProductsCount < 4) { // 连续4次没有评分的新商品时停止
                 // 获取当前商品数量
                 currentCount = await page.evaluate(() => {
-                    return document.querySelectorAll('div[data-index][class*="tile-root"]').length;
+                    // 尝试多种选择器获取商品元素
+                    const selectors = [
+                        'div[data-index][class*="tile-root"]',
+                        '#contentScrollPaginator .tile-root',
+                        '.tile-root',
+                        '.widget-search-result-container [data-index]'
+                    ];
+                    
+                    let maxCount = 0;
+                    let bestSelector = '';
+                    
+                    // 尝试所有选择器，选择找到最多元素的那个
+                    for (const selector of selectors) {
+                        const count = document.querySelectorAll(selector).length;
+                        console.log(`选择器 "${selector}" 找到 ${count} 个元素`);
+                        
+                        if (count > maxCount) {
+                            maxCount = count;
+                            bestSelector = selector;
+                        }
+                    }
+                    
+                    // 获取最佳选择器的元素
+                    const elements = document.querySelectorAll(bestSelector);
+                    console.log(`使用最佳选择器 "${bestSelector}" 找到 ${elements.length} 个元素`);
+                    
+                    // 调试信息：输出前5个和最后5个元素的data-index属性
+                    const debugInfo = [];
+                    for (let i = 0; i < Math.min(5, elements.length); i++) {
+                        const dataIndex = elements[i].getAttribute('data-index');
+                        debugInfo.push(`元素${i}: data-index=${dataIndex}`);
+                    }
+                    
+                    // 检查最后几个元素
+                    if (elements.length > 5) {
+                        debugInfo.push('...');
+                        for (let i = Math.max(5, elements.length - 5); i < elements.length; i++) {
+                            const dataIndex = elements[i].getAttribute('data-index');
+                            debugInfo.push(`元素${i}: data-index=${dataIndex}`);
+                        }
+                    }
+                    
+                    console.log('元素信息:', debugInfo.join(', '));
+                    
+                    // 检查页面是否有"加载更多"按钮
+                    const loadMoreButton = document.querySelector('button[data-widget="searchResultsV2.loadMore"]');
+                    if (loadMoreButton) {
+                        console.log('发现"加载更多"按钮，页面可能有更多商品');
+                    }
+                    
+                    return maxCount;
                 });
 
-                console.log(`当前商品数量: ${currentCount}`);
-
-                if (currentCount === previousCount) {
-                    noChangeCount++;
-                    console.log(`商品数量未变化，连续${noChangeCount}次`);
-                } else {
-                    noChangeCount = 0;
-                    console.log('商品数量发生变化，重置计数器');
-                }
+                console.log(`当前商品数量: ${currentCount}, 上一次数量: ${previousCount}`);
 
                 // 执行滚动
                 await page.bringToFront();
                 await page.evaluate((distance, direction) => {
                     window.scrollBy(0, direction === 'down' ? distance : -distance);
+                    console.log(`已滚动 ${direction === 'down' ? distance : -distance} 像素`);
                 }, this.distance, this.direction);
 
-                // 等待新内容加载
-                await page.waitForTimeout(10000);
+                // 如果连续多次没有评分的新商品，尝试更大的滚动距离
+                if (noRatedProductsCount > 2) {
+                    await page.evaluate((distance) => {
+                        window.scrollBy(0, distance * 2);
+                        console.log(`尝试更大滚动距离: ${distance * 2} 像素`);
+                    }, this.distance);
+                }
+
+                // 等待新内容加载，增加等待时间
+                await page.waitForTimeout(12000);
+
+                // 每次滚动后采集数据
+                const newData = await page.evaluate(() => {
+                    return new Promise((resolve) => {
+                        setTimeout(() => {
+                            const products = [];
+                            // 使用更新后的选择器来定位商品卡片
+                            const productCards = document.querySelectorAll('div[class*="tile-root"]');
+                            console.log('找到的产品卡片数量:', productCards.length);
+
+                            productCards.forEach((card, index) => {
+                                const product = {};
+
+                                // 提取链接和ID
+                                const linkElement = card.querySelector('a[class*="tile-clickable-element"]');
+                                product.link = linkElement ? linkElement.href : '未找到链接';
+                                product.id = product.link ? product.link.match(/\/product\/([^\/\?]+)/)?.[1] : '未找到ID';
+
+                                // 提取图片URL
+                                const imageElement = card.querySelector('img[class*="b933-a"]');
+                                product.imageUrl = imageElement ? imageElement.src : '未找到图片URL';
+
+                                // 提取价格信息
+                                const currentPriceElement = card.querySelector('span[class*="tsHeadline500Medium"]');
+                                product.currentPrice = currentPriceElement ? currentPriceElement.textContent.trim() : '未找到当前价格';
+
+                                const oldPriceElement = card.querySelector('span[class*="tsBodyControl400Small"]');
+                                product.oldPrice = oldPriceElement ? oldPriceElement.textContent.trim() : '未找到原价';
+
+                                // 提取折扣信息
+                                const discountElement = card.querySelector('span[class*="c3025-b4"]');
+                                product.discount = discountElement ? discountElement.textContent.trim() : '未找到折扣';
+
+                                // 提取标题
+                                const titleElement = card.querySelector('span[class*="tsBody500Medium"]');
+                                product.title = titleElement ? titleElement.textContent.trim() : '未找到标题';
+
+                                // ---------- 优化评分收集 (开始) ----------
+                                // 使用三种不同方法尝试提取评分
+                                let rating = null;
+                                
+                                // 方法1: 通过原始选择器查找黄色星星图标附近的评分文本
+                                const ratingContainer1 = card.querySelector('svg[class*="p6b18-a5"][style*="color:rgba(255, 165, 0, 1)"]');
+                                if (ratingContainer1 && !rating) {
+                                    const ratingElement = ratingContainer1.closest('span[class*="p6b18-a4"]')?.querySelector('span[style*="color:rgba(7, 7, 7, 1)"]');
+                                    if (ratingElement) {
+                                        rating = ratingElement.textContent.trim();
+                                    }
+                                }
+                                
+                                // 方法2: 通过替代颜色格式查找黄色星星图标
+                                if (!rating) {
+                                    const ratingContainer2 = card.querySelector('svg[style*="color: rgb(255, 165, 0)"]');
+                                    if (ratingContainer2) {
+                                        const ratingElement = ratingContainer2.closest('span')?.querySelector('span[style*="color: rgb(7, 7, 7)"]');
+                                        if (ratingElement) {
+                                            rating = ratingElement.textContent.trim();
+                                        }
+                                    }
+                                }
+                                
+                                // 方法3: 查找任何包含可能是评分的数值文本(通常是1-5之间带小数点的数字)
+                                if (!rating) {
+                                    // 检查p6b类元素内的所有span
+                                    const ratingContainers = card.querySelectorAll('div[class*="p6b"]');
+                                    for (const container of ratingContainers) {
+                                        const spans = container.querySelectorAll('span');
+                                        for (const span of spans) {
+                                            const text = span.textContent.trim();
+                                            // 评分一般是1到5之间的数字，可能带有小数点
+                                            if (/^[1-5](\.\d)?$/.test(text)) {
+                                                rating = text;
+                                                break;
+                                            }
+                                        }
+                                        if (rating) break;
+                                    }
+                                }
+                                
+                                product.rating = rating || '未找到评分';
+                                // ---------- 优化评分收集 (结束) ----------
+
+                                // 提取评论数（寻找包含"отзыва"文字的元素）
+                                const reviewContainer = card.querySelector('svg[class*="p6b18-a5"][style*="color:rgba(0, 26, 52, 0.4)"]');
+                                if (reviewContainer) {
+                                    const reviewElement = reviewContainer.closest('span[class*="p6b18-a4"]').querySelector('span[style*="color:rgba(0, 26, 52, 0.6)"]');
+                                    if (reviewElement) {
+                                        const reviewText = reviewElement.textContent.trim();
+                                        product.reviewCount = reviewText.replace(/[^\d]/g, ''); // 只保留数字
+                                    } else {
+                                        product.reviewCount = '0';
+                                    }
+                                } else {
+                                    product.reviewCount = '0';
+                                }
+
+                                // 提取配送信息
+                                const deliveryElement = card.querySelector('div[class*="tsBodyControl500Medium"]');
+                                product.deliveryDate = deliveryElement ? deliveryElement.textContent.trim() : '未找到配送日期';
+
+                                // 检查是否标注为优惠活动
+                                const promotionElement = card.querySelector('svg[style*="color: rgb(16, 196, 76)"]');
+                                product.hasPromotion = !!promotionElement;
+
+                                // 收集"添加到购物车"按钮信息
+                                const cartButtonElement = card.querySelector('button[class*="b2122-"]');
+                                product.cartButtonText = cartButtonElement ? cartButtonElement.textContent.trim() : '';
+
+                                console.log(`产品 ${index + 1}:`, product);
+                                products.push(product);
+                            });
+
+                            resolve(products);
+                        }, 5000);
+                    });
+                });
+
+                console.log(`本次滚动采集到 ${newData.length} 个产品数据`);
+                
+                // 将新数据添加到总数据集合中，并去重
+                if (newData && newData.length > 0) {
+                    // 使用产品ID去重
+                    const existingIds = new Set(this.allCollectedData.map(item => item.id));
+                    const uniqueNewData = newData.filter(item => !existingIds.has(item.id));
+                    
+                    // 检查是否有带评分的新商品
+                    const newRatedProducts = uniqueNewData.filter(item => 
+                        item.rating && item.rating !== '未找到评分' && /^[1-5](\.\d)?$/.test(item.rating)
+                    );
+                    
+                    if (newRatedProducts.length > 0) {
+                        console.log(`添加了 ${newRatedProducts.length} 个带评分的新产品`);
+                        noRatedProductsCount = 0; // 重置计数器
+                    } else {
+                        noRatedProductsCount++; // 增加计数器
+                        console.log(`没有找到带评分的新产品，连续 ${noRatedProductsCount} 次没有带评分的新产品`);
+                    }
+                    
+                    // 只有当有新增数据时才输出
+                    if (uniqueNewData.length > 0) {
+                        console.log(`添加了 ${uniqueNewData.length} 个新产品，当前总共有 ${this.allCollectedData.length + uniqueNewData.length} 个产品`);
+                        
+                        // 只输出新增加的数据，而不是总体的
+                        outputHandler.handle(uniqueNewData, 'output', this.task_name, this.cityname);
+                        
+                        // 更新总数据集合
+                        this.allCollectedData = [...this.allCollectedData, ...uniqueNewData];
+                    } else {
+                        console.log(`没有新增产品，当前总共有 ${this.allCollectedData.length} 个产品`);
+                    }
+                } else {
+                    noRatedProductsCount++; // 如果没有任何新数据，也增加计数器
+                    console.log(`没有采集到任何新产品，连续 ${noRatedProductsCount} 次没有带评分的新产品`);
+                }
 
                 previousCount = currentCount;
             }
-
-            console.log('滚动结束，商品数量已稳定');
-
+            
+            console.log(`滚动结束，连续 ${noRatedProductsCount} 次没有带评分的新产品`);
+            return page;
         } catch (error) {
             console.error('滚动过程发生错误:', error);
         }

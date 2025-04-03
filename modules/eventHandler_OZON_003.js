@@ -152,7 +152,7 @@ export async function handleEvent(event, page, browser,index, sortedData_new, ta
             const newLoopPage = await task.execute(page, browser, index, sortedData_new, task_name, cityname, handleEvent);
             return newLoopPage || page; // 如果 newLoopPage 是 undefined，则返回原始页面
         case 'scroll':
-            task = new ScrollTask(event.distance, event.direction);
+            task = new ScrollTask(event.distance, event.direction, task_name, cityname);
             break;
         case 'navigation':
             task = new NavigationTask(event.url);
