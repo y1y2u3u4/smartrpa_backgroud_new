@@ -935,8 +935,8 @@ export class ScrollTask extends Task {
                                 product.link = linkElement ? linkElement.href : '未找到链接';
                                 product.id = product.link ? product.link.match(/\/product\/([^\/\?]+)/)?.[1] : '未找到ID';
 
-                                // 提取图片URL
-                                const imageElement = card.querySelector('img[class*="b933-a"]');
+                                // 提取图片URLimg.j6q_25.b990-a
+                                const imageElement = card.querySelector('img.s8j_25.b9100-a');
                                 product.imageUrl = imageElement ? imageElement.src : '未找到图片URL';
 
                                 // 提取价格信息

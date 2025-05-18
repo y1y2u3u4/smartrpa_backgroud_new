@@ -44,9 +44,8 @@ async function waitForTableData(page, task_name, cityname) {
         // 等待表格和分页器出现
         await Promise.all([
             page.waitForSelector('tr.table-row-module_row_tR-2M', { timeout: 30000, visible: true }),
-            page.waitForSelector('article.styles_paginationWrapper_0I0St, article.styles_paginationWrapper_24KuK', { timeout: 30000 })
+            page.waitForSelector('article[data-widget="simpleTable-TablePagination"]', { timeout: 30000 })
         ]);
-
         
 
         // 获取总页数
@@ -62,9 +61,15 @@ async function waitForTableData(page, task_name, cityname) {
             }
 
             // 如果无法从总数信息获取，则从分页按钮获取
-            const pagination = document.querySelector('article.styles_paginationWrapper_0I0St ul.pagination-module_pagination_2UpUe, article.styles_paginationWrapper_24KuK ul.pagination-module_pagination_OvL2B');
-            if (!pagination) {
+            // 用 data-widget 属性定位分页器
+            const paginationArticle = document.querySelector('article[data-widget="simpleTable-TablePagination"]');
+            if (!paginationArticle) {
                 console.log('未找到分页器，返回1页');
+                return 1;
+            }
+            const pagination = paginationArticle.querySelector('ul.pagination-module_pagination_2UpUe');
+            if (!pagination) {
+                console.log('未找到分页ul，返回1页');
                 return 1;
             }
 
@@ -81,7 +86,7 @@ async function waitForTableData(page, task_name, cityname) {
                 .filter(text => /^\d+$/.test(text))
                 .map(Number);
 
-            const maxPage = Math.max(...pageNumbers);
+            const maxPage = pageNumbers.length > 0 ? Math.max(...pageNumbers) : 1;
             console.log('找到的最大页码:', maxPage);
             return maxPage;
         });
@@ -96,7 +101,11 @@ async function waitForTableData(page, task_name, cityname) {
             // 如果不是第一页，需要点击翻页按钮
             if (currentPage > 1) {
                 await page.evaluate((pageNum) => {
-                    const pagination = document.querySelector('article.styles_paginationWrapper_0I0St ul.pagination-module_pagination_2UpUe, article.styles_paginationWrapper_24KuK ul.pagination-module_pagination_OvL2B');
+                    // 用 data-widget 属性定位分页器，ul用模糊匹配
+                    const paginationArticle = document.querySelector('article[data-widget="simpleTable-TablePagination"]');
+                    if (!paginationArticle) return;
+                    const pagination = paginationArticle.querySelector('ul[class*="pagination-module_pagination"]');
+                    if (!pagination) return;
                     const buttons = Array.from(pagination.querySelectorAll('button'));
                     const targetButton = buttons.find(btn => btn.textContent.trim() === String(pageNum));
                     if (targetButton) {
@@ -106,7 +115,8 @@ async function waitForTableData(page, task_name, cityname) {
 
                 // 等待新数据加载
                 await page.waitForFunction(() => {
-                    const loadingIndicator = document.querySelector('.loading-module_loading_2Yqkq');
+                    // 更新加载指示器选择器，添加多种可能的类名
+                    const loadingIndicator = document.querySelector('.loading-module_loading_2Yqkq, .loading-module_loading_3pPGW');
                     return !loadingIndicator;
                 }, { timeout: 30000 });
                 

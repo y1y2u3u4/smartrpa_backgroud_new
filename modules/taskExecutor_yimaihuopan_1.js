@@ -525,34 +525,115 @@ export class ClickTask extends Task {
                 
                 for (let currentPage = startPage; currentPage <= endPage; currentPage++) {
                     try {
-                        // 输入页码并触发跳转
-                        await page.waitForSelector('.el-pagination__editor .el-input__inner');
-                        await page.evaluate((page) => {
-                            const input = document.querySelector('.el-pagination__editor .el-input__inner');
-                            input.value = page;
-                            input.dispatchEvent(new Event('input'));
-                            input.dispatchEvent(new Event('change'));
-                            // 模拟回车键触发跳转
-                            input.dispatchEvent(new KeyboardEvent('keydown', {
-                                key: 'Enter',
-                                code: 'Enter',
-                                keyCode: 13,
-                                bubbles: true
-                            }));
-                        }, currentPage);
-
+                        console.log(`准备跳转到第 ${currentPage} 页...`);
+                        
+                        // 等待确保页面加载完成
+                        await new Promise(resolve => setTimeout(resolve, 3000));
+                        
+                        // 尝试直接点击输入框
+                        try {
+                            await page.waitForSelector('.el-pagination__jump .el-input__inner', { visible: true, timeout: 5000 });
+                            await page.click('.el-pagination__jump .el-input__inner');
+                            console.log('已点击页码输入框');
+                        } catch (error) {
+                            console.error('点击页码输入框失败:', error.message);
+                            // 如果点击失败，尝试使用JavaScript执行点击
+                            await page.evaluate(() => {
+                                const input = document.querySelector('.el-pagination__jump .el-input__inner');
+                                if (input) input.click();
+                            });
+                            console.log('已通过JavaScript点击页码输入框');
+                        }
+                        
+                        // 等待一下确保输入框已获得焦点
+                        await new Promise(resolve => setTimeout(resolve, 1000));
+                        
+                        // 清空输入框 - 修复Control+A的问题
+                        await page.evaluate(() => {
+                            const input = document.querySelector('.el-pagination__jump .el-input__inner');
+                            if (input) {
+                                input.value = '';
+                            }
+                        });
+                        console.log('已清空输入框');
+                        
+                        // 输入页码
+                        await page.keyboard.type(currentPage.toString(), { delay: 100 });
+                        console.log(`已输入页码: ${currentPage}`);
+                        
+                        // 等待一下确保输入完成
+                        await new Promise(resolve => setTimeout(resolve, 1000));
+                        
+                        // 按回车键
+                        await page.keyboard.press('Enter');
+                        console.log('已按下回车键');
+                        
                         // 等待页面加载
+                        console.log(`等待页面加载...`);
                         await new Promise(resolve => setTimeout(resolve, 7000));
-
-                        // 验证页码是否正确跳转
+                        
+                        // 验证页码是否正确跳转 - 通过检查URL或页面内容
                         const actualPage = await page.evaluate(() => {
-                            const input = document.querySelector('.el-pagination__editor .el-input__inner');
-                            return input ? parseInt(input.value) : null;
+                            // 首先检查活动页码按钮
+                            const activePageButton = document.querySelector('.el-pager li.active');
+                            if (activePageButton) {
+                                return parseInt(activePageButton.textContent.trim());
+                            }
+                            
+                            // 如果找不到活动页码按钮，检查输入框
+                            const input = document.querySelector('.el-pagination__jump .el-input__inner');
+                            if (input) {
+                                return parseInt(input.value);
+                            }
+                            
+                            // 如果都找不到，尝试从页面内容判断
+                            // 例如检查表格中的序号或其他指示当前页的元素
+                            return null;
                         });
                         
                         if (actualPage !== currentPage) {
-                            console.log(`页码跳转可能失败，期望页码: ${currentPage}，实际页码: ${actualPage}`);
-                            continue;
+                            console.log(`页码跳转可能失败，期望页码: ${currentPage}，实际页码: ${actualPage || '未知'}`);
+                            
+                            // 尝试再次跳转，使用另一种方法
+                            console.log('尝试使用另一种方法跳转...');
+                            await page.evaluate((targetPage) => {
+                                // 直接修改输入框值并提交
+                                const input = document.querySelector('.el-pagination__jump .el-input__inner');
+                                if (input) {
+                                    input.value = targetPage;
+                                    // 创建并触发回车键事件
+                                    const event = new KeyboardEvent('keydown', {
+                                        key: 'Enter',
+                                        code: 'Enter',
+                                        keyCode: 13,
+                                        which: 13,
+                                        bubbles: true
+                                    });
+                                    input.dispatchEvent(event);
+                                }
+                            }, currentPage);
+                            
+                            // 再次等待页面加载
+                            await new Promise(resolve => setTimeout(resolve, 7000));
+                            
+                            // 再次验证
+                            const retryActualPage = await page.evaluate(() => {
+                                const activePageButton = document.querySelector('.el-pager li.active');
+                                if (activePageButton) {
+                                    return parseInt(activePageButton.textContent.trim());
+                                }
+                                const input = document.querySelector('.el-pagination__jump .el-input__inner');
+                                return input ? parseInt(input.value) : null;
+                            });
+                            
+                            if (retryActualPage !== currentPage) {
+                                console.log(`重试后仍然失败，跳过第 ${currentPage} 页`);
+                                continue;
+                            } else {
+                                console.log(`重试成功，已跳转到第 ${currentPage} 页`);
+                            }
+                        } else {
+                            console.log(`成功跳转到第 ${currentPage} 页，开始获取数据...`);
                         }
 
                         // 获取当前页数据

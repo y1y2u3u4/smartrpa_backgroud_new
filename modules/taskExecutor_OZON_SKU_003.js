@@ -694,72 +694,47 @@ export class OutputTask extends Task {
                     return [];
                 }
 
+
                 function extractProductInfo(row) {
                     const info = {};
+                    
                     // 基础信息提取
-                    const imgElement = row.querySelector('img.image-cdn-module_noRatio_yMny2');
+                    const imgElement = row.querySelector('img.s8j_25.b9100-a');
                     info.imageUrl = imgElement ? imgElement.src : 'N/A';
-
-                    const nameElement = row.querySelector('a.styles_name_WmgIV');
+                
+                    const nameElement = row.querySelector('.bq020-a span.tsBody500Medium');
                     info.title = nameElement ? nameElement.textContent.trim() : 'N/A';
-                    info.productUrl = nameElement ? nameElement.href : 'N/A';
-
-                    const brandElement = row.querySelector('.styles_brand_ofFTK span');
-                    info.brand = brandElement ? brandElement.textContent.trim() : 'N/A';
-
-                    // 类别信息
-                    const category1Element = row.querySelector('.styles_category1_dyX7k');
-                    const category3Element = row.querySelector('.styles_category3_gAkdH');
-                    info.category1 = category1Element ? category1Element.textContent.trim() : 'N/A';
-                    info.category3 = category3Element ? category3Element.textContent.trim() : 'N/A';
-
-                    // 获取所有单元格
-                    const cells = row.querySelectorAll('.table-cell-module_cell_MThHP');
-
-                    // 提取各项数据（按列顺序）
-                    const cellData = {
-                        4: { key: 'orderAmount', label: '订购金额' },
-                        5: { key: 'salesDynamics', label: '周转动态' },
-                        6: { key: 'orderedQuantity', label: '已订购数量' },
-                        7: { key: 'averagePrice', label: '平均价格' },
-                        8: { key: 'missedSales', label: '已错过销售' },
-                        9: { key: 'subscriptionShare', label: '认购份额' },
-                        10: { key: 'availability', label: '可用性' },
-                        11: { key: 'dailyAverageSales', label: '每日平均销量' },
-                        12: { key: 'workMode', label: '工作模式' },
-                        13: { key: 'warehouse', label: '仓库' },
-                        14: { key: 'deliveryTime', label: '配送时间' },
-                        15: { key: 'searchViews', label: '搜索结果浏览量' },
-                        16: { key: 'cardViews', label: '商品卡片浏览量' },
-                        17: { key: 'searchAddToCart', label: '从搜索结果加入购物车' },
-                        18: { key: 'cardAddToCart', label: '从商品卡片添加购物车' },
-                        19: { key: 'adCostShare', label: '广告费用份额' },
-                        20: { key: 'listingDate', label: '上架日期' }
-                    };
-
-                    // 提取每个单元格的数据
-                    Object.entries(cellData).forEach(([index, { key }]) => {
-                        const cell = cells[index];
-                        if (cell) {
-                            let value = cell.textContent.trim();
-                            // 处理百分比值
-                            if (value.includes('%')) {
-                                info[key + 'Raw'] = value;
-                                info[key] = parseFloat(value.replace('%', '').replace(',', '.')) / 100;
-                            } else {
-                                // 处理价格值（移除货币符号和空格）
-                                info[key] = value.replace(/[^\d.,]/g, '').replace(',', '.');
-                            }
-                        } else {
-                            info[key] = 'N/A';
-                        }
-                    });
-
+                    
+                    const linkElement = row.querySelector('a.q4b011-a');
+                    info.productUrl = linkElement ? linkElement.href : 'N/A';
+                
+                    // 价格信息
+                    const priceElement = row.querySelector('span.c390-a1.tsHeadline500Medium');
+                    info.price = priceElement ? priceElement.textContent.trim() : 'N/A';
+                    
+                    const originalPriceElement = row.querySelector('span.c390-a1.tsBodyControl400Small');
+                    info.originalPrice = originalPriceElement ? originalPriceElement.textContent.trim() : 'N/A';
+                    
+                    // 折扣信息
+                    const discountElement = row.querySelector('.c390-b4');
+                    info.discount = discountElement ? discountElement.textContent.trim() : 'N/A';
+                
+                    // 评分和评论信息
+                    const ratingElement = row.querySelector('.p6b20-a4 span[style="color: rgb(7, 7, 7);"]');
+                    info.rating = ratingElement ? ratingElement.textContent.trim() : 'N/A';
+                    
+                    const reviewsElement = row.querySelector('.p6b20-a4 span[style="color: rgba(0, 26, 52, 0.6);"]');
+                    info.reviews = reviewsElement ? reviewsElement.textContent.trim() : 'N/A';
+                
+                    // 配送信息
+                    const deliveryElement = row.querySelector('.b290-a8.tsBodyControl500Medium');
+                    info.deliveryDate = deliveryElement ? deliveryElement.textContent.trim() : 'N/A';
+                    
                     return info;
                 }
 
                 // 获取所有产品行
-                const rows = document.querySelectorAll('tr.table-row-module_row_JSSv0');
+                const rows = document.querySelectorAll('div.qj0_25.tile-root');
                 const products = Array.from(rows).map(extractProductInfo);
 
                 return products;
