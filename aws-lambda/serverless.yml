@@ -1,0 +1,154 @@
+service: smartrpa-background-service
+
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: nodejs16.x
+  memorySize: 2048 # Higher memory for browser operations
+  timeout: 900 # 15 minutes maximum timeout
+  region: ${opt:region, 'us-east-1'} # Default to us-east-1, but can be overridden
+  
+  # Environment variables
+  environment:
+    ADSPOWER_API_URL: ${env:ADSPOWER_API_URL, ''}
+    ADSPOWER_REMOTE_API_URL: ${env:ADSPOWER_REMOTE_API_URL, ''}
+    ADSPOWER_API_KEY: ${env:ADSPOWER_API_KEY, 'b996c078e3bfdb1dcc0cd3f26ea4c949'}
+    ADSPOWER_DEFAULT_USER_ID: ${env:ADSPOWER_DEFAULT_USER_ID, 'kn8o287'}
+    ADSPOWER_HEADLESS: 'true'
+    ADSPOWER_TIMEOUT: '60000'
+    DYNAMODB_TASK_TABLE: ${self:service}-${opt:stage, 'dev'}-tasks
+    S3_BUCKET_NAME: ${self:service}-${opt:stage, 'dev'}-data
+    AWS_REGION: ${opt:region, 'us-east-1'}
+    NODE_ENV: ${opt:stage, 'dev'}
+  
+  # IAM permissions
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - dynamodb:Query
+            - dynamodb:Scan
+            - dynamodb:GetItem
+            - dynamodb:PutItem
+            - dynamodb:UpdateItem
+            - dynamodb:DeleteItem
+          Resource:
+            - !GetAtt TasksTable.Arn
+        - Effect: Allow
+          Action:
+            - s3:GetObject
+            - s3:PutObject
+            - s3:ListBucket
+          Resource:
+            - !GetAtt DataBucket.Arn
+            - !Join ['', [!GetAtt DataBucket.Arn, '/*']]
+
+functions:
+  # API Handler - to process API requests
+  api:
+    handler: aws-lambda/handlers/api-handler.handler
+    events:
+      - httpApi:
+          path: /api/{proxy+}
+          method: ANY
+    environment:
+      API_GATEWAY_BASE_PATH: ${self:provider.stage}
+
+  # Task initiator - to handle task launching
+  taskLauncher:
+    handler: aws-lambda/handlers/task-launcher.handler
+    events:
+      - httpApi:
+          path: /task/launch
+          method: POST
+    environment:
+      TASK_QUEUE: ${self:service}-${opt:stage, 'dev'}-tasks
+
+  # Task processor - separate handler for processing tasks
+  taskProcessor:
+    handler: aws-lambda/handlers/task-processor.handler
+    events:
+      - sqs:
+          arn: !GetAtt TaskQueue.Arn
+          batchSize: 1
+    environment:
+      TASK_PROCESSOR_TYPE: standard
+
+  # Status checker - for checking task status
+  statusChecker:
+    handler: aws-lambda/handlers/status-checker.handler
+    events:
+      - httpApi:
+          path: /task/status/{taskId}
+          method: GET
+      - httpApi:
+          path: /task/list
+          method: GET
+    environment:
+      LIST_LIMIT: 100
+
+# Define custom packager to bundle only necessary files
+package:
+  patterns:
+    - '!./**'
+    - aws-lambda/handlers/**
+    - serverless-adsPower.js
+    - modules/**
+    - package.json
+    - node_modules/**
+    - '!node_modules/.cache/**'
+    - '!**/*.test.js'
+    - '!**/tests/**'
+
+# Create necessary resources
+resources:
+  Resources:
+    # DynamoDB table for task state persistence
+    TasksTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        BillingMode: PAY_PER_REQUEST
+        TableName: ${self:provider.environment.DYNAMODB_TASK_TABLE}
+        AttributeDefinitions:
+          - AttributeName: taskId
+            AttributeType: S
+          - AttributeName: status
+            AttributeType: S
+        KeySchema:
+          - AttributeName: taskId
+            KeyType: HASH
+        GlobalSecondaryIndexes:
+          - IndexName: StatusIndex
+            KeySchema:
+              - AttributeName: status
+                KeyType: HASH
+            Projection:
+              ProjectionType: ALL
+
+    # S3 Bucket for storing task data
+    DataBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: ${self:provider.environment.S3_BUCKET_NAME}
+        CorsConfiguration:
+          CorsRules:
+            - AllowedHeaders:
+                - '*'
+              AllowedMethods:
+                - GET
+                - PUT
+                - POST
+                - DELETE
+              AllowedOrigins:
+                - '*'
+              MaxAge: 3000
+
+    # SQS Queue for task processing
+    TaskQueue:
+      Type: AWS::SQS::Queue
+      Properties:
+        QueueName: ${self:service}-${opt:stage, 'dev'}-tasks
+        VisibilityTimeout: 900 # Match Lambda timeout
+        MessageRetentionPeriod: 345600 # 4 days
